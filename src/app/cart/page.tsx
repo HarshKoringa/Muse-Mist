@@ -4,6 +4,8 @@ import { useCartStore } from "@/store/cartStore";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import CheckoutButton from "@/components/CheckoutButton";
+import CODCheckoutButton from "@/components/CODCheckoutButton";
 
 const gradientMap: Record<string, string> = {
   Sunscreen: "from-[#DCEFFF] via-[#DCD9F8] to-white",
@@ -145,7 +147,7 @@ export default function CartPage() {
             <div className="flex justify-between text-base text-gray-500 mb-4">
               <span>Shipping</span>
               <span className="text-green-500 font-medium">
-                Calculated at checkout
+                Free with prepaid
               </span>
             </div>
 
@@ -154,17 +156,51 @@ export default function CartPage() {
               <span>₹{subtotal}</span>
             </div>
 
-            <button
-              className="w-full mt-6 py-4 rounded-xl bg-[#1A237E] text-white text-base font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-              onClick={() => {
-                // Shiprocket Magic Checkout — Phase 4
-              }}
-            >
-              Proceed to Checkout
-            </button>
+            {/* Payment Method Selection */}
+            <div className="flex flex-col gap-3 mt-6">
+              <p className="text-sm font-semibold text-[#1A237E]">
+                Select Payment Method
+              </p>
+
+              {/* Prepaid option */}
+              <div className="p-4 rounded-xl border-2 border-[#DCD9F8] bg-[#DCEFFF] flex items-center justify-between">
+                <div>
+                  <p className="text-base font-semibold text-[#1A237E]">
+                    Prepaid (UPI / Card)
+                  </p>
+                  <p className="text-xs text-green-600 font-medium mt-0.5">
+                    5% OFF + Free Shipping
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                  RECOMMENDED
+                </span>
+              </div>
+              <CheckoutButton paymentMethod="prepaid" />
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-xs text-gray-400">or</span>
+                <div className="flex-1 h-px bg-gray-100" />
+              </div>
+
+              {/* COD option */}
+              <div className="p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+                <div>
+                  <p className="text-base font-semibold text-gray-600">
+                    Cash on Delivery
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    ₹50 delivery charge applies
+                  </p>
+                </div>
+              </div>
+              <CODCheckoutButton />
+            </div>
 
             <p className="text-xs text-gray-400 text-center mt-3">
-              Secure checkout powered by Shiprocket
+              Secure checkout · Free shipping on prepaid orders above ₹999
             </p>
           </motion.div>
         )}

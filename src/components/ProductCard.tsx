@@ -6,6 +6,7 @@ import { ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCartStore } from "@/store/cartStore";
 import AddedToast from "./AddedToast";
+import Link from "next/link";
 
 type Props = {
   product: Product;
@@ -97,6 +98,13 @@ export default function ProductCard({ product, onQuickView }: Props) {
           <p className="text-sm text-gray-500 mt-2 line-clamp-2">
             {product.description}
           </p>
+          <Link
+            href={`/products/${product.slug}`}
+            onClick={(e) => e.stopPropagation()}
+            className="text-xs font-medium text-[#1A237E] opacity-50 hover:opacity-100 transition-opacity underline underline-offset-2 w-fit"
+          >
+            View full details →
+          </Link>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">

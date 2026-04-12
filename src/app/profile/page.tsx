@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import { UserCircle2 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
+import OrderHistory from "@/components/OrderHistory";
 
 export const metadata = {
   title: "My Profile | Muse & Mist",
@@ -24,6 +25,13 @@ export default async function ProfilePage() {
     .select("full_name, avatar_url, email, phone, created_at")
     .eq("id", user.id)
     .single();
+
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("id, status, total, payment_method, created_at, items")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(10);
 
   const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
   const fullName = profile?.full_name || user.user_metadata?.full_name;
@@ -72,6 +80,10 @@ export default async function ProfilePage() {
         )}
 
         <LogoutButton />
+
+        {orders && orders.length > 0 && (
+          <OrderHistory orders={orders} />
+        )}
       </div>
     </main>
   );

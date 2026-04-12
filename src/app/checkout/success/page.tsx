@@ -1,0 +1,87 @@
+'use client'
+
+import { motion } from 'framer-motion'
+import { CheckCircle2, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+
+function SuccessContent() {
+  const searchParams = useSearchParams()
+  const orderId = searchParams.get('order_id')
+
+  return (
+    <main className="min-h-screen bg-[#DCEFFF] flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md bg-white rounded-3xl shadow-lg
+                   p-10 flex flex-col items-center gap-6 text-center"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+        >
+          <CheckCircle2 size={72} className="text-green-500" />
+        </motion.div>
+
+        <div>
+          <h1 className="text-2xl font-semibold text-[#1A237E] mb-2">
+            Order Confirmed!
+          </h1>
+          <p className="text-base text-gray-500 leading-relaxed">
+            Your Muse &amp; Mist order is confirmed and being
+            prepared for dispatch from Jamnagar.
+          </p>
+          {orderId && (
+            <p className="text-xs text-gray-400 mt-3 font-mono">
+              Order ID: {orderId.slice(0, 8).toUpperCase()}
+            </p>
+          )}
+        </div>
+
+        <div className="w-full p-4 rounded-xl bg-[#DCEFFF] border border-[#DCD9F8] text-left">
+          <p className="text-sm text-[#1A237E] font-medium mb-1">
+            What happens next?
+          </p>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            You&apos;ll receive a tracking link via WhatsApp/email
+            once your order is picked up by our courier partner.
+            Expected delivery: 4–6 business days.
+          </p>
+        </div>
+
+        <div className="flex flex-col w-full gap-3">
+          <Link
+            href="/home-v1#products"
+            className="w-full py-4 rounded-xl bg-[#1A237E] text-white
+                       text-base font-semibold text-center
+                       hover:opacity-90 transition-opacity
+                       flex items-center justify-center gap-2"
+          >
+            Continue Shopping
+            <ArrowRight size={18} />
+          </Link>
+          <Link
+            href="/profile"
+            className="w-full py-4 rounded-xl border-2 border-[#1A237E]
+                       text-[#1A237E] text-base font-semibold text-center
+                       hover:bg-[#1A237E] hover:text-white transition-all"
+          >
+            View My Orders
+          </Link>
+        </div>
+      </motion.div>
+    </main>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense>
+      <SuccessContent />
+    </Suspense>
+  )
+}

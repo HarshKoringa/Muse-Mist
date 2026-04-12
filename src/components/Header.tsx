@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
-import { User, UserCircle2, ShoppingBag } from "lucide-react";
+import { User, UserCircle2, ShoppingBag, Package } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useCartStore } from "@/store/cartStore";
@@ -144,6 +144,12 @@ export default function Header() {
               Shop
             </button>
             <Link
+              href="/routine"
+              className="text-base font-medium text-[#1A237E] hover:opacity-70 transition-opacity"
+            >
+              Routine
+            </Link>
+            <Link
               href="/about"
               className="text-base font-medium text-[#1A237E] hover:opacity-70 transition-opacity"
             >
@@ -162,6 +168,16 @@ export default function Header() {
                 </span>
               )}
             </Link>
+
+            {/* Orders icon — logged in only */}
+            {user && (
+              <Link href="/orders" className="relative">
+                <Package
+                  size={24}
+                  className="text-[#1A237E] cursor-pointer hover:opacity-70 transition-opacity"
+                />
+              </Link>
+            )}
 
             {/* User account trigger */}
             {user ? (
@@ -255,12 +271,28 @@ export default function Header() {
               Shop
             </button>
             <Link
+              href="/routine"
+              onClick={() => setOpen(false)}
+              className="py-2 text-base font-medium text-[#131824] hover:text-[#1A237E]"
+            >
+              Routine
+            </Link>
+            <Link
               href="/about"
               onClick={() => setOpen(false)}
               className="py-2 text-base font-medium text-[#131824] hover:text-[#1A237E]"
             >
               About
             </Link>
+            {user && (
+              <Link
+                href="/orders"
+                onClick={() => setOpen(false)}
+                className="py-2 text-base font-medium text-[#131824] hover:text-[#1A237E]"
+              >
+                My Orders
+              </Link>
+            )}
 
             {/* Mobile Login / Account */}
             <div className="pt-4 mt-2 border-t border-indigo-900/10">
