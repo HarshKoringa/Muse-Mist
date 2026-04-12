@@ -1,0 +1,151 @@
+"use client";
+
+import { useState } from "react";
+import { Product } from "@/types/product";
+import { X, ShoppingBag, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCartStore } from "@/store/cartStore";
+import AddedToast from "./AddedToast";
+
+type Props = {
+  product: Product;
+  onClose: () => void;
+};
+
+const gradientMap: Record<string, string> = {
+  Sunscreen: "from-[#DCEFFF] via-[#DCD9F8] to-white",
+  Moisturiser: "from-[#DCD9F8] via-[#DCEFFF] to-white",
+  Serum: "from-[#1A237E] via-[#3949AB] to-[#DCD9F8]",
+  "Face Wash": "from-[#DCEFFF] via-white to-[#DCD9F8]",
+};
+
+const subtitleMap: Record<string, string> = {
+  "invisible-glow-shield": "SPF 50+ PA+++ · Vitamin C · Fermented Rice Water",
+  "barrier-repair": "Ceramides · Hyaluronic Acid · Cica",
+  "reset-to-radiance": "15% Vitamin C · Amla · Orange Peel",
+  "smooth-and-spotless": "10% Niacinamide · 1% Alpha Arbutin · Cica",
+  "cleanse-clear-calm": "Salicylic Acid · Niacinamide · Zinc PCA",
+};
+
+export default function QuickViewModal({ product, onClose }: Props) {
+  const addItem = useCartStore((state) => state.addItem);
+  const [showToast, setShowToast] = useState(false);
+  const gradient =
+    gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
+  const subtitle = subtitleMap[product.slug] ?? "";
+  const outOfStock = product.stock_count === 0;
+
+  return (
+    <>
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center px-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
+        <motion.div
+          className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl"
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Gradient Header */}
+          <div
+            className={`w-full h-44 bg-gradient-to-br ${gradient} relative flex flex-col justify-between p-4`}
+          >
+            <button
+              onClick={onClose}
+              className="self-end w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition cursor-pointer"
+            >
+              <X size={16} className="text-[#1A237E]" />
+            </button>
+            <div>
+              <p className="text-xs font-semibold tracking-widest uppercase text-[#1A237E] opacity-30">
+                Muse &amp; Mist
+              </p>
+              <p className="text-sm font-medium text-[#1A237E] opacity-60">
+                {product.name}
+              </p>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 flex flex-col gap-4">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-gray-400 uppercase tracking-widest">
+                  {product.category}
+                </p>
+                {product.stock_count > 0 && product.stock_count <= 10 && (
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-600">
+                    Only {product.stock_count} left
+                  </span>
+                )}
+                {product.stock_count === 0 && (
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-500">
+                    Out of Stock
+                  </span>
+                )}
+              </div>
+
+              <h2 className="text-2xl font-semibold text-[#1A237E]">
+                {product.name}
+              </h2>
+
+              {subtitle && (
+                <div className="flex items-center gap-1 mt-1">
+                  <Sparkles size={12} className="text-[#1A237E] opacity-50" />
+                  <p className="text-xs text-[#1A237E] opacity-50 font-medium">
+                    {subtitle}
+                  </p>
+                </div>
+              )}
+
+              <p className="text-base text-gray-500 mt-3 leading-relaxed">
+                {product.description}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <span className="text-2xl font-bold text-[#1A237E]">
+                ₹{product.price}
+              </span>
+              <button
+                disabled={outOfStock}
+                onClick={() => {
+                  addItem({
+                    id: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    price: product.price,
+                    category: product.category,
+                    stock_count: product.stock_count,
+                  });
+                  setShowToast(true);
+                  setTimeout(() => {
+                    setShowToast(false);
+                    onClose();
+                  }, 800);
+                }}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-base font-medium transition-opacity ${
+                  outOfStock
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-[#1A237E] text-white hover:opacity-90 cursor-pointer"
+                }`}
+              >
+                <ShoppingBag size={18} />
+                {outOfStock ? "Sold Out" : "Add to Cart"}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+    <AddedToast visible={showToast} productName={product.name} />
+    </>
+  );
+}

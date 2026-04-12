@@ -14,7 +14,7 @@ export const products: Product[] = [
     category: "Moisturizer",
     price: 899,
     tag: "Hydrating",
-    imagePath: "/images/cloud-coat.jpg",
+    imagePath: "/file.svg",
   },
   {
     id: "2",
@@ -22,7 +22,7 @@ export const products: Product[] = [
     category: "Sunscreen",
     price: 999,
     tag: "UV Protection",
-    imagePath: "/images/veil-spf50.jpg",
+    imagePath: "/file.svg",
   },
   {
     id: "3",
@@ -30,7 +30,7 @@ export const products: Product[] = [
     category: "Hydrator",
     price: 799,
     tag: "Brightening",
-    imagePath: "/images/glass-skin-gel-cream.jpg",
+    imagePath: "/file.svg",
   },
   {
     id: "4",
@@ -38,6 +38,6 @@ export const products: Product[] = [
     category: "Serum",
     price: 1299,
     tag: "Vitamin C",
-    imagePath: "/images/aurora-c-serum.jpg",
+    imagePath: "/file.svg",
   },
 ];
