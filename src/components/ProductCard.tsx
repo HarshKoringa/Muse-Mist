@@ -92,12 +92,14 @@ export default function ProductCard({ product, onQuickView }: Props) {
       {/* Card Body */}
       <div className="p-5 flex flex-col gap-3 flex-1">
         <div>
-          <p className="text-xs text-white/40 uppercase tracking-widest mb-1" style={{ fontFamily: 'var(--font-body)' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)' }}
+              className="text-xl font-light text-white leading-tight mb-1">
             {product.category}
-          </p>
-          <h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'var(--font-display)' }}>
-            {product.name}
           </h3>
+          <p style={{ fontFamily: 'var(--font-body)' }}
+             className="text-sm text-white/70 font-medium tracking-wide">
+            {product.name}
+          </p>
           <p className="text-xs text-[#DCD9F8]/60 mt-0.5 font-medium">
             {subtitle}
           </p>

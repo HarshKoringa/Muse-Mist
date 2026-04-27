@@ -91,9 +91,10 @@ export default function QuickViewModal({ product, onClose }: Props) {
           <div className="p-6 flex flex-col gap-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-gray-400 uppercase tracking-widest">
+                <h2 style={{ fontFamily: 'var(--font-display)' }}
+                    className="text-2xl font-light text-[#1A237E] leading-tight mb-1">
                   {product.category}
-                </p>
+                </h2>
                 {product.stock_count > 0 && product.stock_count <= 10 && (
                   <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-600">
                     Only {product.stock_count} left
@@ -106,9 +107,10 @@ export default function QuickViewModal({ product, onClose }: Props) {
                 )}
               </div>
 
-              <h2 className="text-2xl font-semibold text-[#1A237E]">
+              <p style={{ fontFamily: 'var(--font-body)' }}
+                 className="text-sm text-[#1A237E]/60 font-medium tracking-wide">
                 {product.name}
-              </h2>
+              </p>
 
               {subtitle && (
                 <div className="flex items-center gap-1 mt-1">

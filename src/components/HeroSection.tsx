@@ -145,7 +145,7 @@ export default function HeroSection() {
               {[
                 { value: '5', label: 'Active formulas' },
                 { value: '0%', label: 'Harmful fillers' },
-                { value: '100%', label: 'Dermatologist-guided' },
+                { value: '100%', label: 'Honest ingredients' },
               ].map((stat) => (
                 <div key={stat.label}>
                   <p className="text-2xl font-semibold text-white" style={{ fontFamily: 'var(--font-display)' }}>

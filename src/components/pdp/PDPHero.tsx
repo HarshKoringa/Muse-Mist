@@ -115,12 +115,14 @@ export default function PDPHero({ product }: Props) {
             transition={{ duration: 0.5 }}
           >
             {/* Category + name */}
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">
+            <h1 style={{ fontFamily: 'var(--font-display)' }}
+                className="text-4xl font-light text-[#1A237E] leading-tight mb-1">
               {product.category}
-            </p>
-            <h1 className="text-3xl font-semibold text-[#1A237E] mb-2">
-              {product.name}
             </h1>
+            <p style={{ fontFamily: 'var(--font-body)' }}
+               className="text-sm text-[#1A237E]/60 font-medium tracking-wide mb-4">
+              {product.name}
+            </p>
             {subtitle && (
               <p className="text-sm font-medium text-[#1A237E]
                             opacity-50 mb-4">
