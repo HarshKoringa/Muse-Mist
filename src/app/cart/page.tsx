@@ -4,8 +4,7 @@ import { useCartStore } from "@/store/cartStore";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import CheckoutButton from "@/components/CheckoutButton";
-import CODCheckoutButton from "@/components/CODCheckoutButton";
+import EarlyAccessButton from "@/components/EarlyAccessButton";
 
 const gradientMap: Record<string, string> = {
   Sunscreen: "from-[#DCEFFF] via-[#DCD9F8] to-white",
@@ -27,7 +26,7 @@ export default function CartPage() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Link href="/home-v1">
+          <Link href="/">
             <ArrowLeft
               size={22}
               className="text-[#1A237E] cursor-pointer hover:opacity-70 transition-opacity"
@@ -48,7 +47,7 @@ export default function CartPage() {
               Your cart is empty
             </p>
             <Link
-              href="/home-v1#products"
+              href="/#products"
               className="mt-2 px-6 py-3 rounded-xl bg-[#1A237E] text-white text-base font-medium hover:opacity-90 transition-opacity"
             >
               Shop The Edit
@@ -136,6 +135,18 @@ export default function CartPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4"
           >
+            {/* Early Access Launch Banner */}
+            <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r
+                            from-[#1A237E] to-[#3949AB] text-white text-center">
+              <p className="text-base font-semibold">
+                🚀 We&apos;re launching soon!
+              </p>
+              <p className="text-sm opacity-70 mt-1">
+                Register for early access to get 30% off
+                when we go live.
+              </p>
+            </div>
+
             <h2 className="text-lg font-semibold text-[#1A237E] mb-4">
               Order Summary
             </h2>
@@ -151,56 +162,15 @@ export default function CartPage() {
               </span>
             </div>
 
-            <div className="flex justify-between text-lg font-bold text-[#1A237E] pt-4 border-t border-gray-100">
+            <div className="flex justify-between text-lg font-bold text-[#1A237E] pt-4 border-t border-gray-100 mb-6">
               <span>Total</span>
               <span>₹{subtotal}</span>
             </div>
 
-            {/* Payment Method Selection */}
-            <div className="flex flex-col gap-3 mt-6">
-              <p className="text-sm font-semibold text-[#1A237E]">
-                Select Payment Method
-              </p>
-
-              {/* Prepaid option */}
-              <div className="p-4 rounded-xl border-2 border-[#DCD9F8] bg-[#DCEFFF] flex items-center justify-between">
-                <div>
-                  <p className="text-base font-semibold text-[#1A237E]">
-                    Prepaid (UPI / Card)
-                  </p>
-                  <p className="text-xs text-green-600 font-medium mt-0.5">
-                    5% OFF + Free Shipping
-                  </p>
-                </div>
-                <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                  RECOMMENDED
-                </span>
-              </div>
-              <CheckoutButton paymentMethod="prepaid" />
-
-              {/* Divider */}
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-xs text-gray-400">or</span>
-                <div className="flex-1 h-px bg-gray-100" />
-              </div>
-
-              {/* COD option */}
-              <div className="p-4 rounded-xl border border-gray-200 flex items-center justify-between">
-                <div>
-                  <p className="text-base font-semibold text-gray-600">
-                    Cash on Delivery
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    ₹50 delivery charge applies
-                  </p>
-                </div>
-              </div>
-              <CODCheckoutButton />
-            </div>
+            <EarlyAccessButton fullWidth={true} />
 
             <p className="text-xs text-gray-400 text-center mt-3">
-              Secure checkout · Free shipping on prepaid orders above ₹999
+              Register now · Get 30% off at launch
             </p>
           </motion.div>
         )}

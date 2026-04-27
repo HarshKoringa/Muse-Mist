@@ -7,6 +7,7 @@ body {
 }
 
 :root {
+  --banner-height: 40px;
   --bg-main: #eceff3;
   --bg-soft-alt: #f4eee7;
   --surface: #ffffff;
@@ -17,9 +18,15 @@ body {
   --accent-lilac-soft: #e3dcf4;
   --accent-sky: #9ad6ff;
   --footer-bg: #101521;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'DM Sans', sans-serif;
 }
 
 body {
   background: var(--bg-main);
   color: var(--ink-main);
+}
+
+.bg-gradient-radial {
+  background-image: radial-gradient(var(--tw-gradient-stops));
 }

@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Product } from "@/types/product";
-import { ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
-import { useCartStore } from "@/store/cartStore";
-import AddedToast from "./AddedToast";
+import Image from "next/image";
 import Link from "next/link";
+import EarlyAccessButton from "./EarlyAccessButton";
 
 type Props = {
   product: Product;
@@ -49,96 +47,82 @@ function StockBadge({ count }: { count: number }) {
 }
 
 export default function ProductCard({ product, onQuickView }: Props) {
-  const addItem = useCartStore((state) => state.addItem);
-  const [showToast, setShowToast] = useState(false);
-  const gradient =
-    gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
+  const gradient = gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
   const subtitle = subtitleMap[product.slug] ?? product.category;
-  const outOfStock = product.stock_count === 0;
 
   return (
-    <>
     <motion.div
       initial={{ opacity: 0, y: 32 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-white/8 backdrop-blur-sm rounded-3xl overflow-hidden flex flex-col group cursor-pointer border border-white/10 hover:border-white/25 transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
       onClick={onQuickView}
     >
-      {/* Gradient Placeholder */}
-      <div
-        className={`w-full h-56 bg-gradient-to-br ${gradient} relative flex flex-col justify-between p-4`}
-      >
-        <div className="flex justify-end">
-          <StockBadge count={product.stock_count} />
+      {/* Image or Gradient Placeholder */}
+      {product.image_url ? (
+        <div className="w-full h-64 relative overflow-hidden">
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            fill
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+          <div className="absolute top-3 right-3">
+            <StockBadge count={product.stock_count} />
+          </div>
         </div>
-        <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#1A237E] opacity-30">
-            Muse &amp; Mist
-          </p>
-          <p className="text-sm font-medium text-[#1A237E] opacity-60 mt-0.5">
-            {product.name}
-          </p>
+      ) : (
+        <div className={`w-full h-64 bg-gradient-to-br ${gradient} relative flex flex-col justify-between p-4`}>
+          <div className="flex justify-end">
+            <StockBadge count={product.stock_count} />
+          </div>
+          <div>
+            <p className="text-xs font-semibold tracking-widest uppercase text-[#1A237E] opacity-30">
+              Muse &amp; Mist
+            </p>
+            <p className="text-sm font-medium text-[#1A237E] opacity-60 mt-0.5">
+              {product.name}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Card Body */}
       <div className="p-5 flex flex-col gap-3 flex-1">
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-1" style={{ fontFamily: 'var(--font-body)' }}>
             {product.category}
           </p>
-          <h3 className="text-lg font-semibold text-[#1A237E]">
+          <h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'var(--font-display)' }}>
             {product.name}
           </h3>
-          <p className="text-xs text-[#1A237E] opacity-60 mt-0.5 font-medium">
+          <p className="text-xs text-[#DCD9F8]/60 mt-0.5 font-medium">
             {subtitle}
           </p>
-          <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+          <p className="text-sm text-white/40 mt-2 line-clamp-2 font-light">
             {product.description}
           </p>
           <Link
             href={`/products/${product.slug}`}
             onClick={(e) => e.stopPropagation()}
-            className="text-xs font-medium text-[#1A237E] opacity-50 hover:opacity-100 transition-opacity underline underline-offset-2 w-fit"
+            className="text-xs font-medium text-white/25 hover:text-white/50 transition-colors underline underline-offset-2 w-fit"
           >
             View full details →
           </Link>
         </div>
 
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-          <span className="text-xl font-bold text-[#1A237E]">
-            ₹{product.price}
-          </span>
-          <button
-            disabled={outOfStock}
-            onClick={(e) => {
-              e.stopPropagation();
-              addItem({
-                id: product.id,
-                name: product.name,
-                slug: product.slug,
-                price: product.price,
-                category: product.category,
-                stock_count: product.stock_count,
-              });
-              setShowToast(true);
-              setTimeout(() => setShowToast(false), 2000);
-            }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-base font-medium transition-opacity ${
-              outOfStock
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-[#1A237E] text-white hover:opacity-90 cursor-pointer"
-            }`}
-          >
-            <ShoppingBag size={16} />
-            {outOfStock ? "Sold Out" : "Add to Cart"}
-          </button>
+        <div className="flex flex-col gap-3 mt-auto pt-3 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-sm font-medium text-white/50" style={{ fontFamily: 'var(--font-body)' }}>₹</span>
+            <span className="text-xl font-semibold text-white tracking-tight" style={{ fontFamily: 'var(--font-body)' }}>
+              {product.price.toLocaleString('en-IN')}
+            </span>
+          </div>
+          <EarlyAccessButton productName={product.name} fullWidth={true} />
         </div>
       </div>
     </motion.div>
-    <AddedToast visible={showToast} productName={product.name} />
-    </>
   );
 }

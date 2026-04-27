@@ -1,21 +1,21 @@
 import Header from "@/components/Header";
-import RoutineHero from "@/components/routine/RoutineHero";
-import RoutinePhilosophy from "@/components/routine/RoutinePhilosophy";
-import RoutineSteps from "@/components/routine/RoutineSteps";
-import RoutineSplit from "@/components/routine/RoutineSplit";
-import RoutineMantra from "@/components/routine/RoutineMantra";
-import RoutineCTA from "@/components/routine/RoutineCTA";
+import RoutineHero from '@/components/routine/RoutineHero'
+import RoutinePillars from '@/components/routine/RoutinePillars'
+import RoutineSteps from '@/components/routine/RoutineSteps'
+import RoutineSplit from '@/components/routine/RoutineSplit'
+import RoutineMantra from '@/components/routine/RoutineMantra'
+import RoutineCTA from '@/components/routine/RoutineCTA'
 
 export default function RoutinePage() {
   return (
-    <div className="min-h-screen bg-[#DCD9F8] font-sans overflow-auto">
+    <main className="min-h-screen bg-white overflow-x-hidden">
       <Header />
       <RoutineHero />
-      <RoutinePhilosophy />
+      <RoutinePillars />
       <RoutineSteps />
       <RoutineSplit />
       <RoutineMantra />
       <RoutineCTA />
-    </div>
-  );
+    </main>
+  )
 }

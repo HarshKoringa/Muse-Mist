@@ -1,12 +1,11 @@
 'use client'
 
 import { Product } from '@/types/product'
-import { useCartStore } from '@/store/cartStore'
 import { motion } from 'framer-motion'
-import { ShoppingBag, Zap, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
-import AddedToast from '@/components/AddedToast'
+import EarlyAccessButton from '@/components/EarlyAccessButton'
 
 const gradientMap: Record<string, string> = {
   Sunscreen:   'from-[#DCEFFF] via-[#DCD9F8] to-white',
@@ -26,70 +25,87 @@ const subtitleMap: Record<string, string> = {
 type Props = { product: Product }
 
 export default function PDPHero({ product }: Props) {
-  const addItem = useCartStore((state) => state.addItem)
-  const [showToast, setShowToast] = useState(false)
   const gradient = gradientMap[product.category] ?? 'from-[#DCD9F8] to-[#DCEFFF]'
   const subtitle = subtitleMap[product.slug] ?? ''
   const outOfStock = product.stock_count === 0
-
-  const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      price: product.price,
-      category: product.category,
-      stock_count: product.stock_count,
-    })
-    setShowToast(true)
-    setTimeout(() => setShowToast(false), 2000)
-  }
 
   return (
     <>
       <section className="w-full">
 
-        {/* Large gradient visual */}
-        <div className={`w-full h-72 sm:h-96 bg-gradient-to-br
-                         ${gradient} relative flex flex-col
-                         justify-between p-6`}>
-
-          {/* Back button */}
-          <Link
-            href="/home-v1"
-            className="flex items-center gap-2 text-[#1A237E]
-                       opacity-50 hover:opacity-100
-                       transition-opacity w-fit"
-          >
-            <ArrowLeft size={18} />
-            <span className="text-base">Back</span>
-          </Link>
-
-          <div>
-            <p className="text-xs font-bold tracking-widest uppercase
-                          text-[#1A237E] opacity-20 mb-1">
-              Muse & Mist
-            </p>
-            <p className="text-xl font-semibold text-[#1A237E] opacity-50">
-              {product.name}
-            </p>
+        {/* Large image or gradient visual */}
+        {product.image_url ? (
+          <div className="w-full h-72 sm:h-96 relative overflow-hidden">
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              className="object-cover object-center"
+              sizes="100vw"
+              priority
+            />
+            {/* Back button */}
+            <Link
+              href="/"
+              className="absolute top-6 left-6 flex items-center gap-2 text-white
+                         bg-black/30 hover:bg-black/50 transition-colors
+                         rounded-full px-3 py-1.5 w-fit"
+            >
+              <ArrowLeft size={18} />
+              <span className="text-base">Back</span>
+            </Link>
+            {/* Stock badge */}
+            <div className="absolute top-6 right-6">
+              {outOfStock ? (
+                <span className="text-xs font-medium px-3 py-1 rounded-full bg-red-100 text-red-500">
+                  Out of Stock
+                </span>
+              ) : product.stock_count <= 10 ? (
+                <span className="text-xs font-medium px-3 py-1 rounded-full bg-amber-100 text-amber-600">
+                  Only {product.stock_count} left
+                </span>
+              ) : null}
+            </div>
           </div>
-
-          {/* Stock badge */}
-          <div className="absolute top-6 right-6">
-            {outOfStock ? (
-              <span className="text-xs font-medium px-3 py-1 rounded-full
-                               bg-red-100 text-red-500">
-                Out of Stock
-              </span>
-            ) : product.stock_count <= 10 ? (
-              <span className="text-xs font-medium px-3 py-1 rounded-full
-                               bg-amber-100 text-amber-600">
-                Only {product.stock_count} left
-              </span>
-            ) : null}
+        ) : (
+          <div className={`w-full h-72 sm:h-96 bg-gradient-to-br
+                           ${gradient} relative flex flex-col
+                           justify-between p-6`}>
+            {/* Back button */}
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-[#1A237E]
+                         opacity-50 hover:opacity-100
+                         transition-opacity w-fit"
+            >
+              <ArrowLeft size={18} />
+              <span className="text-base">Back</span>
+            </Link>
+            <div>
+              <p className="text-xs font-bold tracking-widest uppercase
+                            text-[#1A237E] opacity-20 mb-1">
+                Muse & Mist
+              </p>
+              <p className="text-xl font-semibold text-[#1A237E] opacity-50">
+                {product.name}
+              </p>
+            </div>
+            {/* Stock badge */}
+            <div className="absolute top-6 right-6">
+              {outOfStock ? (
+                <span className="text-xs font-medium px-3 py-1 rounded-full
+                                 bg-red-100 text-red-500">
+                  Out of Stock
+                </span>
+              ) : product.stock_count <= 10 ? (
+                <span className="text-xs font-medium px-3 py-1 rounded-full
+                                 bg-amber-100 text-amber-600">
+                  Only {product.stock_count} left
+                </span>
+              ) : null}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Product info card */}
         <div className="max-w-2xl mx-auto px-4 py-10">
@@ -146,41 +162,10 @@ export default function PDPHero({ product }: Props) {
                 ₹{product.price}
               </span>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                {/* Add to Cart */}
-                <button
-                  disabled={outOfStock}
-                  onClick={handleAddToCart}
-                  className={`flex-1 flex items-center justify-center
-                              gap-2 py-4 rounded-2xl text-base font-semibold
-                              transition-opacity
-                              ${outOfStock
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#DCD9F8] text-[#1A237E] hover:opacity-80 cursor-pointer'
-                              }`}
-                >
-                  <ShoppingBag size={20} />
-                  {outOfStock ? 'Out of Stock' : 'Add to Cart'}
-                </button>
-
-                {/* Buy Now — Shiprocket stub */}
-                <button
-                  disabled={outOfStock}
-                  onClick={() => {
-                    // Phase 4 — Shiprocket Magic SDK fires here
-                  }}
-                  className={`flex-1 flex items-center justify-center
-                              gap-2 py-4 rounded-2xl text-base font-semibold
-                              transition-opacity
-                              ${outOfStock
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'
-                              }`}
-                >
-                  <Zap size={20} />
-                  Buy Now
-                </button>
-              </div>
+              <EarlyAccessButton
+                productName={product.name}
+                fullWidth={true}
+              />
 
               <p className="text-xs text-gray-400 text-center">
                 Free shipping on orders above ₹999 ·
@@ -191,7 +176,6 @@ export default function PDPHero({ product }: Props) {
         </div>
       </section>
 
-      <AddedToast visible={showToast} productName={product.name} />
     </>
   )
 }

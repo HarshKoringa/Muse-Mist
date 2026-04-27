@@ -1,4 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
+
+export const dynamic = 'force-dynamic'
 import { notFound, redirect } from 'next/navigation'
 import OrderDetailClient from '@/components/OrderDetailClient'
 

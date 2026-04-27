@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
 
 function AddressForm() {
@@ -13,6 +14,7 @@ function AddressForm() {
   const clearCart = useCartStore((state) => state.clearCart)
 
   const [loading, setLoading] = useState(false)
+  const [policyAgreed, setPolicyAgreed] = useState(false)
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -160,16 +162,27 @@ function AddressForm() {
             </div>
           ))}
 
+          {/* Policy agreement checkbox */}
+          <label className="flex items-start gap-3 cursor-pointer mt-2">
+            <input
+              type="checkbox"
+              checked={policyAgreed}
+              onChange={(e) => setPolicyAgreed(e.target.checked)}
+              className="mt-0.5 w-4 h-4 accent-[#1A237E] flex-shrink-0 cursor-pointer"
+            />
+            <span className="text-sm text-gray-500 leading-relaxed">
+              I have read and agree to the{' '}
+              <Link href="/policies/returns" target="_blank" className="text-[#1A237E] underline underline-offset-2">Return Policy</Link>
+              {' '}and{' '}
+              <Link href="/policies/refunds" target="_blank" className="text-[#1A237E] underline underline-offset-2">Refund Policy</Link>.
+              I understand that returns must be reported within 48 hours of delivery with an unboxing video.
+            </span>
+          </label>
+
           <button
             onClick={handleSubmit}
-            disabled={loading}
-            className={`w-full py-4 rounded-xl text-base font-semibold
-                        flex items-center justify-center gap-2 mt-4
-                        transition-opacity
-                        ${loading
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'
-                        }`}
+            disabled={loading || !policyAgreed}
+            className={`w-full py-4 rounded-xl text-base font-semibold flex items-center justify-center gap-2 mt-2 transition-opacity ${loading || !policyAgreed ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'}`}
           >
             {loading ? (
               <>

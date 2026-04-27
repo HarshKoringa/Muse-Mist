@@ -1,4 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
+
+export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import OrderHistory from '@/components/OrderHistory'
 import Link from 'next/link'
@@ -22,7 +24,7 @@ export default async function OrdersPage() {
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Link href="/home-v1">
+          <Link href="/">
             <ArrowLeft size={22} className="text-[#1A237E] cursor-pointer hover:opacity-70 transition-opacity" />
           </Link>
           <div>
@@ -45,7 +47,7 @@ export default async function OrdersPage() {
               No orders yet
             </p>
             <Link
-              href="/home-v1#products"
+              href="/#products"
               className="mt-2 px-6 py-3 rounded-xl bg-[#1A237E] text-white text-base font-medium hover:opacity-90 transition-opacity"
             >
               Shop The Edit

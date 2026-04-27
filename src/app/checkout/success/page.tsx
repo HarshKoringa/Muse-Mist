@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { CheckCircle2, ArrowRight } from 'lucide-react'
+import { CheckCircle2, ArrowRight, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -53,9 +53,24 @@ function SuccessContent() {
           </p>
         </div>
 
+        <div className="w-full p-4 rounded-xl bg-amber-50 border border-amber-200 text-left flex gap-3">
+          <Clock size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm text-amber-800 font-medium mb-1">
+              48-hour return window
+            </p>
+            <p className="text-sm text-amber-700 leading-relaxed">
+              If your order arrives damaged or incorrect, report it within 48 hours of delivery with an unboxing video.{' '}
+              <Link href="/policies/returns" className="underline underline-offset-2 font-medium">
+                View Policy →
+              </Link>
+            </p>
+          </div>
+        </div>
+
         <div className="flex flex-col w-full gap-3">
           <Link
-            href="/home-v1#products"
+            href="/#products"
             className="w-full py-4 rounded-xl bg-[#1A237E] text-white
                        text-base font-semibold text-center
                        hover:opacity-90 transition-opacity

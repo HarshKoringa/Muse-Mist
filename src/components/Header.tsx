@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
-import { User, UserCircle2, ShoppingBag, Package } from "lucide-react";
+import { User, UserCircle2, ShoppingBag, Package, Menu, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useCartStore } from "@/store/cartStore";
@@ -12,30 +12,47 @@ import { useCartStore } from "@/store/cartStore";
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<string>("");
+  const isDarkHero = pathname === '/' || pathname === '/routine' || pathname === '/about';
 
-  const handleShopClick = () => {
-    if (pathname === "/home-v1") {
-      document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push("/home-v1#products");
-    }
-  };
+  // Mounted guard — prevents SSR/CSR hydration mismatch
+  const [mounted, setMounted] = useState(false);
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [active, setActive] = useState<string>("");
+  const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const supabase = createClient();
   const [cartCount, setCartCount] = useState(0);
-  const totalItems = useCartStore((state) => state.totalItems);
 
+  // Mount effect — must run first
   useEffect(() => {
-    setCartCount(totalItems());
+    setMounted(true);
+  }, []);
+
+  // Cart count — only read Zustand persist after mount to avoid hydration mismatch
+  useEffect(() => {
+    if (!mounted) return;
+    setCartCount(useCartStore.getState().totalItems());
     const unsub = useCartStore.subscribe((state) => {
       setCartCount(state.totalItems());
     });
     return () => unsub();
-  }, []);
+  }, [mounted]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  const handleShopClick = () => {
+    if (pathname === "/") {
+      document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push("/#products");
+    }
+  };
 
   // Track Supabase auth state
   useEffect(() => {
@@ -50,16 +67,16 @@ export default function Header() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Hide on scroll down, show on scroll up — improved thresholds and menu handling
+  // Hide on scroll down, show on scroll up
   useEffect(() => {
     let lastY = typeof window !== "undefined" ? window.scrollY : 0;
     let ticking = false;
 
     const onScroll = () => {
       const currentY = window.scrollY;
+      setScrolled(currentY > 80);
 
-      if (open) {
-        // keep header visible while mobile menu is open
+      if (mobileMenuOpen) {
         if (hidden) setHidden(false);
         lastY = currentY;
         return;
@@ -68,14 +85,11 @@ export default function Header() {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const delta = currentY - lastY;
-
-          // use a slightly larger threshold so small jitters don't toggle visibility
           if (currentY > 80 && delta > 10) {
             setHidden(true);
           } else if (delta < -10 || currentY < 60) {
             setHidden(false);
           }
-
           lastY = currentY;
           ticking = false;
         });
@@ -85,7 +99,7 @@ export default function Header() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [open]);
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const sections = Array.from(
@@ -111,7 +125,6 @@ export default function Header() {
 
     sections.forEach((s) => observerRef.current?.observe(s));
 
-    // handle hash on load
     const handleHash = () =>
       setActive(window.location.hash.replace("#", "") || "");
     handleHash();
@@ -123,35 +136,40 @@ export default function Header() {
     };
   }, []);
 
-  const linkClass = (id: string) =>
-    `font-medium transition ${active === id ? "text-[#1A237E]" : "text-[#131824] hover:text-[#1A237E]"}`;
+  // Derive color state — always white/blue on server (before mount)
+  const isDark = mounted && isDarkHero && !scrolled;
 
   return (
     <>
       <nav
-        className={`sticky top-0 z-50 backdrop-blur-md bg-[#DCEFFF]/70 border-b-[0.5px] border-indigo-900/10 transform transition-transform duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`}
+        className={`fixed top-0 left-0 right-0 z-40 transform transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"} ${isDark ? 'bg-white/5 backdrop-blur-md border-b border-white/10' : 'bg-white/80 backdrop-blur-xl border-b border-white/40 shadow-sm shadow-black/5'}`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="text-2xl font-bold text-[#1A237E]">
+          {/* Logo */}
+          <div
+            className={`text-xl font-semibold cursor-pointer transition-colors duration-300 ${isDark ? 'text-white' : 'text-[#1A237E]'}`}
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
             Muse &amp; Mist
           </div>
 
+          {/* Desktop nav */}
           <div className="hidden md:flex gap-8 items-center">
             <button
               onClick={handleShopClick}
-              className="text-base font-medium text-[#1A237E] hover:opacity-70 transition-opacity cursor-pointer"
+              className={`text-base font-medium transition-colors duration-300 hover:opacity-70 cursor-pointer ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
             >
               Shop
             </button>
             <Link
               href="/routine"
-              className="text-base font-medium text-[#1A237E] hover:opacity-70 transition-opacity"
+              className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
             >
               Routine
             </Link>
             <Link
               href="/about"
-              className="text-base font-medium text-[#1A237E] hover:opacity-70 transition-opacity"
+              className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
             >
               About
             </Link>
@@ -160,9 +178,9 @@ export default function Header() {
             <Link href="/cart" className="relative">
               <ShoppingBag
                 size={24}
-                className="text-[#1A237E] cursor-pointer hover:opacity-70 transition-opacity"
+                className={`transition-colors duration-300 hover:opacity-70 cursor-pointer ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
               />
-              {cartCount > 0 && (
+              {mounted && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#1A237E] text-white text-xs font-semibold flex items-center justify-center">
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
@@ -170,17 +188,17 @@ export default function Header() {
             </Link>
 
             {/* Orders icon — logged in only */}
-            {user && (
+            {mounted && user && (
               <Link href="/orders" className="relative">
                 <Package
                   size={24}
-                  className="text-[#1A237E] cursor-pointer hover:opacity-70 transition-opacity"
+                  className={`transition-colors duration-300 hover:opacity-70 cursor-pointer ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
                 />
               </Link>
             )}
 
             {/* User account trigger */}
-            {user ? (
+            {mounted && user ? (
               <Link href="/profile">
                 {user.user_metadata?.avatar_url ? (
                   <Image
@@ -188,147 +206,135 @@ export default function Header() {
                     alt="Profile"
                     width={36}
                     height={36}
-                    className="rounded-full border-2 border-[#1A237E] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    className={`rounded-full border-2 object-cover cursor-pointer hover:opacity-90 transition-opacity w-9 h-9 ${isDark ? 'border-white' : 'border-[#1A237E]'}`}
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full border-2 border-[#1A237E] bg-[#DCD9F8] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
-                    <UserCircle2 size={22} className="text-[#1A237E]" />
+                  <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity ${isDark ? 'border-white bg-white/10' : 'border-[#1A237E] bg-[#DCD9F8]'}`}>
+                    <UserCircle2 size={22} className={isDark ? 'text-white' : 'text-[#1A237E]'} />
                   </div>
                 )}
               </Link>
-            ) : (
+            ) : mounted ? (
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-xl bg-[#1A237E] text-white text-base font-medium hover:opacity-90 transition-opacity"
+                className={`px-5 py-2.5 rounded-xl text-base font-medium transition-all duration-300 hover:opacity-90 ${isDark ? 'bg-white/15 backdrop-blur-sm text-white border border-white/20 hover:bg-white/25' : 'bg-[#1A237E] text-white'}`}
               >
                 Sign In
               </Link>
-            )}
+            ) : null}
           </div>
 
-          <div className="md:hidden">
+          {/* Mobile: cart badge + hamburger */}
+          <div className="md:hidden flex items-center gap-3">
+            <Link href="/cart" className="relative">
+              <ShoppingBag
+                size={22}
+                className={`transition-colors duration-300 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+              />
+              {mounted && cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#1A237E] text-white text-[10px] font-semibold flex items-center justify-center">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </Link>
+
             <button
-              onClick={() => setOpen(true)}
-              aria-label="Open menu"
-              className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A237E]/30"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+              aria-label="Toggle menu"
             >
-              <svg
-                className="w-6 h-6 text-[#1A237E]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile slide-over */}
-      <div className={`fixed inset-0 z-40 md:hidden pointer-events-none`}>
-        <div
-          className={`absolute inset-0 bg-black/30 transition-opacity ${open ? "opacity-100 pointer-events-auto" : "opacity-0"}`}
-          onClick={() => setOpen(false)}
-        />
+      {/* Mobile menu panel */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-30 md:hidden bg-black/20 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
 
-        <aside
-          className={`absolute inset-y-0 right-0 w-72 bg-white/90 backdrop-blur-md shadow-xl transform transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}
-        >
-          <div className="p-4 flex items-center justify-between">
-            <div className="text-lg font-bold text-[#1A237E]">Menu</div>
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Close menu"
-              className="p-2"
-            >
-              <svg
-                className="w-5 h-5 text-[#1A237E]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+          {/* Panel */}
+          <div className="fixed top-[65px] left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-xl">
+            <div className="flex flex-col px-6 py-2">
+
+              <button
+                onClick={() => { handleShopClick(); setMobileMenuOpen(false); }}
+                style={{ fontFamily: 'var(--font-body)' }}
+                className="flex items-center py-4 text-base font-medium text-[#1A237E] border-b border-gray-100 w-full text-left hover:opacity-70 transition-opacity cursor-pointer"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
+                Shop
+              </button>
 
-          <nav className="flex flex-col gap-4 px-6 py-2">
-            <button
-              onClick={() => { handleShopClick(); setOpen(false); }}
-              className="py-2 text-base font-medium text-[#1A237E] text-left hover:opacity-70 transition-opacity cursor-pointer"
-            >
-              Shop
-            </button>
-            <Link
-              href="/routine"
-              onClick={() => setOpen(false)}
-              className="py-2 text-base font-medium text-[#131824] hover:text-[#1A237E]"
-            >
-              Routine
-            </Link>
-            <Link
-              href="/about"
-              onClick={() => setOpen(false)}
-              className="py-2 text-base font-medium text-[#131824] hover:text-[#1A237E]"
-            >
-              About
-            </Link>
-            {user && (
               <Link
-                href="/orders"
-                onClick={() => setOpen(false)}
-                className="py-2 text-base font-medium text-[#131824] hover:text-[#1A237E]"
+                href="/routine"
+                style={{ fontFamily: 'var(--font-body)' }}
+                className="flex items-center py-4 text-base font-medium text-[#1A237E] border-b border-gray-100 hover:opacity-70 transition-opacity"
               >
-                My Orders
+                Routine
               </Link>
-            )}
 
-            {/* Mobile Login / Account */}
-            <div className="pt-4 mt-2 border-t border-indigo-900/10">
-              {user ? (
+              <Link
+                href="/about"
+                style={{ fontFamily: 'var(--font-body)' }}
+                className="flex items-center py-4 text-base font-medium text-[#1A237E] border-b border-gray-100 hover:opacity-70 transition-opacity"
+              >
+                About
+              </Link>
+
+              {mounted && user && (
                 <Link
-                  href="/profile"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#DCD9F8] text-[#1A237E] text-base font-semibold hover:bg-[#c9c5f4] transition"
+                  href="/orders"
+                  style={{ fontFamily: 'var(--font-body)' }}
+                  className="flex items-center py-4 text-base font-medium text-[#1A237E] border-b border-gray-100 hover:opacity-70 transition-opacity"
                 >
-                  {user.user_metadata?.avatar_url ? (
-                    <Image
-                      src={user.user_metadata.avatar_url}
-                      alt="Profile"
-                      width={24}
-                      height={24}
-                      className="w-6 h-6 rounded-full border border-[#1A237E] object-cover"
-                    />
-                  ) : (
-                    <UserCircle2 size={18} className="text-[#1A237E]" />
-                  )}
-                  My Account
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#1A237E] text-white text-base font-semibold hover:bg-[#151c6b] transition"
-                >
-                  <User className="w-4 h-4" strokeWidth={1.75} />
-                  Sign In
+                  My Orders
                 </Link>
               )}
+
+              <div className="pt-4 pb-4">
+                {mounted && user ? (
+                  <Link
+                    href="/profile"
+                    style={{ fontFamily: 'var(--font-body)' }}
+                    className="flex items-center gap-3 py-2 text-base font-medium text-[#1A237E] hover:opacity-70 transition-opacity"
+                  >
+                    {user.user_metadata?.avatar_url ? (
+                      <Image
+                        src={user.user_metadata.avatar_url}
+                        alt="Profile"
+                        width={32}
+                        height={32}
+                        className="rounded-full border-2 border-[#1A237E] object-cover w-8 h-8"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-[#DCD9F8] border-2 border-[#1A237E] flex items-center justify-center">
+                        <span className="text-sm font-semibold text-[#1A237E]">
+                          {user.email?.charAt(0).toUpperCase() ?? 'U'}
+                        </span>
+                      </div>
+                    )}
+                    My Profile
+                  </Link>
+                ) : mounted ? (
+                  <Link
+                    href="/login"
+                    style={{ fontFamily: 'var(--font-body)' }}
+                    className="w-full block py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold text-center hover:opacity-90 transition-opacity"
+                  >
+                    Sign In
+                  </Link>
+                ) : null}
+              </div>
+
             </div>
-          </nav>
-        </aside>
-      </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

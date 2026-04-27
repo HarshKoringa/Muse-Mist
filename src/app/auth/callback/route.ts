@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   if (!code) {
     console.error('[Muse & Mist] Auth callback: no code param received')
-    return NextResponse.redirect(`${origin}/home-v1?error=auth_failed`)
+    return NextResponse.redirect(`${origin}/?error=auth_failed`)
   }
 
   try {
@@ -17,14 +17,14 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[Muse & Mist] exchangeCodeForSession error:', error.message)
-      return NextResponse.redirect(`${origin}/home-v1?error=auth_failed`)
+      return NextResponse.redirect(`${origin}/?error=auth_failed`)
     }
 
     // Success — send them home
-    return NextResponse.redirect(`${origin}/home-v1`)
+    return NextResponse.redirect(`${origin}/`)
 
   } catch (err) {
     console.error('[Muse & Mist] Unexpected auth error:', err)
-    return NextResponse.redirect(`${origin}/home-v1?error=auth_failed`)
+    return NextResponse.redirect(`${origin}/?error=auth_failed`)
   }
 }

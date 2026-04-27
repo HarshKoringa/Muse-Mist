@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Product } from "@/types/product";
-import { X, ShoppingBag, Sparkles } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCartStore } from "@/store/cartStore";
-import AddedToast from "./AddedToast";
+import Image from "next/image";
+import EarlyAccessButton from "./EarlyAccessButton";
 
 type Props = {
   product: Product;
@@ -28,12 +27,9 @@ const subtitleMap: Record<string, string> = {
 };
 
 export default function QuickViewModal({ product, onClose }: Props) {
-  const addItem = useCartStore((state) => state.addItem);
-  const [showToast, setShowToast] = useState(false);
   const gradient =
     gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
   const subtitle = subtitleMap[product.slug] ?? "";
-  const outOfStock = product.stock_count === 0;
 
   return (
     <>
@@ -53,25 +49,43 @@ export default function QuickViewModal({ product, onClose }: Props) {
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Gradient Header */}
-          <div
-            className={`w-full h-44 bg-gradient-to-br ${gradient} relative flex flex-col justify-between p-4`}
-          >
-            <button
-              onClick={onClose}
-              className="self-end w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition cursor-pointer"
-            >
-              <X size={16} className="text-[#1A237E]" />
-            </button>
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase text-[#1A237E] opacity-30">
-                Muse &amp; Mist
-              </p>
-              <p className="text-sm font-medium text-[#1A237E] opacity-60">
-                {product.name}
-              </p>
+          {/* Image or Gradient Header */}
+          {product.image_url ? (
+            <div className="w-full h-44 relative overflow-hidden">
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 768px) 100vw, 448px"
+              />
+              <button
+                onClick={onClose}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition cursor-pointer"
+              >
+                <X size={16} className="text-[#1A237E]" />
+              </button>
             </div>
-          </div>
+          ) : (
+            <div
+              className={`w-full h-44 bg-gradient-to-br ${gradient} relative flex flex-col justify-between p-4`}
+            >
+              <button
+                onClick={onClose}
+                className="self-end w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition cursor-pointer"
+              >
+                <X size={16} className="text-[#1A237E]" />
+              </button>
+              <div>
+                <p className="text-xs font-semibold tracking-widest uppercase text-[#1A237E] opacity-30">
+                  Muse &amp; Mist
+                </p>
+                <p className="text-sm font-medium text-[#1A237E] opacity-60">
+                  {product.name}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Content */}
           <div className="p-6 flex flex-col gap-4">
@@ -114,38 +128,12 @@ export default function QuickViewModal({ product, onClose }: Props) {
               <span className="text-2xl font-bold text-[#1A237E]">
                 ₹{product.price}
               </span>
-              <button
-                disabled={outOfStock}
-                onClick={() => {
-                  addItem({
-                    id: product.id,
-                    name: product.name,
-                    slug: product.slug,
-                    price: product.price,
-                    category: product.category,
-                    stock_count: product.stock_count,
-                  });
-                  setShowToast(true);
-                  setTimeout(() => {
-                    setShowToast(false);
-                    onClose();
-                  }, 800);
-                }}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-base font-medium transition-opacity ${
-                  outOfStock
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-[#1A237E] text-white hover:opacity-90 cursor-pointer"
-                }`}
-              >
-                <ShoppingBag size={18} />
-                {outOfStock ? "Sold Out" : "Add to Cart"}
-              </button>
+              <EarlyAccessButton productName={product.name} fullWidth={false} />
             </div>
           </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
-    <AddedToast visible={showToast} productName={product.name} />
     </>
   );
 }

@@ -1,41 +1,71 @@
-"use client";
+'use client'
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion'
 
 export default function RoutineHero() {
   return (
-    <section className="relative w-full px-6 pt-20 pb-16 overflow-hidden bg-[#DCD9F8]">
-      <div
-        className="absolute -right-32 -top-24 w-[480px] h-[480px] blur-3xl opacity-30 rounded-full"
-        style={{ background: "radial-gradient(circle, #DCEFFF 0%, transparent 70%)" }}
-      />
-      <div className="max-w-3xl mx-auto text-center relative z-10">
+    <section className="relative w-full min-h-[70vh] overflow-hidden bg-[#0D1117] flex flex-col justify-between px-6 sm:px-12 pt-40 pb-16">
+
+      {/* Ambient orbs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10 blur-3xl pointer-events-none"
+           style={{ background: 'radial-gradient(circle, #DCD9F8, transparent)' }} />
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full opacity-10 blur-3xl pointer-events-none"
+           style={{ background: 'radial-gradient(circle, #1A237E, transparent)' }} />
+
+      {/* Hero content */}
+      <div className="max-w-4xl">
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-xs font-semibold tracking-widest uppercase text-[#1A237E] opacity-50 mb-4"
+          transition={{ delay: 0.1 }}
+          className="text-xs tracking-[0.35em] uppercase text-[#DCD9F8]/40 mb-6 font-medium"
+          style={{ fontFamily: 'var(--font-body)' }}
         >
           The Muse &amp; Mist Method
         </motion.p>
+
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.08 }}
-          className="text-4xl md:text-6xl font-serif font-extrabold text-[#1A237E] leading-tight tracking-wide uppercase mb-6"
+          transition={{ delay: 0.2, duration: 0.8 }}
+          style={{ fontFamily: 'var(--font-display)' }}
+          className="text-[64px] sm:text-[96px] font-light text-white leading-[0.95] tracking-tight mb-8"
         >
-          Your Skin.<br />Your Ritual.
+          Your skin.<br />
+          <em className="text-[#DCD9F8]/50">Your ritual.</em>
         </motion.h1>
+
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.16 }}
-          className="text-lg text-[#1A237E]/70 max-w-xl mx-auto leading-relaxed"
+          transition={{ delay: 0.4, duration: 0.6 }}
+          style={{ fontFamily: 'var(--font-body)' }}
+          className="text-base sm:text-lg text-white/40 font-light max-w-lg leading-relaxed"
         >
-          A simple, science-backed routine designed for real life — not a 12-step
-          shelf. Every product earns its place.
+          A science-backed routine designed for real life —
+          not a 12-step shelf. Every product earns its place.
         </motion.p>
+
+        {/* Step indicators */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="flex items-center gap-2 mt-12"
+        >
+          {['Cleanse', 'Treat', 'Hydrate', 'Moisturise', 'Protect'].map((step, i) => (
+            <div key={step} className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#DCD9F8]/30" />
+                <span className="text-xs text-white/25 hidden sm:block" style={{ fontFamily: 'var(--font-body)' }}>
+                  {step}
+                </span>
+              </div>
+              {i < 4 && <div className="w-6 h-px bg-white/10" />}
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
-  );
+  )
 }
