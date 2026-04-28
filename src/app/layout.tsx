@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Cormorant_Garamond, DM_Sans } from "next/font/google
 import "./globals.css";
 import { ToastProvider } from "@/lib/toast-context";
 import { ToastContainer } from "@/components/ToastContainer";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,12 +35,39 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Muse & Mist | Secure Your Glow",
-  description:
-    "Join the Muse List for early access to the 3-in-1 Day Shield. Luxury skincare, scientifically softened.",
-  robots: "index, follow",
+  title: {
+    default: 'Muse & Mist | Glazed Skin. No Drama.',
+    template: '%s | Muse & Mist',
+  },
+  description: 'Hybrid Harmony Skincare. High-performance actives meet calming botanicals. Built for real Indian skin.',
+  keywords: [
+    'skincare', 'serum', 'sunscreen', 'moisturizer',
+    'niacinamide', 'vitamin c', 'India', 'Gen Z skincare',
+    'Muse and Mist', 'HRK Wellness',
+  ],
+  authors: [{ name: 'Muse & Mist' }],
+  creator: 'HRK Wellness LLP',
+  robots: 'index, follow',
   icons: {
-    icon: "/favicon.ico",
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    url: 'https://museandmist.in',
+    siteName: 'Muse & Mist',
+    title: 'Muse & Mist | Glazed Skin. No Drama.',
+    description: 'Hybrid Harmony Skincare. High-performance actives meet calming botanicals.',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1080,
+        height: 1080,
+        alt: 'Muse & Mist Logo',
+      },
+    ],
   },
 };
 
@@ -53,8 +82,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${dmSans.variable} antialiased`}
       >
         <ToastProvider>
+          <Header />
           <ToastContainer />
-          {children}
+          <main>
+            {children}
+          </main>
+          <Footer />
         </ToastProvider>
       </body>
     </html>

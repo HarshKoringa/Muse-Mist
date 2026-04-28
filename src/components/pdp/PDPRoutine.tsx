@@ -29,7 +29,7 @@ const routineStepMap: Record<string, { step: string; label: string; context: str
   'invisible-glow-shield': {
     step: 'Step 05',
     label: 'Protect',
-    context: 'Always the final step of your morning routine. Never layer anything on top of SPF — it must sit on the surface.',
+    context: 'Always the final step of your morning routine. Apply generously and reapply every 2-3 hours when outdoors.',
   },
 }
 

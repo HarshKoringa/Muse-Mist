@@ -9,7 +9,7 @@ const pillars = [
   },
   {
     title: 'Skin Intelligence',
-    description: 'Every ingredient earns its place. No fillers, no trend-chasing — just ingredients backed by dermatological research.',
+    description: 'Every ingredient earns its place. No fillers, no trend-chasing — just purposeful formulation driven by chemistry and results.',
   },
   {
     title: 'Glazed Philosophy',

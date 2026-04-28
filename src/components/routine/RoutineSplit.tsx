@@ -13,8 +13,9 @@ const morning = [
 
 const night = [
   { step: '01', label: 'Cleanse', sub: 'Cleanse, Clear & Calm' },
-  { step: '02', label: 'Clarify', sub: 'Smooth & Spotless' },
-  { step: '03', label: 'Moisturise', sub: 'Barrier Repair' },
+  { step: '02', label: 'Brighten', sub: 'Reset to Radiance' },
+  { step: '03', label: 'Clarify', sub: 'Smooth & Spotless' },
+  { step: '04', label: 'Moisturise', sub: 'Barrier Repair' },
 ]
 
 function RoutineCol({ items, dark }: { items: typeof morning; dark: boolean }) {
@@ -100,7 +101,7 @@ export default function RoutineSplit() {
               </div>
               <div>
                 <h3 style={{ fontFamily: 'var(--font-body)' }} className="text-base font-semibold text-white">Night</h3>
-                <p style={{ fontFamily: 'var(--font-body)' }} className="text-xs text-white/30">3 steps · ~3 min</p>
+                <p style={{ fontFamily: 'var(--font-body)' }} className="text-xs text-white/30">4 steps · ~3 min</p>
               </div>
             </div>
             <RoutineCol items={night} dark={true} />

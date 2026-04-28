@@ -146,12 +146,21 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div
-            className={`text-xl font-semibold cursor-pointer transition-colors duration-300 ${isDark ? 'text-white' : 'text-[#1A237E]'}`}
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Muse &amp; Mist
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Muse & Mist"
+              width={36}
+              height={36}
+              className="object-contain"
+            />
+            <span
+              style={{ fontFamily: 'var(--font-display)' }}
+              className={`text-xl font-semibold hidden sm:block transition-colors duration-300 ${mounted && isDarkHero && !scrolled ? 'text-[#1A237E]/70' : 'text-[#1A237E]'}`}
+            >
+              Muse &amp; Mist
+            </span>
+          </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex gap-8 items-center">

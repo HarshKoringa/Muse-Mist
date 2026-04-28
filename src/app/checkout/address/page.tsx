@@ -120,7 +120,7 @@ function AddressForm() {
   ]
 
   return (
-    <main className="min-h-screen bg-[#DCEFFF] px-4 py-12">
+    <main className="min-h-screen bg-[#DCEFFF] px-4 pt-20 pb-12">
       <div className="max-w-lg mx-auto">
 
         <div className="flex items-center gap-4 mb-8">

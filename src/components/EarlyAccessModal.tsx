@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Sparkles, CheckCircle2, Loader2 } from 'lucide-react'
 
@@ -11,6 +12,9 @@ type Props = {
 }
 
 export default function EarlyAccessModal({ isOpen, onClose, productName }: Props) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const [step, setStep] = useState<'form' | 'success'>('form')
   const [loading, setLoading] = useState(false)
   const [discountCode, setDiscountCode] = useState('')
@@ -70,7 +74,9 @@ export default function EarlyAccessModal({ isOpen, onClose, productName }: Props
     onClose()
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -246,6 +252,7 @@ export default function EarlyAccessModal({ isOpen, onClose, productName }: Props
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

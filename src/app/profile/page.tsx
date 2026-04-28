@@ -66,7 +66,7 @@ export default async function ProfilePage() {
     : null;
 
   return (
-    <main className="min-h-screen bg-[#DCEFFF] flex items-center justify-center px-4 py-16">
+    <main className="min-h-screen bg-[#DCEFFF] flex items-center justify-center px-4 pt-20 pb-16">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center gap-4">
 
         {/* Avatar */}

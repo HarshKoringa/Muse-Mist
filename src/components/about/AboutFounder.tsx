@@ -2,12 +2,14 @@
 
 import { motion } from 'framer-motion'
 import { FlaskConical } from 'lucide-react'
+import Image from 'next/image'
 
 const founders = [
   {
     name: 'Harsh Koringa',
     title: 'Co-Founder & CEO',
     tag: 'Brand & Vision',
+    image: 'https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/founder-harsh.jpeg',
     gradientFrom: '#1A237E',
     gradientTo: '#DCD9F8',
     bio1: 'Muse & Mist started as a personal obsession. Frustrated by skincare that either worked but felt harsh, or felt luxurious but did nothing — Harsh decided to build the brand he always wanted to buy from.',
@@ -19,6 +21,7 @@ const founders = [
     name: 'Hitali Koringa',
     title: 'Co-Founder & Head of R&D',
     tag: 'Science & Formulation',
+    image: 'https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/founder-hitali.jpeg',
     gradientFrom: '#DCD9F8',
     gradientTo: '#1A237E',
     bio1: 'With an MSc in Chemistry, Hitali is the scientific backbone of Muse & Mist. Every formula that reaches your skin has passed through her rigorous research and testing process.',
@@ -57,18 +60,25 @@ export default function AboutFounder() {
             className={`flex flex-col ${founder.reverse ? 'sm:flex-row-reverse' : 'sm:flex-row'} gap-10 items-center`}
           >
             {/* Avatar */}
-            <div className="flex-shrink-0 relative">
-              <div
-                className="w-44 h-44 rounded-full flex flex-col items-center justify-end pb-5 shadow-2xl relative overflow-hidden"
-                style={{ background: `linear-gradient(135deg, ${founder.gradientFrom}, ${founder.gradientTo})` }}
-              >
-                {founder.showIcon && (
-                  <FlaskConical size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-20" />
-                )}
-                <span className="text-[9px] font-semibold tracking-widest uppercase text-white/30 text-center px-3 leading-tight" style={{ fontFamily: 'var(--font-body)' }}>
-                  {founder.tag}
-                </span>
-              </div>
+            <div className="w-44 h-44 rounded-full overflow-hidden flex-shrink-0 shadow-2xl border-4 border-white/10">
+              {founder.image ? (
+                <Image
+                  src={founder.image}
+                  alt={founder.name}
+                  width={176}
+                  height={176}
+                  className="w-full h-full object-cover object-top"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex flex-col items-center justify-end pb-5"
+                  style={{ background: `linear-gradient(135deg, ${founder.gradientFrom}, ${founder.gradientTo})` }}
+                >
+                  <span className="text-[9px] font-semibold tracking-widest uppercase text-white/30 text-center px-3 leading-tight" style={{ fontFamily: 'var(--font-body)' }}>
+                    {founder.tag}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Text */}

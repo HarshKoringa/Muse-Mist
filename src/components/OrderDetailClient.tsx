@@ -97,7 +97,7 @@ export default function OrderDetailClient({ order }: Props) {
   const isCancelledOrRTO = ['cancelled', 'rto'].includes(order.status)
 
   return (
-    <main className="min-h-screen bg-[#DCEFFF] px-4 py-12">
+    <main className="min-h-screen bg-[#DCEFFF] px-4 pt-20 pb-12">
       <div className="max-w-2xl mx-auto flex flex-col gap-6">
 
         {/* Header */}

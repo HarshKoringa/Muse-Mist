@@ -22,7 +22,7 @@ export default function CartPage() {
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
-    <main className="min-h-screen bg-[#DCEFFF] px-4 py-12">
+    <main className="min-h-screen bg-[#DCEFFF] px-4 pt-20 pb-12">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">

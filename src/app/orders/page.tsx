@@ -19,7 +19,7 @@ export default async function OrdersPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <main className="min-h-screen bg-[#DCEFFF] px-4 py-12">
+    <main className="min-h-screen bg-[#DCEFFF] px-4 pt-20 pb-12">
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}

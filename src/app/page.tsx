@@ -1,4 +1,3 @@
-import Header from "@/components/Header";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import ProductGrid from "@/components/ProductGrid";
@@ -6,7 +5,6 @@ import ReviewsSection from "@/components/ReviewsSection";
 import HeroSection from "@/components/HeroSection";
 import PhilosophySection from "@/components/PhilosophySection";
 import EarlyAccessCTA from "@/components/EarlyAccessCTA";
-import Footer from "@/components/Footer";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -25,7 +23,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-[#0D1117]">
-      <Header />
       <HeroSection />
       <PhilosophySection />
 
@@ -53,7 +50,6 @@ export default async function Home() {
 
       <ReviewsSection />
       <EarlyAccessCTA count={count ?? 0} />
-      <Footer />
     </div>
   );
 }

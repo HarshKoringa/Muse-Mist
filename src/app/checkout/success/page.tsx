@@ -11,7 +11,7 @@ function SuccessContent() {
   const orderId = searchParams.get('order_id')
 
   return (
-    <main className="min-h-screen bg-[#DCEFFF] flex items-center justify-center px-4">
+    <main className="min-h-screen bg-[#DCEFFF] flex items-center justify-center px-4 pt-20">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
