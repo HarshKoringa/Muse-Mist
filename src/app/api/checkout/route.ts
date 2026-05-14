@@ -61,17 +61,18 @@ export async function POST(req: NextRequest) {
     let total = subtotal
 
     if (payment_method === 'prepaid') {
-      if (earlyAccessDiscount > 0) {
-        discount = Math.round(subtotal * (earlyAccessDiscount / 100))
-      } else {
-        discount = Math.round(subtotal * (PREPAID_DISCOUNT_PERCENT / 100))
-      }
+      // Prepaid base 5% + early access 30% if applicable = up to 35%
+      const totalPercent = PREPAID_DISCOUNT_PERCENT + earlyAccessDiscount
+      discount = Math.round(subtotal * (totalPercent / 100))
       delivery_charge = 0
       total = subtotal - discount
     } else {
-      discount = 0
+      // COD — early access gets 30% off, regular gets none
+      discount = earlyAccessDiscount > 0
+        ? Math.round(subtotal * (earlyAccessDiscount / 100))
+        : 0
       delivery_charge = COD_CHARGE
-      total = subtotal + delivery_charge
+      total = subtotal - discount + delivery_charge
     }
 
     let razorpay_order_id = null
@@ -99,9 +100,11 @@ export async function POST(req: NextRequest) {
       total,
       payment_method,
       is_early_access: earlyAccessDiscount > 0,
-      discount_percent: earlyAccessDiscount > 0
-        ? earlyAccessDiscount
-        : PREPAID_DISCOUNT_PERCENT,
+      early_access_percent: earlyAccessDiscount,
+      prepaid_percent: payment_method === 'prepaid' ? PREPAID_DISCOUNT_PERCENT : 0,
+      total_discount_percent: payment_method === 'prepaid'
+        ? PREPAID_DISCOUNT_PERCENT + earlyAccessDiscount
+        : earlyAccessDiscount,
     })
   } catch (err) {
     console.error('[Muse & Mist] /api/checkout error:', err)

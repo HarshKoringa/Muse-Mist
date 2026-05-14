@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import CheckoutButton from "@/components/CheckoutButton";
 import CODCheckoutButton from "@/components/CODCheckoutButton";
+import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
 
 const gradientMap: Record<string, string> = {
   Sunscreen: "from-[#DCEFFF] via-[#DCD9F8] to-white",
@@ -16,7 +17,6 @@ const gradientMap: Record<string, string> = {
   "Face Wash": "from-[#DCEFFF] via-white to-[#DCD9F8]",
 };
 
-const PREPAID_DISCOUNT = 0.05;
 const COD_CHARGE = 50;
 
 export default function CartPage() {
@@ -26,15 +26,33 @@ export default function CartPage() {
   const decreaseQty = useCartStore((state) => state.decreaseQty);
 
   const [selectedMethod, setSelectedMethod] = useState<"prepaid" | "cod">("prepaid");
+  const [discountLoading, setDiscountLoading] = useState(true);
+  const [prepaidDiscountPercent, setPrepaidDiscountPercent] = useState(5);
+  const [earlyAccessPercent, setEarlyAccessPercent] = useState(0);
+  const [totalPrepaidPercent, setTotalPrepaidPercent] = useState(5);
+  const [codDiscountPercent, setCodDiscountPercent] = useState(0);
+  const [isEarlyAccess, setIsEarlyAccess] = useState(false);
+
+  useEffect(() => {
+    getDiscountInfo().then((info) => {
+      setPrepaidDiscountPercent(info.prepaidDiscountPercent);
+      setEarlyAccessPercent(info.earlyAccessPercent);
+      setTotalPrepaidPercent(info.totalPrepaidPercent);
+      setCodDiscountPercent(info.codDiscountPercent);
+      setIsEarlyAccess(info.isEarlyAccess);
+      setDiscountLoading(false);
+    });
+  }, []);
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const prepaidDiscount = Math.round(subtotal * PREPAID_DISCOUNT);
+
+  const prepaidDiscount = Math.round(subtotal * (totalPrepaidPercent / 100));
   const prepaidTotal = subtotal - prepaidDiscount;
-  const codTotal = subtotal + COD_CHARGE;
+
+  const codDiscount = Math.round(subtotal * (codDiscountPercent / 100));
+  const codTotal = subtotal - codDiscount + COD_CHARGE;
 
   const displayTotal = selectedMethod === "prepaid" ? prepaidTotal : codTotal;
-  const displayDiscount = selectedMethod === "prepaid" ? prepaidDiscount : 0;
-  const displayDelivery = selectedMethod === "prepaid" ? 0 : COD_CHARGE;
 
   return (
     <main className="min-h-screen bg-[#DCEFFF] px-4 pt-20 pb-12">
@@ -193,6 +211,7 @@ export default function CartPage() {
 
             {/* Price breakdown */}
             <div className="flex flex-col gap-3">
+              {/* Subtotal */}
               <div className="flex justify-between text-sm text-gray-500">
                 <span style={{ fontFamily: "var(--font-body)" }}>
                   Subtotal ({items.length} item{items.length > 1 ? "s" : ""})
@@ -202,31 +221,64 @@ export default function CartPage() {
                 </span>
               </div>
 
-              {selectedMethod === "prepaid" && (
-                <div className="flex justify-between text-sm text-green-600">
-                  <span style={{ fontFamily: "var(--font-body)" }}>
-                    Prepaid Discount (5%)
-                  </span>
-                  <span style={{ fontFamily: "var(--font-body)" }}>
-                    −₹{displayDiscount.toLocaleString("en-IN")}
-                  </span>
+              {/* Prepaid breakdown */}
+              {selectedMethod === "prepaid" && !discountLoading && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span style={{ fontFamily: "var(--font-body)" }}>
+                      Prepaid Discount ({prepaidDiscountPercent}%)
+                    </span>
+                    <span>
+                      −₹{Math.round(subtotal * (prepaidDiscountPercent / 100)).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  {isEarlyAccess && (
+                    <div className="flex justify-between text-sm text-purple-600">
+                      <span style={{ fontFamily: "var(--font-body)" }}>
+                        Early Access Discount ({earlyAccessPercent}%) 🎉
+                      </span>
+                      <span>
+                        −₹{Math.round(subtotal * (earlyAccessPercent / 100)).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span style={{ fontFamily: "var(--font-body)" }}>Delivery</span>
+                    <span className="font-medium">FREE</span>
+                  </div>
                 </div>
               )}
 
-              <div className="flex justify-between text-sm text-gray-500">
-                <span style={{ fontFamily: "var(--font-body)" }}>Delivery</span>
-                <span
-                  style={{ fontFamily: "var(--font-body)" }}
-                  className={
-                    displayDelivery === 0 ? "text-green-600 font-medium" : ""
-                  }
-                >
-                  {displayDelivery === 0 ? "FREE" : `₹${displayDelivery}`}
-                </span>
-              </div>
+              {/* COD breakdown */}
+              {selectedMethod === "cod" && !discountLoading && (
+                <div className="flex flex-col gap-2">
+                  {isEarlyAccess && codDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-purple-600">
+                      <span style={{ fontFamily: "var(--font-body)" }}>
+                        Early Access Discount ({earlyAccessPercent}%) 🎉
+                      </span>
+                      <span>
+                        −₹{codDiscount.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span style={{ fontFamily: "var(--font-body)" }}>
+                      Delivery (COD)
+                    </span>
+                    <span>₹{COD_CHARGE}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Loading skeleton for discount rows */}
+              {discountLoading && (
+                <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
+              )}
 
               <div className="h-px bg-gray-100 my-1" />
 
+              {/* Total */}
               <div className="flex justify-between items-baseline">
                 <div>
                   <span
@@ -246,31 +298,83 @@ export default function CartPage() {
                   className="text-2xl font-bold text-[#1A237E]"
                   style={{ fontFamily: "var(--font-body)" }}
                 >
-                  ₹{displayTotal.toLocaleString("en-IN")}
+                  {discountLoading ? (
+                    <span className="inline-block w-24 h-7 bg-gray-100 rounded animate-pulse" />
+                  ) : (
+                    `₹${displayTotal.toLocaleString("en-IN")}`
+                  )}
                 </span>
               </div>
 
-              {selectedMethod === "prepaid" && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-100 mt-1">
-                  <span className="text-green-600 text-sm">✦</span>
-                  <p
-                    className="text-xs text-green-700 font-medium"
-                    style={{ fontFamily: "var(--font-body)" }}
-                  >
-                    You save ₹{displayDiscount.toLocaleString("en-IN")} with prepaid payment
-                  </p>
+              {/* Prepaid savings banner */}
+              {selectedMethod === "prepaid" && !discountLoading && (
+                <div
+                  className={`flex items-start gap-2 p-3 rounded-xl mt-1 ${
+                    isEarlyAccess
+                      ? "bg-purple-50 border border-purple-100"
+                      : "bg-green-50 border border-green-100"
+                  }`}
+                >
+                  <span className={isEarlyAccess ? "text-purple-600" : "text-green-600"}>
+                    ✦
+                  </span>
+                  <div>
+                    {isEarlyAccess ? (
+                      <>
+                        <p
+                          className="text-xs text-purple-700 font-semibold"
+                          style={{ fontFamily: "var(--font-body)" }}
+                        >
+                          🎉 You save ₹{prepaidDiscount.toLocaleString("en-IN")} ({totalPrepaidPercent}% off)
+                        </p>
+                        <p
+                          className="text-[10px] text-purple-600 mt-0.5"
+                          style={{ fontFamily: "var(--font-body)" }}
+                        >
+                          Early Access ({earlyAccessPercent}%) + Prepaid ({prepaidDiscountPercent}%) combined
+                        </p>
+                      </>
+                    ) : (
+                      <p
+                        className="text-xs text-green-700 font-medium"
+                        style={{ fontFamily: "var(--font-body)" }}
+                      >
+                        You save ₹{prepaidDiscount.toLocaleString("en-IN")} with prepaid
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {selectedMethod === "cod" && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100 mt-1">
-                  <span className="text-amber-600 text-sm">ℹ</span>
-                  <p
-                    className="text-xs text-amber-700"
-                    style={{ fontFamily: "var(--font-body)" }}
-                  >
-                    Switch to prepaid to save ₹{prepaidDiscount.toLocaleString("en-IN")} + get free delivery
-                  </p>
+              {/* COD banner */}
+              {selectedMethod === "cod" && !discountLoading && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100 mt-1">
+                  <span className="text-amber-600">ℹ</span>
+                  <div>
+                    {isEarlyAccess ? (
+                      <>
+                        <p
+                          className="text-xs text-amber-700 font-medium"
+                          style={{ fontFamily: "var(--font-body)" }}
+                        >
+                          Early access {earlyAccessPercent}% off applied on COD too 🎉
+                        </p>
+                        <p
+                          className="text-[10px] text-amber-600 mt-0.5"
+                          style={{ fontFamily: "var(--font-body)" }}
+                        >
+                          Switch to prepaid to save extra {prepaidDiscountPercent}% + get free delivery
+                        </p>
+                      </>
+                    ) : (
+                      <p
+                        className="text-xs text-amber-700"
+                        style={{ fontFamily: "var(--font-body)" }}
+                      >
+                        Switch to prepaid to save ₹{prepaidDiscount.toLocaleString("en-IN")} + get free delivery
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -278,9 +382,14 @@ export default function CartPage() {
             {/* CTA Button */}
             <div className="mt-6">
               {selectedMethod === "prepaid" ? (
-                <CheckoutButton paymentMethod="prepaid" />
+                <CheckoutButton
+                  paymentMethod="prepaid"
+                  displayAmount={discountLoading ? undefined : prepaidTotal}
+                />
               ) : (
-                <CODCheckoutButton />
+                <CODCheckoutButton
+                  displayAmount={discountLoading ? undefined : codTotal}
+                />
               )}
             </div>
 

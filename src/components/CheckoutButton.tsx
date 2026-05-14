@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react'
 
 type Props = {
   paymentMethod: 'prepaid' | 'cod'
+  displayAmount?: number
 }
 
 declare global {
@@ -18,14 +19,14 @@ declare global {
   }
 }
 
-export default function CheckoutButton({ paymentMethod }: Props) {
+export default function CheckoutButton({ paymentMethod, displayAmount }: Props) {
   const [loading, setLoading] = useState(false)
   const items = useCartStore((state) => state.items)
   const clearCart = useCartStore((state) => state.clearCart)
   const router = useRouter()
 
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0)
-  const prepaidTotal = subtotal - Math.round(subtotal * 0.05)
+  const prepaidTotal = displayAmount ?? (subtotal - Math.round(subtotal * 0.05))
 
   const handleCheckout = async () => {
     setLoading(true)

@@ -6,7 +6,11 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
-export default function CODCheckoutButton() {
+type Props = {
+  displayAmount?: number
+}
+
+export default function CODCheckoutButton({ displayAmount }: Props = {}) {
   const [loading, setLoading] = useState(false)
   const items = useCartStore((state) => state.items)
   const router = useRouter()
@@ -74,7 +78,9 @@ export default function CODCheckoutButton() {
           Processing...
         </>
       ) : (
-        'Place COD Order'
+        displayAmount != null
+          ? `Place COD Order · ₹${displayAmount.toLocaleString('en-IN')}`
+          : 'Place COD Order'
       )}
     </button>
   )
