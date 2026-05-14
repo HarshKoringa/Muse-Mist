@@ -4,7 +4,10 @@ import { Product } from "@/types/product";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import EarlyAccessButton from "./EarlyAccessButton";
+import { useState } from "react";
+import { ShoppingBag } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
+import AddedToast from "./AddedToast";
 
 type Props = {
   product: Product;
@@ -49,6 +52,9 @@ function StockBadge({ count }: { count: number }) {
 export default function ProductCard({ product, onQuickView }: Props) {
   const gradient = gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
   const subtitle = subtitleMap[product.slug] ?? product.category;
+  const addItem = useCartStore((state) => state.addItem);
+  const [showToast, setShowToast] = useState(false);
+  const outOfStock = product.stock_count === 0;
 
   return (
     <motion.div
@@ -122,9 +128,31 @@ export default function ProductCard({ product, onQuickView }: Props) {
               {product.price.toLocaleString('en-IN')}
             </span>
           </div>
-          <EarlyAccessButton productName={product.name} fullWidth={true} />
+          <button
+            disabled={outOfStock}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (outOfStock) return;
+              addItem({
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                price: product.price,
+                category: product.category,
+                stock_count: product.stock_count,
+              });
+              setShowToast(true);
+              setTimeout(() => setShowToast(false), 2000);
+            }}
+            style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-base font-semibold transition-all cursor-pointer ${outOfStock ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-[#DCD9F8] text-[#1A237E] hover:bg-white hover:opacity-90'}`}
+          >
+            <ShoppingBag size={16} />
+            {outOfStock ? 'Out of Stock' : 'Add to Cart'}
+          </button>
         </div>
       </div>
+      <AddedToast visible={showToast} productName={product.name} />
     </motion.div>
   );
 }

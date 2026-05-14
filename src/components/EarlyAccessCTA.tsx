@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import EarlyAccessButton from './EarlyAccessButton'
+import Link from 'next/link'
 
 type Props = { count: number }
 
@@ -14,21 +14,22 @@ export default function EarlyAccessCTA({ count }: Props) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs tracking-[0.3em] uppercase text-[#1A237E]/40 mb-4 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
-            Early Access
-          </p>
           <h2 style={{ fontFamily: 'var(--font-display)' }} className="text-[52px] sm:text-[64px] font-light text-[#1A237E] leading-tight mb-6">
-            Be first.<br />
-            <em>Pay less.</em>
+            Glazed skin.<br />
+            <em>Starts here.</em>
           </h2>
           <p style={{ fontFamily: 'var(--font-body)' }} className="text-base text-[#1A237E]/60 leading-relaxed mb-10 max-w-sm mx-auto font-light">
-            Register now and get 30% off your entire first order when we go live. No code needed — it&apos;s automatic.
+            High-performance actives meet calming botanicals.
+            Skincare designed for real skin, real life.
           </p>
           <div className="flex flex-col items-center gap-4 mt-10">
-            <EarlyAccessButton variant="primary" fullWidth={false} />
-            <p style={{ fontFamily: 'var(--font-body)' }} className="text-xs text-[#1A237E]/30">
-              Join {count ?? 0} muses already on the list
-            </p>
+            <Link
+              href="/#products"
+              style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold hover:opacity-90 transition-opacity"
+            >
+              Shop Now →
+            </Link>
           </div>
         </motion.div>
       </div>

@@ -4,7 +4,8 @@ import { useCartStore } from "@/store/cartStore";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import EarlyAccessButton from "@/components/EarlyAccessButton";
+import CheckoutButton from "@/components/CheckoutButton";
+import CODCheckoutButton from "@/components/CODCheckoutButton";
 
 const gradientMap: Record<string, string> = {
   Sunscreen: "from-[#DCEFFF] via-[#DCD9F8] to-white",
@@ -135,18 +136,6 @@ export default function CartPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4"
           >
-            {/* Early Access Launch Banner */}
-            <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r
-                            from-[#1A237E] to-[#3949AB] text-white text-center">
-              <p className="text-base font-semibold">
-                🚀 We&apos;re launching soon!
-              </p>
-              <p className="text-sm opacity-70 mt-1">
-                Register for early access to get 30% off
-                when we go live.
-              </p>
-            </div>
-
             <h2 className="text-lg font-semibold text-[#1A237E] mb-4">
               Order Summary
             </h2>
@@ -167,11 +156,49 @@ export default function CartPage() {
               <span>₹{subtotal}</span>
             </div>
 
-            <EarlyAccessButton fullWidth={true} />
+            <div className="flex flex-col gap-3 mt-6">
+              <p className="text-sm font-semibold text-[#1A237E]"
+                 style={{ fontFamily: 'var(--font-body)' }}>
+                Payment Method
+              </p>
 
-            <p className="text-xs text-gray-400 text-center mt-3">
-              Register now · Get 30% off at launch
-            </p>
+              {/* Prepaid */}
+              <div className="p-4 rounded-xl border-2 border-[#DCD9F8] bg-[#DCEFFF]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-base font-semibold text-[#1A237E]"
+                       style={{ fontFamily: 'var(--font-body)' }}>
+                      UPI / Card / Netbanking
+                    </p>
+                    <p className="text-xs text-green-600 font-medium mt-0.5">
+                      5% OFF + Free Shipping
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                    RECOMMENDED
+                  </span>
+                </div>
+              </div>
+              <CheckoutButton paymentMethod="prepaid" />
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-xs text-gray-400">or</span>
+                <div className="flex-1 h-px bg-gray-100" />
+              </div>
+
+              {/* COD */}
+              <div className="p-4 rounded-xl border border-gray-200">
+                <p className="text-base font-semibold text-gray-600"
+                   style={{ fontFamily: 'var(--font-body)' }}>
+                  Cash on Delivery
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  ₹50 delivery charge applies
+                </p>
+              </div>
+              <CODCheckoutButton />
+            </div>
           </motion.div>
         )}
       </div>

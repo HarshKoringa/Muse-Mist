@@ -2,10 +2,12 @@
 
 import { Product } from '@/types/product'
 import { motion } from 'framer-motion'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Zap } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import EarlyAccessButton from '@/components/EarlyAccessButton'
+import { useState } from 'react'
+import { useCartStore } from '@/store/cartStore'
+import AddedToast from '@/components/AddedToast'
 
 const gradientMap: Record<string, string> = {
   Sunscreen:   'from-[#DCEFFF] via-[#DCD9F8] to-white',
@@ -28,6 +30,21 @@ export default function PDPHero({ product }: Props) {
   const gradient = gradientMap[product.category] ?? 'from-[#DCD9F8] to-[#DCEFFF]'
   const subtitle = subtitleMap[product.slug] ?? ''
   const outOfStock = product.stock_count === 0
+  const addItem = useCartStore((state) => state.addItem)
+  const [showToast, setShowToast] = useState(false)
+
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      category: product.category,
+      stock_count: product.stock_count,
+    })
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 2000)
+  }
 
   return (
     <>
@@ -164,10 +181,34 @@ export default function PDPHero({ product }: Props) {
                 ₹{product.price}
               </span>
 
-              <EarlyAccessButton
-                productName={product.name}
-                fullWidth={true}
-              />
+              <div className="flex gap-3">
+                {/* Add to Cart */}
+                <button
+                  disabled={outOfStock}
+                  onClick={handleAddToCart}
+                  style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-semibold transition-all ${outOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#DCD9F8] text-[#1A237E] hover:opacity-80 cursor-pointer'}`}
+                >
+                  <ShoppingBag size={20} />
+                  {outOfStock ? 'Out of Stock' : 'Add to Cart'}
+                </button>
+
+                {/* Buy Now */}
+                <button
+                  disabled={outOfStock}
+                  onClick={() => {
+                    if (!outOfStock) {
+                      handleAddToCart()
+                      window.location.href = '/cart'
+                    }
+                  }}
+                  style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-semibold transition-all ${outOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'}`}
+                >
+                  <Zap size={20} />
+                  Buy Now
+                </button>
+              </div>
 
               <p className="text-xs text-gray-400 text-center">
                 Free shipping on orders above ₹999 ·
@@ -178,6 +219,7 @@ export default function PDPHero({ product }: Props) {
         </div>
       </section>
 
+      <AddedToast visible={showToast} productName={product.name} />
     </>
   )
 }

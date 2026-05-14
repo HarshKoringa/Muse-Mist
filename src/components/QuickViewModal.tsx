@@ -1,10 +1,12 @@
 "use client";
 
 import { Product } from "@/types/product";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import EarlyAccessButton from "./EarlyAccessButton";
+import { useState } from "react";
+import { useCartStore } from "@/store/cartStore";
+import AddedToast from "@/components/AddedToast";
 
 type Props = {
   product: Product;
@@ -30,6 +32,9 @@ export default function QuickViewModal({ product, onClose }: Props) {
   const gradient =
     gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
   const subtitle = subtitleMap[product.slug] ?? "";
+  const addItem = useCartStore((state) => state.addItem);
+  const [showToast, setShowToast] = useState(false);
+  const outOfStock = product.stock_count === 0;
 
   return (
     <>
@@ -130,12 +135,36 @@ export default function QuickViewModal({ product, onClose }: Props) {
               <span className="text-2xl font-bold text-[#1A237E]">
                 ₹{product.price}
               </span>
-              <EarlyAccessButton productName={product.name} fullWidth={false} />
+              <button
+                disabled={outOfStock}
+                onClick={() => {
+                  if (outOfStock) return;
+                  addItem({
+                    id: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    price: product.price,
+                    category: product.category,
+                    stock_count: product.stock_count,
+                  });
+                  setShowToast(true);
+                  setTimeout(() => {
+                    setShowToast(false);
+                    onClose();
+                  }, 800);
+                }}
+                style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-base font-semibold transition-all ${outOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'}`}
+              >
+                <ShoppingBag size={18} />
+                {outOfStock ? 'Out of Stock' : 'Add to Cart'}
+              </button>
             </div>
           </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
+    <AddedToast visible={showToast} productName={product.name} />
     </>
   );
 }

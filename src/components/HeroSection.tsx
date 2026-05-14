@@ -1,13 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import EarlyAccessButton from './EarlyAccessButton'
-import EarlyAccessModal from './EarlyAccessModal'
 
 export default function HeroSection() {
-  const [isEarlyAccessOpen, setIsEarlyAccessOpen] = useState(false)
-
   return (
     <section className="relative w-full min-h-screen overflow-hidden bg-[#0D1117] flex flex-col">
 
@@ -43,18 +38,12 @@ export default function HeroSection() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm w-fit"
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm w-fit mb-6"
             >
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <p className="text-sm text-white/80 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
-                Launching soon —{' '}
-                <button
-                  onClick={() => setIsEarlyAccessOpen(true)}
-                  className="text-[#DCD9F8] font-semibold hover:text-white transition-colors cursor-pointer underline underline-offset-2"
-                >
-                  get 30% off
-                </button>
+                Now Live — Shop The Edit
               </p>
             </motion.div>
 
@@ -124,7 +113,15 @@ export default function HeroSection() {
               transition={{ delay: 1, duration: 0.6 }}
               className="flex flex-wrap items-center gap-4"
             >
-              <EarlyAccessButton variant="primary" fullWidth={false} />
+              <button
+                onClick={() =>
+                  document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
+                }
+                style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
+                className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#DCD9F8] text-[#1A237E] text-base font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Shop The Edit →
+              </button>
               <button
                 onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
                 style={{ fontFamily: 'var(--font-body)' }}
@@ -226,11 +223,6 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Early Access Modal */}
-      <EarlyAccessModal
-        isOpen={isEarlyAccessOpen}
-        onClose={() => setIsEarlyAccessOpen(false)}
-      />
     </section>
   )
 }
