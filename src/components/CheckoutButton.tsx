@@ -24,6 +24,9 @@ export default function CheckoutButton({ paymentMethod }: Props) {
   const clearCart = useCartStore((state) => state.clearCart)
   const router = useRouter()
 
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0)
+  const prepaidTotal = subtotal - Math.round(subtotal * 0.05)
+
   const handleCheckout = async () => {
     setLoading(true)
 
@@ -144,10 +147,10 @@ export default function CheckoutButton({ paymentMethod }: Props) {
         {loading ? (
           <>
             <Loader2 size={18} className="animate-spin" />
-            Processing...
+            Opening payment gateway...
           </>
         ) : (
-          'Proceed to Checkout'
+          <>Pay ₹{prepaidTotal.toLocaleString('en-IN')} →</>
         )}
       </button>
     </>

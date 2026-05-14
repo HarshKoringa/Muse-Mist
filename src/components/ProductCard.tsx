@@ -121,13 +121,32 @@ export default function ProductCard({ product, onQuickView }: Props) {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-3 mt-auto pt-3 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-baseline gap-0.5">
-            <span className="text-sm font-medium text-white/50" style={{ fontFamily: 'var(--font-body)' }}>₹</span>
-            <span className="text-xl font-semibold text-white tracking-tight" style={{ fontFamily: 'var(--font-body)' }}>
-              {product.price.toLocaleString('en-IN')}
+        <div className="flex flex-col gap-1 mt-auto pt-3 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
+          {/* Price row */}
+          <div className="flex items-baseline justify-between">
+            <div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs text-white/40"
+                      style={{ fontFamily: 'var(--font-body)' }}>₹</span>
+                <span className="text-2xl font-semibold text-white"
+                      style={{ fontFamily: 'var(--font-body)' }}>
+                  {product.price.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <p className="text-[10px] text-white/30 mt-0.5"
+                 style={{ fontFamily: 'var(--font-body)' }}>
+                Incl. of all taxes
+              </p>
+            </div>
+            {/* Prepaid offer badge */}
+            <span className="text-[10px] font-semibold px-2 py-1
+                             rounded-full bg-green-500/15 text-green-400
+                             border border-green-500/20">
+              5% off prepaid
             </span>
           </div>
+
+          {/* Add to Cart button */}
           <button
             disabled={outOfStock}
             onClick={(e) => {
@@ -140,12 +159,13 @@ export default function ProductCard({ product, onQuickView }: Props) {
                 price: product.price,
                 category: product.category,
                 stock_count: product.stock_count,
+                image_url: product.image_url,
               });
               setShowToast(true);
               setTimeout(() => setShowToast(false), 2000);
             }}
             style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
-            className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-base font-semibold transition-all cursor-pointer ${outOfStock ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-[#DCD9F8] text-[#1A237E] hover:bg-white hover:opacity-90'}`}
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-base font-semibold transition-all cursor-pointer mt-2 ${outOfStock ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-[#DCD9F8] text-[#1A237E] hover:bg-white hover:opacity-90'}`}
           >
             <ShoppingBag size={16} />
             {outOfStock ? 'Out of Stock' : 'Add to Cart'}

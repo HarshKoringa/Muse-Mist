@@ -146,6 +146,7 @@ export default function QuickViewModal({ product, onClose }: Props) {
                     price: product.price,
                     category: product.category,
                     stock_count: product.stock_count,
+                    image_url: product.image_url,
                   });
                   setShowToast(true);
                   setTimeout(() => {

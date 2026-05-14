@@ -41,6 +41,7 @@ export default function PDPHero({ product }: Props) {
       price: product.price,
       category: product.category,
       stock_count: product.stock_count,
+      image_url: product.image_url ?? null,
     })
     setShowToast(true)
     setTimeout(() => setShowToast(false), 2000)
@@ -177,9 +178,36 @@ export default function PDPHero({ product }: Props) {
             {/* Price + CTA */}
             <div className="flex flex-col gap-4 pt-6
                             border-t border-gray-100">
-              <span className="text-3xl font-bold text-[#1A237E]">
-                ₹{product.price}
-              </span>
+              {/* Price */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg text-[#1A237E]/50">₹</span>
+                  <span className="text-4xl font-semibold text-[#1A237E]"
+                        style={{ fontFamily: 'var(--font-body)' }}>
+                    {product.price.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">Incl. of all taxes</p>
+              </div>
+
+              {/* Offer pills */}
+              <div className="flex flex-wrap gap-2">
+                <span className="flex items-center gap-1.5 text-xs font-semibold
+                                 px-3 py-1.5 rounded-full
+                                 bg-green-50 text-green-700 border border-green-200">
+                  ✦ 5% off on prepaid
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-semibold
+                                 px-3 py-1.5 rounded-full
+                                 bg-blue-50 text-blue-700 border border-blue-200">
+                  🚚 Free shipping on prepaid
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-medium
+                                 px-3 py-1.5 rounded-full
+                                 bg-gray-50 text-gray-500 border border-gray-200">
+                  COD available (+₹50)
+                </span>
+              </div>
 
               <div className="flex gap-3">
                 {/* Add to Cart */}
@@ -211,8 +239,7 @@ export default function PDPHero({ product }: Props) {
               </div>
 
               <p className="text-xs text-gray-400 text-center">
-                Free shipping on orders above ₹999 ·
-                Secure checkout via Shiprocket
+                🔒 Secure checkout · Powered by Razorpay &amp; Shiprocket
               </p>
             </div>
           </motion.div>

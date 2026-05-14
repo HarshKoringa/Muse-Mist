@@ -1,11 +1,17 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
+
+type OrderSummary = {
+  total: number
+  discount: number
+  method: 'prepaid' | 'cod'
+}
 
 function AddressForm() {
   const router = useRouter()
@@ -15,6 +21,7 @@ function AddressForm() {
 
   const [loading, setLoading] = useState(false)
   const [policyAgreed, setPolicyAgreed] = useState(false)
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null)
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -24,6 +31,20 @@ function AddressForm() {
     state: '',
     pincode: '',
   })
+
+  useEffect(() => {
+    const pending =
+      sessionStorage.getItem('pending_payment') ||
+      sessionStorage.getItem('pending_order')
+    if (pending) {
+      const data = JSON.parse(pending)
+      const total = data.order_data?.total ?? data.total
+      const discount = data.order_data?.discount ?? data.discount ?? 0
+      if (total) {
+        setOrderSummary({ total, discount, method })
+      }
+    }
+  }, [method])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -138,6 +159,31 @@ function AddressForm() {
             </p>
           </div>
         </div>
+
+        {orderSummary && (
+          <div className="bg-white rounded-2xl p-4 mb-6 border border-gray-100 shadow-sm">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-500"
+                 style={{ fontFamily: 'var(--font-body)' }}>
+                Order Total
+              </p>
+              <div className="text-right">
+                <p className="text-xl font-bold text-[#1A237E]"
+                   style={{ fontFamily: 'var(--font-body)' }}>
+                  ₹{orderSummary.total?.toLocaleString('en-IN')}
+                </p>
+                <p className="text-[10px] text-gray-400">
+                  Incl. of all taxes
+                </p>
+              </div>
+            </div>
+            {orderSummary.discount > 0 && (
+              <p className="text-xs text-green-600 mt-1 font-medium">
+                You saved ₹{orderSummary.discount.toLocaleString('en-IN')} on this order
+              </p>
+            )}
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}

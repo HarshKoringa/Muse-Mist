@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import CheckoutButton from "@/components/CheckoutButton";
 import CODCheckoutButton from "@/components/CODCheckoutButton";
 
@@ -14,13 +16,25 @@ const gradientMap: Record<string, string> = {
   "Face Wash": "from-[#DCEFFF] via-white to-[#DCD9F8]",
 };
 
+const PREPAID_DISCOUNT = 0.05;
+const COD_CHARGE = 50;
+
 export default function CartPage() {
   const items = useCartStore((state) => state.items);
   const removeItem = useCartStore((state) => state.removeItem);
   const increaseQty = useCartStore((state) => state.increaseQty);
   const decreaseQty = useCartStore((state) => state.decreaseQty);
 
+  const [selectedMethod, setSelectedMethod] = useState<"prepaid" | "cod">("prepaid");
+
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const prepaidDiscount = Math.round(subtotal * PREPAID_DISCOUNT);
+  const prepaidTotal = subtotal - prepaidDiscount;
+  const codTotal = subtotal + COD_CHARGE;
+
+  const displayTotal = selectedMethod === "prepaid" ? prepaidTotal : codTotal;
+  const displayDiscount = selectedMethod === "prepaid" ? prepaidDiscount : 0;
+  const displayDelivery = selectedMethod === "prepaid" ? 0 : COD_CHARGE;
 
   return (
     <main className="min-h-screen bg-[#DCEFFF] px-4 pt-20 pb-12">
@@ -70,13 +84,25 @@ export default function CartPage() {
                 transition={{ duration: 0.3 }}
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex gap-4 mb-4 items-center"
               >
-                {/* Gradient Thumbnail */}
-                <div
-                  className={`w-20 h-20 rounded-xl bg-gradient-to-br ${gradient} flex-shrink-0 flex items-end p-2`}
-                >
-                  <span className="text-[8px] font-bold tracking-widest uppercase text-[#1A237E] opacity-30">
-                    M&amp;M
-                  </span>
+                {/* Product image or gradient fallback */}
+                <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-[#DCEFFF]">
+                  {item.image_url ? (
+                    <Image
+                      src={item.image_url}
+                      alt={item.name}
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className={`w-full h-full bg-gradient-to-br ${gradient} flex items-end p-1.5`}
+                    >
+                      <span className="text-[8px] font-bold tracking-widest uppercase text-[#1A237E] opacity-30">
+                        M&amp;M
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Details */}
@@ -88,7 +114,7 @@ export default function CartPage() {
                     {item.name}
                   </h3>
                   <p className="text-base font-bold text-[#1A237E] mt-1">
-                    ₹{item.price * item.quantity}
+                    ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                   </p>
                 </div>
 
@@ -131,75 +157,140 @@ export default function CartPage() {
 
         {/* Order Summary */}
         {items.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4"
-          >
-            <h2 className="text-lg font-semibold text-[#1A237E] mb-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4">
+            <h2
+              className="text-lg font-semibold text-[#1A237E] mb-6"
+              style={{ fontFamily: "var(--font-body)" }}
+            >
               Order Summary
             </h2>
 
-            <div className="flex justify-between text-base text-gray-500 mb-2">
-              <span>Subtotal</span>
-              <span>₹{subtotal}</span>
-            </div>
-            <div className="flex justify-between text-base text-gray-500 mb-4">
-              <span>Shipping</span>
-              <span className="text-green-500 font-medium">
-                Free with prepaid
-              </span>
+            {/* Payment method toggle */}
+            <div className="flex gap-2 mb-6 p-1 bg-gray-50 rounded-xl">
+              <button
+                onClick={() => setSelectedMethod("prepaid")}
+                style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                  selectedMethod === "prepaid"
+                    ? "bg-white text-[#1A237E] shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                Prepaid
+              </button>
+              <button
+                onClick={() => setSelectedMethod("cod")}
+                style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                  selectedMethod === "cod"
+                    ? "bg-white text-[#1A237E] shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                Cash on Delivery
+              </button>
             </div>
 
-            <div className="flex justify-between text-lg font-bold text-[#1A237E] pt-4 border-t border-gray-100 mb-6">
-              <span>Total</span>
-              <span>₹{subtotal}</span>
-            </div>
+            {/* Price breakdown */}
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between text-sm text-gray-500">
+                <span style={{ fontFamily: "var(--font-body)" }}>
+                  Subtotal ({items.length} item{items.length > 1 ? "s" : ""})
+                </span>
+                <span style={{ fontFamily: "var(--font-body)" }}>
+                  ₹{subtotal.toLocaleString("en-IN")}
+                </span>
+              </div>
 
-            <div className="flex flex-col gap-3 mt-6">
-              <p className="text-sm font-semibold text-[#1A237E]"
-                 style={{ fontFamily: 'var(--font-body)' }}>
-                Payment Method
-              </p>
-
-              {/* Prepaid */}
-              <div className="p-4 rounded-xl border-2 border-[#DCD9F8] bg-[#DCEFFF]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-base font-semibold text-[#1A237E]"
-                       style={{ fontFamily: 'var(--font-body)' }}>
-                      UPI / Card / Netbanking
-                    </p>
-                    <p className="text-xs text-green-600 font-medium mt-0.5">
-                      5% OFF + Free Shipping
-                    </p>
-                  </div>
-                  <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                    RECOMMENDED
+              {selectedMethod === "prepaid" && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span style={{ fontFamily: "var(--font-body)" }}>
+                    Prepaid Discount (5%)
+                  </span>
+                  <span style={{ fontFamily: "var(--font-body)" }}>
+                    −₹{displayDiscount.toLocaleString("en-IN")}
                   </span>
                 </div>
-              </div>
-              <CheckoutButton paymentMethod="prepaid" />
+              )}
 
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-xs text-gray-400">or</span>
-                <div className="flex-1 h-px bg-gray-100" />
+              <div className="flex justify-between text-sm text-gray-500">
+                <span style={{ fontFamily: "var(--font-body)" }}>Delivery</span>
+                <span
+                  style={{ fontFamily: "var(--font-body)" }}
+                  className={
+                    displayDelivery === 0 ? "text-green-600 font-medium" : ""
+                  }
+                >
+                  {displayDelivery === 0 ? "FREE" : `₹${displayDelivery}`}
+                </span>
               </div>
 
-              {/* COD */}
-              <div className="p-4 rounded-xl border border-gray-200">
-                <p className="text-base font-semibold text-gray-600"
-                   style={{ fontFamily: 'var(--font-body)' }}>
-                  Cash on Delivery
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  ₹50 delivery charge applies
-                </p>
+              <div className="h-px bg-gray-100 my-1" />
+
+              <div className="flex justify-between items-baseline">
+                <div>
+                  <span
+                    className="text-lg font-bold text-[#1A237E]"
+                    style={{ fontFamily: "var(--font-body)" }}
+                  >
+                    Total
+                  </span>
+                  <p
+                    className="text-[10px] text-gray-400 mt-0.5"
+                    style={{ fontFamily: "var(--font-body)" }}
+                  >
+                    Incl. of all taxes
+                  </p>
+                </div>
+                <span
+                  className="text-2xl font-bold text-[#1A237E]"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  ₹{displayTotal.toLocaleString("en-IN")}
+                </span>
               </div>
-              <CODCheckoutButton />
+
+              {selectedMethod === "prepaid" && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-100 mt-1">
+                  <span className="text-green-600 text-sm">✦</span>
+                  <p
+                    className="text-xs text-green-700 font-medium"
+                    style={{ fontFamily: "var(--font-body)" }}
+                  >
+                    You save ₹{displayDiscount.toLocaleString("en-IN")} with prepaid payment
+                  </p>
+                </div>
+              )}
+
+              {selectedMethod === "cod" && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100 mt-1">
+                  <span className="text-amber-600 text-sm">ℹ</span>
+                  <p
+                    className="text-xs text-amber-700"
+                    style={{ fontFamily: "var(--font-body)" }}
+                  >
+                    Switch to prepaid to save ₹{prepaidDiscount.toLocaleString("en-IN")} + get free delivery
+                  </p>
+                </div>
+              )}
             </div>
-          </motion.div>
+
+            {/* CTA Button */}
+            <div className="mt-6">
+              {selectedMethod === "prepaid" ? (
+                <CheckoutButton paymentMethod="prepaid" />
+              ) : (
+                <CODCheckoutButton />
+              )}
+            </div>
+
+            <p
+              className="text-[10px] text-gray-400 text-center mt-3"
+              style={{ fontFamily: "var(--font-body)" }}
+            >
+              🔒 Secure checkout · Powered by Razorpay &amp; Shiprocket
+            </p>
+          </div>
         )}
       </div>
     </main>

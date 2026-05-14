@@ -9,6 +9,7 @@ export type CartItem = {
   category: string;
   quantity: number;
   stock_count: number;
+  image_url?: string | null;
 };
 
 type CartStore = {
@@ -73,6 +74,13 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "muse-mist-cart",
+      version: 3,
+      migrate: (persistedState: unknown, version: number) => {
+        if (version < 3) {
+          return { items: [] };
+        }
+        return persistedState as CartStore;
+      },
     },
   ),
 );
