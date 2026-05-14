@@ -9,15 +9,19 @@ import { Loader2 } from 'lucide-react'
 type Props = {
   paymentMethod: 'prepaid' | 'cod'
   displayAmount?: number
+  totalDiscountPercent?: number
+  isEarlyAccess?: boolean
 }
 
-export default function CheckoutButton({ paymentMethod, displayAmount }: Props) {
+export default function CheckoutButton({
+  paymentMethod,
+  displayAmount,
+  totalDiscountPercent = 5,
+  isEarlyAccess = false,
+}: Props) {
   const [loading, setLoading] = useState(false)
   const items = useCartStore((state) => state.items)
   const router = useRouter()
-
-  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0)
-  const prepaidTotal = displayAmount ?? (subtotal - Math.round(subtotal * 0.05))
 
   const handleCheckout = async () => {
     setLoading(true)
@@ -29,6 +33,11 @@ export default function CheckoutButton({ paymentMethod, displayAmount }: Props) 
         router.push('/login')
         return
       }
+
+      const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0)
+      const discount = Math.round(subtotal * (totalDiscountPercent / 100))
+      // Use the exact total passed from cart (same value, avoids rounding drift)
+      const total = displayAmount ?? (subtotal - discount)
 
       sessionStorage.setItem('checkout_data', JSON.stringify({
         items: items.map((i) => ({
@@ -43,6 +52,12 @@ export default function CheckoutButton({ paymentMethod, displayAmount }: Props) 
         })),
         payment_method: paymentMethod,
         user_id: user.id,
+        subtotal,
+        discount,
+        delivery_charge: 0,
+        total,
+        is_early_access: isEarlyAccess,
+        total_discount_percent: totalDiscountPercent,
       }))
 
       router.push(`/checkout/address?method=${paymentMethod}`)
@@ -73,7 +88,7 @@ export default function CheckoutButton({ paymentMethod, displayAmount }: Props) 
           Processing...
         </>
       ) : (
-        <>Pay ₹{prepaidTotal.toLocaleString('en-IN')} →</>
+        'Continue to Address →'
       )}
     </button>
   )

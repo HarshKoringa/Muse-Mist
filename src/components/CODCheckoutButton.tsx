@@ -6,11 +6,19 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
+const COD_CHARGE = 50
+
 type Props = {
   displayAmount?: number
+  totalDiscountPercent?: number
+  isEarlyAccess?: boolean
 }
 
-export default function CODCheckoutButton({ displayAmount }: Props = {}) {
+export default function CODCheckoutButton({
+  displayAmount,
+  totalDiscountPercent = 0,
+  isEarlyAccess = false,
+}: Props = {}) {
   const [loading, setLoading] = useState(false)
   const items = useCartStore((state) => state.items)
   const router = useRouter()
@@ -21,6 +29,11 @@ export default function CODCheckoutButton({ displayAmount }: Props = {}) {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
+
+      const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0)
+      const discount = Math.round(subtotal * (totalDiscountPercent / 100))
+      // Use the exact total passed from cart (same value, avoids rounding drift)
+      const total = displayAmount ?? (subtotal - discount + COD_CHARGE)
 
       sessionStorage.setItem('checkout_data', JSON.stringify({
         items: items.map((i) => ({
@@ -35,6 +48,12 @@ export default function CODCheckoutButton({ displayAmount }: Props = {}) {
         })),
         payment_method: 'cod',
         user_id: user.id,
+        subtotal,
+        discount,
+        delivery_charge: COD_CHARGE,
+        total,
+        is_early_access: isEarlyAccess,
+        total_discount_percent: totalDiscountPercent,
       }))
 
       router.push('/checkout/address?method=cod')

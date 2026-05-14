@@ -49,17 +49,13 @@ function AddressForm() {
     const parsed = JSON.parse(raw)
     setCheckoutData(parsed)
 
-    // Compute display-only order summary (server recalculates accurately)
-    const subtotal: number = parsed.items.reduce(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (s: number, i: any) => s + i.price * i.quantity,
-      0
-    )
-    const discount = parsed.payment_method === 'prepaid'
-      ? Math.round(subtotal * 0.05)
-      : 0
-    const delivery = parsed.payment_method === 'cod' ? 50 : 0
-    setOrderSummary({ subtotal, discount, delivery, total: subtotal - discount + delivery })
+    // Read pre-computed totals saved by cart page — no recalculation needed
+    setOrderSummary({
+      subtotal: parsed.subtotal,
+      discount: parsed.discount,
+      delivery: parsed.delivery_charge,
+      total: parsed.total,
+    })
 
     // Prefill name/email/phone from profile
     const supabase = createClient()

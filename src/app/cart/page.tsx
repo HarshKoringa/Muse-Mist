@@ -385,10 +385,14 @@ export default function CartPage() {
                 <CheckoutButton
                   paymentMethod="prepaid"
                   displayAmount={discountLoading ? undefined : prepaidTotal}
+                  totalDiscountPercent={totalPrepaidPercent}
+                  isEarlyAccess={isEarlyAccess}
                 />
               ) : (
                 <CODCheckoutButton
                   displayAmount={discountLoading ? undefined : codTotal}
+                  totalDiscountPercent={codDiscountPercent}
+                  isEarlyAccess={isEarlyAccess}
                 />
               )}
             </div>
