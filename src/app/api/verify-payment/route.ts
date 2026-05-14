@@ -66,7 +66,36 @@ export async function POST(req: NextRequest) {
       throw orderError
     }
 
-    // Step 3 — Create Shiprocket shipment (non-blocking)
+    // Step 3 — Mark early access discount as used if applicable
+    if (order_data.is_early_access) {
+      try {
+        const profile = await supabase
+          .from('profiles')
+          .select('phone_number')
+          .eq('id', order_data.user_id)
+          .single()
+
+        if (profile.data?.phone_number) {
+          const rawPhone = profile.data.phone_number.replace(/\D/g, '')
+          const normalizedPhone = rawPhone.startsWith('91')
+            ? rawPhone
+            : '91' + rawPhone
+
+          await supabase
+            .from('muses')
+            .update({ discount_used: true })
+            .eq('phone', normalizedPhone)
+            .eq('discount_used', false)
+
+          console.log('[Order] Early access discount marked as used')
+        }
+      } catch (e) {
+        console.log('[Order] Could not mark discount as used:', e)
+      }
+    }
+
+    // Step 4 — Create Shiprocket shipment (non-blocking)
+
     try {
       const token = await getShiprocketToken()
 
@@ -109,7 +138,7 @@ export async function POST(req: NextRequest) {
       console.error('[Muse & Mist] Shiprocket order creation failed:', shipErr)
     }
 
-    // Step 4 — Decrement stock
+    // Step 5 — Decrement stock
     for (const item of order_data.items) {
       await supabase.rpc('decrement_stock', {
         product_id: item.id,

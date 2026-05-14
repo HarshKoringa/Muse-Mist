@@ -1,4 +1,5 @@
 import { getRazorpayInstance } from '@/lib/razorpay'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 const COD_CHARGE = 50
@@ -22,12 +23,49 @@ export async function POST(req: NextRequest) {
       0
     )
 
+    // Check if user has an unused early access discount
+    let earlyAccessDiscount = 0
+    try {
+      const adminSupabase = createAdminClient()
+
+      const { data: profile } = await adminSupabase
+        .from('profiles')
+        .select('phone_number')
+        .eq('id', user_id)
+        .single()
+
+      if (profile?.phone_number) {
+        const rawPhone = profile.phone_number.replace(/\D/g, '')
+        const normalizedPhone = rawPhone.startsWith('91')
+          ? rawPhone
+          : '91' + rawPhone
+
+        const { data: muse } = await adminSupabase
+          .from('muses')
+          .select('id, discount_percent, discount_used')
+          .eq('phone', normalizedPhone)
+          .eq('discount_used', false)
+          .single()
+
+        if (muse) {
+          earlyAccessDiscount = muse.discount_percent
+          console.log('[Checkout] Early access discount found:', muse.discount_percent + '%')
+        }
+      }
+    } catch (e) {
+      console.log('[Checkout] No early access discount found')
+    }
+
     let discount = 0
     let delivery_charge = 0
     let total = subtotal
 
     if (payment_method === 'prepaid') {
-      discount = Math.round(subtotal * (PREPAID_DISCOUNT_PERCENT / 100))
+      if (earlyAccessDiscount > 0) {
+        discount = Math.round(subtotal * (earlyAccessDiscount / 100))
+      } else {
+        discount = Math.round(subtotal * (PREPAID_DISCOUNT_PERCENT / 100))
+      }
       delivery_charge = 0
       total = subtotal - discount
     } else {
@@ -60,6 +98,10 @@ export async function POST(req: NextRequest) {
       delivery_charge,
       total,
       payment_method,
+      is_early_access: earlyAccessDiscount > 0,
+      discount_percent: earlyAccessDiscount > 0
+        ? earlyAccessDiscount
+        : PREPAID_DISCOUNT_PERCENT,
     })
   } catch (err) {
     console.error('[Muse & Mist] /api/checkout error:', err)
