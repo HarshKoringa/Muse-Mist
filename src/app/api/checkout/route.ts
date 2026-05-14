@@ -1,4 +1,4 @@
-import { razorpayInstance } from '@/lib/razorpay'
+import { getRazorpayInstance } from '@/lib/razorpay'
 import { NextRequest, NextResponse } from 'next/server'
 
 const COD_CHARGE = 50
@@ -39,7 +39,8 @@ export async function POST(req: NextRequest) {
     let razorpay_order_id = null
 
     if (payment_method === 'prepaid') {
-      const razorpayOrder = await razorpayInstance.orders.create({
+      const razorpay = getRazorpayInstance()
+      const razorpayOrder = await razorpay.orders.create({
         amount: total * 100,
         currency: 'INR',
         receipt: crypto.randomUUID().slice(0, 10),
