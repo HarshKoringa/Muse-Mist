@@ -31,11 +31,11 @@ export async function createShiprocketOrder(payload: {
   shipping_is_billing: boolean
   payment_method: 'Prepaid' | 'COD'
   sub_total: number
-  discount?: number
+  discount?: string | number
   shipping_charges?: number
   giftwrap_charges?: number
   transaction_charges?: number
-  total_discount?: number
+  total_discount?: string | number
   length: number
   breadth: number
   height: number

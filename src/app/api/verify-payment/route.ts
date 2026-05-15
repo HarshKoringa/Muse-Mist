@@ -110,11 +110,19 @@ export async function POST(req: NextRequest) {
         .toString().replace(/\D/g, '').replace(/^91/, '')
       const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
-      const totalItems = order_data.items.reduce(
+      const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
+        'cleanse-clear-calm':    { gstRate: 5,  hsnCode: 34011190 },
+        'barrier-repair':        { gstRate: 18, hsnCode: 33049990 },
+        'reset-to-radiance':     { gstRate: 18, hsnCode: 33049990 },
+        'invisible-glow-shield': { gstRate: 18, hsnCode: 33049990 },
+        'smooth-and-spotless':   { gstRate: 18, hsnCode: 33049990 },
+      }
+      const DEFAULT_TAX = { gstRate: 18, hsnCode: 33049990 }
+
+      const totalDiscount = order_data.discount ?? 0
+      const totalItemsValue = order_data.items.reduce(
         (s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0
       )
-      const totalDiscount = order_data.discount ?? 0
-      const GST_RATE = 0.18
 
       const shiprocketPayload = {
         order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
@@ -132,11 +140,11 @@ export async function POST(req: NextRequest) {
         shipping_is_billing: true,
         payment_method: isCOD ? 'COD' : 'Prepaid' as 'Prepaid' | 'COD',
         sub_total: order_data.subtotal,
-        discount: totalDiscount,
+        discount: String(totalDiscount),
         shipping_charges: order_data.delivery_charge ?? 0,
         giftwrap_charges: 0,
         transaction_charges: 0,
-        total_discount: totalDiscount,
+        total_discount: String(totalDiscount),
         length: 10,
         breadth: 10,
         height: 8,
@@ -144,21 +152,22 @@ export async function POST(req: NextRequest) {
         order_items: order_data.items.map((item: {
           name: string; slug: string; quantity: number; price: number
         }) => {
-          const itemTotal = item.price * item.quantity
-          const itemDiscountRatio = totalItems > 0 ? itemTotal / totalItems : 0
-          const itemDiscount = Math.round(totalDiscount * itemDiscountRatio / item.quantity)
-          const finalPricePerUnit = item.price - itemDiscount
-          const basePrice = Math.round(finalPricePerUnit / (1 + GST_RATE))
-          const taxAmount = finalPricePerUnit - basePrice
+          const taxConfig = PRODUCT_TAX_CONFIG[item.slug] ?? DEFAULT_TAX
+          const itemWeight = totalItemsValue > 0
+            ? (item.price * item.quantity) / totalItemsValue
+            : 0
+          const discountPerUnit = Math.round(
+            (totalDiscount * itemWeight) / item.quantity
+          )
 
           return {
             name: item.name,
             sku: item.slug,
             units: item.quantity,
             selling_price: item.price,
-            discount: String(itemDiscount),
-            tax: String(taxAmount),
-            hsn: 33049990,
+            discount: String(discountPerUnit),
+            tax: String(taxConfig.gstRate),
+            hsn: taxConfig.hsnCode,
           }
         }),
       }
