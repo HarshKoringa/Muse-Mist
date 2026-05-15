@@ -41,7 +41,7 @@ export async function createShiprocketOrder(payload: {
     units: number
     selling_price: number
   }[]
-}): Promise<number> {
+}): Promise<{ orderId: string; awbCode: string | null }> {
   const token = await getShiprocketToken()
 
   const res = await fetch(`${SHIPROCKET_BASE}/orders/create/adhoc`, {
@@ -62,5 +62,8 @@ export async function createShiprocketOrder(payload: {
     )
   }
 
-  return data.order_id
+  return {
+    orderId: String(data.order_id),
+    awbCode: data.awb_code || null,
+  }
 }

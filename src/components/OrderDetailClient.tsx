@@ -44,6 +44,7 @@ type Order = {
   items: OrderItem[]
   shipping_address: ShippingAddress
   shiprocket_order_id: string | null
+  awb_code: string | null
   razorpay_order_id: string | null
   created_at: string
 }
@@ -177,24 +178,39 @@ export default function OrderDetailClient({ order }: Props) {
 
             {/* Shiprocket tracking link */}
             {order.shiprocket_order_id && (
-              <a
-                href={`https://shiprocket.co/tracking/${order.shiprocket_order_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between mt-4 p-4
-                           rounded-xl bg-[#DCEFFF] border border-[#DCD9F8]
-                           hover:bg-[#DCD9F8] transition-colors group"
-              >
-                <div>
-                  <p className="text-base font-semibold text-[#1A237E]">
-                    Track on Shiprocket
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    AWB: {order.shiprocket_order_id}
-                  </p>
+              order.awb_code ? (
+                <a
+                  href={`https://shiprocket.co/tracking/${order.awb_code}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between mt-4 p-4
+                             rounded-xl bg-[#DCEFFF] border border-[#DCD9F8]
+                             hover:bg-[#DCD9F8] transition-colors group"
+                >
+                  <div>
+                    <p className="text-base font-semibold text-[#1A237E]">
+                      Track on Shiprocket
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      AWB: {order.awb_code}
+                    </p>
+                  </div>
+                  <ExternalLink size={18} className="text-[#1A237E] opacity-50 group-hover:opacity-100 transition-opacity" />
+                </a>
+              ) : (
+                <div className="flex items-center justify-between mt-4 p-4
+                               rounded-xl bg-gray-50 border border-gray-100">
+                  <div>
+                    <p className="text-base font-semibold text-gray-400">
+                      Tracking coming soon
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      AWB will be assigned once the shipment is picked up
+                    </p>
+                  </div>
+                  <Truck size={18} className="text-gray-300 flex-shrink-0" />
                 </div>
-                <ExternalLink size={18} className="text-[#1A237E] opacity-50 group-hover:opacity-100 transition-opacity" />
-              </a>
+              )
             )}
           </motion.div>
         )}

@@ -142,12 +142,16 @@ export async function POST(req: NextRequest) {
         payment_method: shiprocketPayload.payment_method,
       })
 
-      const shiprocketId = await createShiprocketOrder(shiprocketPayload)
-      console.log('[Shiprocket] Success:', shiprocketId)
+      const { orderId: shiprocketOrderId, awbCode } =
+        await createShiprocketOrder(shiprocketPayload)
+      console.log('[Shiprocket] Success:', shiprocketOrderId, 'AWB:', awbCode)
 
       await supabase
         .from('orders')
-        .update({ shiprocket_order_id: String(shiprocketId) })
+        .update({
+          shiprocket_order_id: shiprocketOrderId,
+          awb_code: awbCode,
+        })
         .eq('id', order.id)
 
     } catch (shipErr: unknown) {
