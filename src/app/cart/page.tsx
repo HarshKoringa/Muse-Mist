@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import CheckoutButton from "@/components/CheckoutButton";
 import CODCheckoutButton from "@/components/CODCheckoutButton";
+import DiscountLoader from "@/components/DiscountLoader";
 import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
 
 const gradientMap: Record<string, string> = {
@@ -174,7 +175,9 @@ export default function CartPage() {
         </AnimatePresence>
 
         {/* Order Summary */}
-        {items.length > 0 && (
+        {items.length > 0 && discountLoading && <DiscountLoader />}
+
+        {items.length > 0 && !discountLoading && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4">
             <h2
               className="text-lg font-semibold text-[#1A237E] mb-6"
@@ -222,7 +225,7 @@ export default function CartPage() {
               </div>
 
               {/* Prepaid breakdown */}
-              {selectedMethod === "prepaid" && !discountLoading && (
+              {selectedMethod === "prepaid" && (
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between text-sm text-green-600">
                     <span style={{ fontFamily: "var(--font-body)" }}>
@@ -250,7 +253,7 @@ export default function CartPage() {
               )}
 
               {/* COD breakdown */}
-              {selectedMethod === "cod" && !discountLoading && (
+              {selectedMethod === "cod" && (
                 <div className="flex flex-col gap-2">
                   {isEarlyAccess && codDiscount > 0 && (
                     <div className="flex justify-between text-sm text-purple-600">
@@ -269,11 +272,6 @@ export default function CartPage() {
                     <span>₹{COD_CHARGE}</span>
                   </div>
                 </div>
-              )}
-
-              {/* Loading skeleton for discount rows */}
-              {discountLoading && (
-                <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
               )}
 
               <div className="h-px bg-gray-100 my-1" />
@@ -298,16 +296,12 @@ export default function CartPage() {
                   className="text-2xl font-bold text-[#1A237E]"
                   style={{ fontFamily: "var(--font-body)" }}
                 >
-                  {discountLoading ? (
-                    <span className="inline-block w-24 h-7 bg-gray-100 rounded animate-pulse" />
-                  ) : (
-                    `₹${displayTotal.toLocaleString("en-IN")}`
-                  )}
+                  ₹{displayTotal.toLocaleString("en-IN")}
                 </span>
               </div>
 
               {/* Prepaid savings banner */}
-              {selectedMethod === "prepaid" && !discountLoading && (
+              {selectedMethod === "prepaid" && (
                 <div
                   className={`flex items-start gap-2 p-3 rounded-xl mt-1 ${
                     isEarlyAccess
@@ -347,7 +341,7 @@ export default function CartPage() {
               )}
 
               {/* COD banner */}
-              {selectedMethod === "cod" && !discountLoading && (
+              {selectedMethod === "cod" && (
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100 mt-1">
                   <span className="text-amber-600">ℹ</span>
                   <div>
@@ -384,13 +378,13 @@ export default function CartPage() {
               {selectedMethod === "prepaid" ? (
                 <CheckoutButton
                   paymentMethod="prepaid"
-                  displayAmount={discountLoading ? undefined : prepaidTotal}
+                  displayAmount={prepaidTotal}
                   totalDiscountPercent={totalPrepaidPercent}
                   isEarlyAccess={isEarlyAccess}
                 />
               ) : (
                 <CODCheckoutButton
-                  displayAmount={discountLoading ? undefined : codTotal}
+                  displayAmount={codTotal}
                   totalDiscountPercent={codDiscountPercent}
                   isEarlyAccess={isEarlyAccess}
                 />
