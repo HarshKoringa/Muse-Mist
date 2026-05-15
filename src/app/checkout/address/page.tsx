@@ -338,7 +338,6 @@ function AddressForm() {
                    className="text-[#1A237E] underline underline-offset-2 font-medium">
                   Refund Policy
                 </a>.
-                {' '}Returns must be reported within 48 hours of delivery with an unboxing video.
               </span>
             </label>
 

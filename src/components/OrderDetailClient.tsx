@@ -72,13 +72,13 @@ const timelineSteps = [
   },
 ]
 
-const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  pending:   { label: 'Confirmed', color: 'text-blue-700',   bg: 'bg-blue-100' },
-  paid:      { label: 'Paid',      color: 'text-green-700',  bg: 'bg-green-100' },
-  shipped:   { label: 'Shipped',   color: 'text-purple-700', bg: 'bg-purple-100' },
-  delivered: { label: 'Delivered', color: 'text-green-700',  bg: 'bg-green-100' },
-  cancelled: { label: 'Cancelled', color: 'text-red-600',    bg: 'bg-red-100' },
-  rto:       { label: 'Returned',  color: 'text-orange-700', bg: 'bg-orange-100' },
+const statusConfig: Record<string, { label: string; color: string }> = {
+  pending:   { label: 'Confirmed', color: 'bg-blue-100 text-blue-700'   },
+  paid:      { label: 'Paid',      color: 'bg-green-100 text-green-700' },
+  shipped:   { label: 'Shipped',   color: 'bg-purple-100 text-purple-700' },
+  delivered: { label: 'Delivered', color: 'bg-green-100 text-green-700' },
+  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700'    },
+  rto:       { label: 'Returned',  color: 'bg-orange-100 text-orange-700' },
 }
 
 const gradientMap: Record<string, string> = {
@@ -90,7 +90,7 @@ const gradientMap: Record<string, string> = {
 
 export default function OrderDetailClient({ order }: Props) {
   const router = useRouter()
-  const config = statusConfig[order.status] ?? statusConfig.pending
+  const config = statusConfig[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700' }
 
   const discountPct = order.subtotal > 0
     ? Math.round((order.discount / order.subtotal) * 100)
@@ -131,7 +131,7 @@ export default function OrderDetailClient({ order }: Props) {
               #{order.id.slice(0, 8).toUpperCase()} · {date}
             </p>
           </div>
-          <span className={`ml-auto text-xs font-semibold px-3 py-1.5 rounded-full ${config.bg} ${config.color}`}>
+          <span className={`ml-auto text-xs font-semibold px-3 py-1.5 rounded-full ${config.color}`}>
             {config.label}
           </span>
         </div>

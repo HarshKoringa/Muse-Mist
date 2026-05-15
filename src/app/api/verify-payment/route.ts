@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         billing_pincode: order_data.shipping_address.pincode,
         billing_state: order_data.shipping_address.state,
         billing_country: 'India',
-        billing_email: order_data.shipping_address.email,
+        billing_email: order_data.shipping_address.email || 'support@museandmist.in',
         billing_phone: order_data.shipping_address.phone,
         shipping_is_billing: true,
         payment_method: isCOD ? 'COD' : 'Prepaid' as 'Prepaid' | 'COD',
@@ -146,13 +146,19 @@ export async function POST(req: NextRequest) {
         await createShiprocketOrder(shiprocketPayload)
       console.log('[Shiprocket] Success:', shiprocketOrderId, 'AWB:', awbCode)
 
-      await supabase
+      const { error: updateErr } = await supabase
         .from('orders')
         .update({
           shiprocket_order_id: shiprocketOrderId,
           awb_code: awbCode,
         })
         .eq('id', order.id)
+
+      if (updateErr) {
+        console.error('[Shiprocket] Failed to save shiprocket_order_id:', updateErr)
+      } else {
+        console.log('[Shiprocket] Saved shiprocket_order_id:', shiprocketOrderId)
+      }
 
     } catch (shipErr: unknown) {
       const msg = shipErr instanceof Error ? shipErr.message : String(shipErr)
