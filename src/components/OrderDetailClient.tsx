@@ -7,6 +7,7 @@ import {
   CheckCircle2, Truck, Home,
   XCircle,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -17,6 +18,7 @@ type OrderItem = {
   price: number
   quantity: number
   category: string
+  image_url?: string | null
 }
 
 type ShippingAddress = {
@@ -70,12 +72,12 @@ const timelineSteps = [
 ]
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  pending:   { label: 'Pending',   color: 'text-amber-600',  bg: 'bg-amber-100' },
-  paid:      { label: 'Confirmed', color: 'text-blue-600',   bg: 'bg-blue-100' },
-  shipped:   { label: 'Shipped',   color: 'text-purple-600', bg: 'bg-purple-100' },
-  delivered: { label: 'Delivered', color: 'text-green-600',  bg: 'bg-green-100' },
-  cancelled: { label: 'Cancelled', color: 'text-red-500',    bg: 'bg-red-100' },
-  rto:       { label: 'Returned',  color: 'text-red-500',    bg: 'bg-red-100' },
+  pending:   { label: 'Confirmed', color: 'text-blue-700',   bg: 'bg-blue-100' },
+  paid:      { label: 'Paid',      color: 'text-green-700',  bg: 'bg-green-100' },
+  shipped:   { label: 'Shipped',   color: 'text-purple-700', bg: 'bg-purple-100' },
+  delivered: { label: 'Delivered', color: 'text-green-700',  bg: 'bg-green-100' },
+  cancelled: { label: 'Cancelled', color: 'text-red-600',    bg: 'bg-red-100' },
+  rto:       { label: 'Returned',  color: 'text-orange-700', bg: 'bg-orange-100' },
 }
 
 const gradientMap: Record<string, string> = {
@@ -88,6 +90,21 @@ const gradientMap: Record<string, string> = {
 export default function OrderDetailClient({ order }: Props) {
   const router = useRouter()
   const config = statusConfig[order.status] ?? statusConfig.pending
+
+  const discountPct = order.subtotal > 0
+    ? Math.round((order.discount / order.subtotal) * 100)
+    : 0
+
+  const discountLabel = (() => {
+    if (order.discount === 0) return null
+    if (order.payment_method === 'cod') {
+      return `Early Access Discount (${discountPct}%)`
+    }
+    if (discountPct > 5) {
+      return `Discount Applied (${discountPct}%)`
+    }
+    return `Prepaid Discount (${discountPct}%)`
+  })()
   const date = new Date(order.created_at).toLocaleDateString('en-IN', {
     weekday: 'long',
     day: 'numeric',
@@ -219,10 +236,22 @@ export default function OrderDetailClient({ order }: Props) {
               const gradient = gradientMap[item.category] ?? 'from-[#DCD9F8] to-[#DCEFFF]'
               return (
                 <div key={item.id} className="flex items-center gap-4">
-                  <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${gradient} flex-shrink-0 flex items-end p-1.5`}>
-                    <span className="text-[7px] font-bold tracking-widest uppercase text-[#1A237E] opacity-30">
-                      M&amp;M
-                    </span>
+                  <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-[#DCEFFF]">
+                    {item.image_url ? (
+                      <Image
+                        src={item.image_url}
+                        alt={item.name}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-end p-1.5`}>
+                        <span className="text-[7px] font-bold tracking-widest uppercase text-[#1A237E] opacity-30">
+                          M&amp;M
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-0.5">
@@ -259,9 +288,11 @@ export default function OrderDetailClient({ order }: Props) {
               <span>₹{order.subtotal}</span>
             </div>
 
-            {order.discount > 0 && (
+            {order.discount > 0 && discountLabel && (
               <div className="flex justify-between text-base text-green-600">
-                <span>Prepaid Discount (5%)</span>
+                <span style={{ fontFamily: 'var(--font-body)' }}>
+                  {discountLabel}
+                </span>
                 <span>−₹{order.discount}</span>
               </div>
             )}

@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/utils/supabase/admin'
-import { createShiprocketOrder, getShiprocketToken } from '@/lib/shiprocket'
+import { createShiprocketOrder } from '@/lib/shiprocket'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
@@ -37,6 +37,10 @@ export async function POST(req: NextRequest) {
     // Step 2 — Save order to Supabase (admin client bypasses RLS)
     const supabase = createAdminClient()
 
+    // COD = payment collected on delivery → 'pending'
+    // Prepaid = payment already received → 'paid'
+    const orderStatus = isCOD ? 'pending' : 'paid'
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -49,7 +53,7 @@ export async function POST(req: NextRequest) {
         total_amount: order_data.total ?? 0,
         items: order_data.items ?? [],
         shipping_address: order_data.shipping_address ?? {},
-        status: 'paid',
+        status: orderStatus,
         razorpay_order_id: razorpay_order_id ?? null,
         razorpay_payment_id: razorpay_payment_id ?? null,
       })
@@ -95,17 +99,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Step 4 — Create Shiprocket shipment (non-blocking)
-
     try {
-      const token = await getShiprocketToken()
-
       const nameParts = (order_data.shipping_address.name ?? 'Customer')
         .trim()
         .split(' ')
       const firstName = nameParts[0] ?? 'Customer'
       const lastName = nameParts.slice(1).join(' ') || 'Customer'
 
-      await createShiprocketOrder(token, {
+      const shiprocketPayload = {
         order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
         order_date: new Date().toISOString().split('T')[0],
         pickup_location: 'Home',
@@ -119,7 +120,7 @@ export async function POST(req: NextRequest) {
         billing_email: order_data.shipping_address.email,
         billing_phone: order_data.shipping_address.phone,
         shipping_is_billing: true,
-        payment_method: isCOD ? 'COD' : 'Prepaid',
+        payment_method: isCOD ? 'COD' : 'Prepaid' as 'Prepaid' | 'COD',
         sub_total: order_data.total,
         length: 10,
         breadth: 10,
@@ -133,9 +134,26 @@ export async function POST(req: NextRequest) {
           units: item.quantity,
           selling_price: item.price,
         })),
+      }
+
+      console.log('[Shiprocket] Attempting order creation...', {
+        order_id: shiprocketPayload.order_id,
+        pickup_location: shiprocketPayload.pickup_location,
+        payment_method: shiprocketPayload.payment_method,
       })
-    } catch (shipErr) {
-      console.error('[Muse & Mist] Shiprocket order creation failed:', shipErr)
+
+      const shiprocketId = await createShiprocketOrder(shiprocketPayload)
+      console.log('[Shiprocket] Success:', shiprocketId)
+
+      await supabase
+        .from('orders')
+        .update({ shiprocket_order_id: String(shiprocketId) })
+        .eq('id', order.id)
+
+    } catch (shipErr: unknown) {
+      const msg = shipErr instanceof Error ? shipErr.message : String(shipErr)
+      const stack = shipErr instanceof Error ? shipErr.stack : undefined
+      console.error('[Shiprocket] FAILED:', { message: msg, stack })
     }
 
     // Step 5 — Decrement stock
