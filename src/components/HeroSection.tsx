@@ -184,7 +184,8 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Floating ingredient pills */}
+            {/* Floating ingredient pills — hidden on mobile to prevent overflow */}
+            <div className="hidden sm:block">
             {[
               { text: 'Ceramides', pos: 'absolute -left-4 top-16', delay: 1.2 },
               { text: 'Vitamin C 15%', pos: 'absolute -right-4 top-24', delay: 1.4 },
@@ -203,22 +204,8 @@ export default function HeroSection() {
                 {pill.text}
               </motion.div>
             ))}
+            </div>
 
-            {/* Scroll indicator */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2, duration: 0.6 }}
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-            >
-              <div className="w-px h-12 bg-gradient-to-b from-white/30 to-transparent" />
-              <p
-                className="text-xs text-white/20 tracking-widest uppercase"
-                style={{ fontFamily: 'var(--font-body)' }}
-              >
-                Scroll
-              </p>
-            </motion.div>
           </motion.div>
         </div>
       </div>

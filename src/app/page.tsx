@@ -24,7 +24,6 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-[#0D1117]">
       <HeroSection />
-      <PhilosophySection />
 
       {/* Product section — Deep Ink Blue */}
       <section id="products" className="w-full px-6 sm:px-12 py-24 bg-[#1A237E]">
@@ -48,6 +47,7 @@ export default async function Home() {
         </div>
       </section>
 
+      <PhilosophySection />
       <ReviewsSection />
       <EarlyAccessCTA count={count ?? 0} />
     </div>
