@@ -110,6 +110,12 @@ export async function POST(req: NextRequest) {
         .toString().replace(/\D/g, '').replace(/^91/, '')
       const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
+      const totalItems = order_data.items.reduce(
+        (s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0
+      )
+      const totalDiscount = order_data.discount ?? 0
+      const GST_RATE = 0.18
+
       const shiprocketPayload = {
         order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
         order_date: new Date().toISOString().split('T')[0],
@@ -125,19 +131,36 @@ export async function POST(req: NextRequest) {
         billing_phone: shiprocketPhone,
         shipping_is_billing: true,
         payment_method: isCOD ? 'COD' : 'Prepaid' as 'Prepaid' | 'COD',
-        sub_total: order_data.total,
+        sub_total: order_data.subtotal,
+        discount: totalDiscount,
+        shipping_charges: order_data.delivery_charge ?? 0,
+        giftwrap_charges: 0,
+        transaction_charges: 0,
+        total_discount: totalDiscount,
         length: 10,
         breadth: 10,
         height: 8,
         weight: 0.3,
         order_items: order_data.items.map((item: {
           name: string; slug: string; quantity: number; price: number
-        }) => ({
-          name: item.name,
-          sku: item.slug,
-          units: item.quantity,
-          selling_price: item.price,
-        })),
+        }) => {
+          const itemTotal = item.price * item.quantity
+          const itemDiscountRatio = totalItems > 0 ? itemTotal / totalItems : 0
+          const itemDiscount = Math.round(totalDiscount * itemDiscountRatio / item.quantity)
+          const finalPricePerUnit = item.price - itemDiscount
+          const basePrice = Math.round(finalPricePerUnit / (1 + GST_RATE))
+          const taxAmount = finalPricePerUnit - basePrice
+
+          return {
+            name: item.name,
+            sku: item.slug,
+            units: item.quantity,
+            selling_price: item.price,
+            discount: String(itemDiscount),
+            tax: String(taxAmount),
+            hsn: 33049990,
+          }
+        }),
       }
 
       console.log('[Shiprocket] FULL PAYLOAD:', JSON.stringify(shiprocketPayload, null, 2))

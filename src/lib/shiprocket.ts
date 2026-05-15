@@ -31,6 +31,11 @@ export async function createShiprocketOrder(payload: {
   shipping_is_billing: boolean
   payment_method: 'Prepaid' | 'COD'
   sub_total: number
+  discount?: number
+  shipping_charges?: number
+  giftwrap_charges?: number
+  transaction_charges?: number
+  total_discount?: number
   length: number
   breadth: number
   height: number
@@ -40,6 +45,9 @@ export async function createShiprocketOrder(payload: {
     sku: string
     units: number
     selling_price: number
+    discount?: string
+    tax?: string
+    hsn?: number
   }[]
 }): Promise<{ orderId: string; awbCode: string | null }> {
   const token = await getShiprocketToken()
