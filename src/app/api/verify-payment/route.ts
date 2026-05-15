@@ -99,6 +99,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Step 4 — Create Shiprocket shipment (non-blocking)
+    // Defined outside try so catch block can log it for manual retry
+    let shiprocketPayload: Record<string, unknown> | null = null
+
     try {
       const nameParts = (order_data.shipping_address?.name ?? 'Customer')
         .trim().split(' ')
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
         (s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0
       )
 
-      const shiprocketPayload = {
+      shiprocketPayload = {
         order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
         order_date: new Date().toISOString().split('T')[0],
         pickup_location: 'Home',
@@ -138,7 +141,7 @@ export async function POST(req: NextRequest) {
         billing_email: order_data.shipping_address?.email || 'support@museandmist.in',
         billing_phone: shiprocketPhone,
         shipping_is_billing: true,
-        payment_method: isCOD ? 'COD' : 'Prepaid' as 'Prepaid' | 'COD',
+        payment_method: isCOD ? 'COD' : 'Prepaid',
         sub_total: order_data.subtotal,
         discount: String(totalDiscount),
         shipping_charges: order_data.delivery_charge ?? 0,
@@ -175,7 +178,7 @@ export async function POST(req: NextRequest) {
       console.log('[Shiprocket] FULL PAYLOAD:', JSON.stringify(shiprocketPayload, null, 2))
 
       const { orderId: shiprocketOrderId, awbCode } =
-        await createShiprocketOrder(shiprocketPayload)
+        await createShiprocketOrder(shiprocketPayload as Parameters<typeof createShiprocketOrder>[0])
 
       console.log('[Shiprocket] SUCCESS:', shiprocketOrderId)
 
@@ -190,12 +193,27 @@ export async function POST(req: NextRequest) {
       if (updateErr) {
         console.error('[Shiprocket] DB UPDATE FAILED:', updateErr.message, updateErr.details)
       } else {
-        console.log('[Shiprocket] DB updated ✓ order_id:', shiprocketOrderId)
+        console.log('[Shiprocket] Saved to DB ✓', shiprocketOrderId)
       }
 
     } catch (shipErr: unknown) {
       const msg = shipErr instanceof Error ? shipErr.message : String(shipErr)
-      console.error('[Shiprocket] CATCH ERROR:', msg)
+      console.error('[Shiprocket] FAILED for order:', order.id, '|', msg)
+
+      try {
+        await supabase
+          .from('shiprocket_failures')
+          .insert({
+            order_id: order.id,
+            error_message: msg,
+            payload: shiprocketPayload,
+            retry_count: 0,
+            resolved: false,
+          })
+        console.log('[Shiprocket] Failure logged to DB ✓')
+      } catch (logErr) {
+        console.error('[Shiprocket] Could not log failure:', logErr)
+      }
     }
 
     // Step 5 — Decrement stock
