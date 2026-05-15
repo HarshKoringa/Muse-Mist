@@ -323,16 +323,20 @@ export default function OrderDetailClient({ order }: Props) {
             </div>
 
             <div className="flex justify-between text-lg font-bold text-[#1A237E] pt-3 mt-1 border-t border-gray-100">
-              <span>Total Paid</span>
+              <span>
+                {order.payment_method === 'cod'
+                  ? 'Amount to Pay on Delivery'
+                  : 'Total Paid'}
+              </span>
               <span>₹{order.total}</span>
             </div>
 
             <div className="flex items-center gap-2 mt-2">
               <CreditCard size={14} className="text-gray-400" />
-              <p className="text-xs text-gray-400 capitalize">
-                {order.payment_method === 'prepaid'
-                  ? 'Paid online (Razorpay)'
-                  : 'Cash on Delivery'}
+              <p className="text-xs text-gray-400">
+                {order.payment_method === 'cod'
+                  ? '📦 Cash on Delivery'
+                  : '✓ Paid Online'}
               </p>
             </div>
           </div>

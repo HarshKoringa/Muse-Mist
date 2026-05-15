@@ -100,11 +100,15 @@ export async function POST(req: NextRequest) {
 
     // Step 4 — Create Shiprocket shipment (non-blocking)
     try {
-      const nameParts = (order_data.shipping_address.name ?? 'Customer')
-        .trim()
-        .split(' ')
+      const nameParts = (order_data.shipping_address?.name ?? 'Customer')
+        .trim().split(' ')
       const firstName = nameParts[0] ?? 'Customer'
       const lastName = nameParts.slice(1).join(' ') || 'Customer'
+
+      // Normalize phone — Shiprocket needs 10 digits, no country code
+      const rawPhone = (order_data.shipping_address?.phone ?? '')
+        .toString().replace(/\D/g, '').replace(/^91/, '')
+      const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
       const shiprocketPayload = {
         order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
@@ -112,13 +116,13 @@ export async function POST(req: NextRequest) {
         pickup_location: 'Home',
         billing_customer_name: firstName,
         billing_last_name: lastName,
-        billing_address: order_data.shipping_address.address,
-        billing_city: order_data.shipping_address.city,
-        billing_pincode: order_data.shipping_address.pincode,
-        billing_state: order_data.shipping_address.state,
+        billing_address: order_data.shipping_address?.address ?? '',
+        billing_city: order_data.shipping_address?.city ?? '',
+        billing_pincode: String(order_data.shipping_address?.pincode ?? ''),
+        billing_state: order_data.shipping_address?.state ?? '',
         billing_country: 'India',
-        billing_email: order_data.shipping_address.email || 'support@museandmist.in',
-        billing_phone: order_data.shipping_address.phone,
+        billing_email: order_data.shipping_address?.email || 'support@museandmist.in',
+        billing_phone: shiprocketPhone,
         shipping_is_billing: true,
         payment_method: isCOD ? 'COD' : 'Prepaid' as 'Prepaid' | 'COD',
         sub_total: order_data.total,
@@ -136,15 +140,12 @@ export async function POST(req: NextRequest) {
         })),
       }
 
-      console.log('[Shiprocket] Attempting order creation...', {
-        order_id: shiprocketPayload.order_id,
-        pickup_location: shiprocketPayload.pickup_location,
-        payment_method: shiprocketPayload.payment_method,
-      })
+      console.log('[Shiprocket] FULL PAYLOAD:', JSON.stringify(shiprocketPayload, null, 2))
 
       const { orderId: shiprocketOrderId, awbCode } =
         await createShiprocketOrder(shiprocketPayload)
-      console.log('[Shiprocket] Success:', shiprocketOrderId, 'AWB:', awbCode)
+
+      console.log('[Shiprocket] SUCCESS:', shiprocketOrderId)
 
       const { error: updateErr } = await supabase
         .from('orders')
@@ -155,15 +156,14 @@ export async function POST(req: NextRequest) {
         .eq('id', order.id)
 
       if (updateErr) {
-        console.error('[Shiprocket] Failed to save shiprocket_order_id:', updateErr)
+        console.error('[Shiprocket] DB UPDATE FAILED:', updateErr.message, updateErr.details)
       } else {
-        console.log('[Shiprocket] Saved shiprocket_order_id:', shiprocketOrderId)
+        console.log('[Shiprocket] DB updated ✓ order_id:', shiprocketOrderId)
       }
 
     } catch (shipErr: unknown) {
       const msg = shipErr instanceof Error ? shipErr.message : String(shipErr)
-      const stack = shipErr instanceof Error ? shipErr.stack : undefined
-      console.error('[Shiprocket] FAILED:', { message: msg, stack })
+      console.error('[Shiprocket] CATCH ERROR:', msg)
     }
 
     // Step 5 — Decrement stock
