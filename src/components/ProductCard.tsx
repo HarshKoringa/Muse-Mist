@@ -122,29 +122,44 @@ export default function ProductCard({ product, onQuickView }: Props) {
         </div>
 
         <div className="flex flex-col gap-1 mt-auto pt-3 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
-          {/* Price row */}
-          <div className="flex items-baseline justify-between">
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xs text-white/40"
-                      style={{ fontFamily: 'var(--font-body)' }}>₹</span>
-                <span className="text-2xl font-semibold text-white"
-                      style={{ fontFamily: 'var(--font-body)' }}>
-                  {product.price.toLocaleString('en-IN')}
-                </span>
-              </div>
-              <p className="text-[10px] text-white/30 mt-0.5"
-                 style={{ fontFamily: 'var(--font-body)' }}>
-                Incl. of all taxes
-              </p>
+          {/* Discount badge */}
+          {product.discount_active && product.discount_percent && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold px-2 py-0.5
+                               rounded-full bg-red-500 text-white
+                               uppercase tracking-wide">
+                {product.discount_label ?? 'Sale'} · {product.discount_percent}% OFF
+              </span>
             </div>
-            {/* Prepaid offer badge */}
-            <span className="text-[10px] font-semibold px-2 py-1
-                             rounded-full bg-green-500/15 text-green-400
-                             border border-green-500/20">
-              5% off prepaid
-            </span>
+          )}
+
+          {/* Price row */}
+          <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-xs text-white/60">₹</span>
+              <span className="text-2xl font-semibold text-white"
+                    style={{ fontFamily: 'var(--font-body)' }}>
+                {Number(product.price).toLocaleString('en-IN')}
+              </span>
+            </div>
+            {product.discount_active && product.mrp && (
+              <span className="text-sm text-white/30 line-through">
+                ₹{Number(product.mrp).toLocaleString('en-IN')}
+              </span>
+            )}
           </div>
+
+          <p className="text-[10px] text-white/30"
+             style={{ fontFamily: 'var(--font-body)' }}>
+            Incl. of all taxes
+          </p>
+
+          {/* Prepaid badge */}
+          <span className="text-[10px] font-semibold px-2 py-1
+                           rounded-full bg-green-500/15 text-green-400
+                           border border-green-500/20 w-fit mt-1">
+            Extra 5% off prepaid
+          </span>
 
           {/* Add to Cart button */}
           <button
@@ -157,6 +172,7 @@ export default function ProductCard({ product, onQuickView }: Props) {
                 name: product.name,
                 slug: product.slug,
                 price: product.price,
+                mrp: product.mrp ?? null,
                 category: product.category,
                 stock_count: product.stock_count,
                 image_url: product.image_url,

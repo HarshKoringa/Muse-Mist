@@ -6,6 +6,7 @@ export type CartItem = {
   name: string;
   slug: string;
   price: number;
+  mrp?: number | null;
   category: string;
   quantity: number;
   stock_count: number;
@@ -74,9 +75,9 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "muse-mist-cart",
-      version: 3,
+      version: 4,
       migrate: (persistedState: unknown, version: number) => {
-        if (version < 3) {
+        if (version < 4) {
           return { items: [] };
         }
         return persistedState as CartStore;

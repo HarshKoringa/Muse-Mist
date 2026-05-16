@@ -135,6 +135,11 @@ export default function CartPage() {
                   <p className="text-base font-bold text-[#1A237E] mt-1">
                     ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                   </p>
+                  {item.mrp && item.mrp > item.price && (
+                    <p className="text-xs text-gray-400 line-through">
+                      ₹{(item.mrp * item.quantity).toLocaleString("en-IN")}
+                    </p>
+                  )}
                 </div>
 
                 {/* Quantity + Remove */}

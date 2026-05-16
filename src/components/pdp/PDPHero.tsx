@@ -39,6 +39,7 @@ export default function PDPHero({ product }: Props) {
       name: product.name,
       slug: product.slug,
       price: product.price,
+      mrp: product.mrp ?? null,
       category: product.category,
       stock_count: product.stock_count,
       image_url: product.image_url ?? null,
@@ -178,24 +179,44 @@ export default function PDPHero({ product }: Props) {
             {/* Price + CTA */}
             <div className="flex flex-col gap-4 pt-6
                             border-t border-gray-100">
-              {/* Price */}
-              <div className="flex flex-col gap-1">
+              {/* Discount badge */}
+              {product.discount_active && product.discount_percent && (
+                <span className="inline-flex items-center text-xs font-bold
+                                 px-3 py-1.5 rounded-full bg-red-500 text-white
+                                 uppercase tracking-wide w-fit">
+                  🎉 {product.discount_label ?? 'Sale'} · {product.discount_percent}% OFF
+                </span>
+              )}
+
+              {/* Price row */}
+              <div className="flex items-baseline gap-3">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg text-[#1A237E]/50">₹</span>
-                  <span className="text-4xl font-semibold text-[#1A237E]"
+                  <span className="text-xl text-[#1A237E]/50">₹</span>
+                  <span className="text-5xl font-bold text-[#1A237E]"
                         style={{ fontFamily: 'var(--font-body)' }}>
-                    {product.price.toLocaleString('en-IN')}
+                    {Number(product.price).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400">Incl. of all taxes</p>
+                {product.discount_active && product.mrp && (
+                  <div className="flex flex-col">
+                    <span className="text-xl text-gray-400 line-through">
+                      ₹{Number(product.mrp).toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-xs text-green-600 font-semibold">
+                      You save ₹{(Number(product.mrp) - Number(product.price)).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                )}
               </div>
+
+              <p className="text-xs text-gray-400 -mt-2">Incl. of all taxes</p>
 
               {/* Offer pills */}
               <div className="flex flex-wrap gap-2">
                 <span className="flex items-center gap-1.5 text-xs font-semibold
                                  px-3 py-1.5 rounded-full
                                  bg-green-50 text-green-700 border border-green-200">
-                  ✦ 5% off on prepaid
+                  ✦ Extra 5% off on prepaid
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-semibold
                                  px-3 py-1.5 rounded-full

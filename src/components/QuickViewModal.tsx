@@ -131,35 +131,63 @@ export default function QuickViewModal({ product, onClose }: Props) {
               </p>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <span className="text-2xl font-bold text-[#1A237E]">
-                ₹{product.price}
-              </span>
-              <button
-                disabled={outOfStock}
-                onClick={() => {
-                  if (outOfStock) return;
-                  addItem({
-                    id: product.id,
-                    name: product.name,
-                    slug: product.slug,
-                    price: product.price,
-                    category: product.category,
-                    stock_count: product.stock_count,
-                    image_url: product.image_url,
-                  });
-                  setShowToast(true);
-                  setTimeout(() => {
-                    setShowToast(false);
-                    onClose();
-                  }, 800);
-                }}
-                style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-base font-semibold transition-all ${outOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'}`}
-              >
-                <ShoppingBag size={18} />
-                {outOfStock ? 'Out of Stock' : 'Add to Cart'}
-              </button>
+            <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
+              {/* Discount badge */}
+              {product.discount_active && product.discount_percent && (
+                <span className="inline-flex items-center text-xs font-bold
+                                 px-3 py-1 rounded-full bg-red-500 text-white
+                                 uppercase tracking-wide w-fit">
+                  {product.discount_label ?? 'Sale'} · {product.discount_percent}% OFF
+                </span>
+              )}
+
+              {/* Price */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-baseline gap-2">
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-lg text-[#1A237E]/50">₹</span>
+                      <span className="text-4xl font-bold text-[#1A237E]"
+                            style={{ fontFamily: 'var(--font-body)' }}>
+                        {Number(product.price).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    {product.discount_active && product.mrp && (
+                      <span className="text-xl text-gray-400 line-through">
+                        ₹{Number(product.mrp).toLocaleString('en-IN')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400">Incl. of all taxes</p>
+                </div>
+
+                <button
+                  disabled={outOfStock}
+                  onClick={() => {
+                    if (outOfStock) return;
+                    addItem({
+                      id: product.id,
+                      name: product.name,
+                      slug: product.slug,
+                      price: product.price,
+                      mrp: product.mrp ?? null,
+                      category: product.category,
+                      stock_count: product.stock_count,
+                      image_url: product.image_url,
+                    });
+                    setShowToast(true);
+                    setTimeout(() => {
+                      setShowToast(false);
+                      onClose();
+                    }, 800);
+                  }}
+                  style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
+                  className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-base font-semibold transition-all ${outOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'}`}
+                >
+                  <ShoppingBag size={18} />
+                  {outOfStock ? 'Out of Stock' : 'Add to Cart'}
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
