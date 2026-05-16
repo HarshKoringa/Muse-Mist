@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createShiprocketOrder } from '@/lib/shiprocket'
+import { sendOrderConfirmation } from '@/lib/whatsapp'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
@@ -96,6 +97,29 @@ export async function POST(req: NextRequest) {
       } catch (e) {
         console.log('[Order] Could not mark discount as used:', e)
       }
+    }
+
+    // Step 3.5 — Send WhatsApp order confirmation
+    try {
+      const customerPhone = order_data.shipping_address?.phone || null
+      const customerName = order_data.shipping_address?.name || 'Customer'
+
+      if (customerPhone) {
+        await sendOrderConfirmation({
+          phone: customerPhone,
+          name: customerName,
+          orderId: order.id,
+          total: order_data.total,
+          paymentMethod: order_data.payment_method,
+        })
+        console.log('[WhatsApp] Order confirmation sent ✓')
+      } else {
+        console.log('[WhatsApp] No phone found — skipped')
+      }
+    } catch (waErr: unknown) {
+      const msg = waErr instanceof Error ? waErr.message : String(waErr)
+      console.error('[WhatsApp] Failed to send:', msg)
+      // Never fail the order because of WhatsApp error
     }
 
     // Step 4 — Create Shiprocket shipment (non-blocking)
