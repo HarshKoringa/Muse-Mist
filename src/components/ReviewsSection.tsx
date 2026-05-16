@@ -50,7 +50,7 @@ function StarRating({ count }: { count: number }) {
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} size={14} className={i < count ? "fill-[#DCD9F8] text-[#DCD9F8]" : "text-gray-200 fill-gray-200"} />
+        <Star key={i} size={14} className={i < count ? "fill-yellow-400 text-yellow-400" : "text-gray-200 fill-gray-200"} />
       ))}
     </div>
   );
@@ -115,7 +115,7 @@ export default function ReviewsSection() {
             Now Live
           </p>
           <p className="text-sm text-white/40" style={{ fontFamily: 'var(--font-body)' }}>
-            Join 12+ muses already shopping
+            Join 100+ muses already shopping
           </p>
         </motion.div>
       </div>
