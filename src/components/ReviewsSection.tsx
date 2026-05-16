@@ -112,10 +112,10 @@ export default function ReviewsSection() {
             ))}
           </div>
           <p className="text-3xl font-light text-white" style={{ fontFamily: 'var(--font-display)' }}>
-            Launching 2026
+            Now Live
           </p>
           <p className="text-sm text-white/40" style={{ fontFamily: 'var(--font-body)' }}>
-            Join 12+ muses already on the early access list
+            Join 12+ muses already shopping
           </p>
         </motion.div>
       </div>

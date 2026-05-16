@@ -47,6 +47,13 @@ export default function CartPage() {
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
+  const launchSaving = items.reduce((sum, item) => {
+    if (item.mrp && item.mrp > item.price) {
+      return sum + (item.mrp - item.price) * item.quantity;
+    }
+    return sum;
+  }, 0);
+
   const prepaidDiscount = Math.round(subtotal * (totalPrepaidPercent / 100));
   const prepaidTotal = subtotal - prepaidDiscount;
 
@@ -308,39 +315,49 @@ export default function CartPage() {
               {/* Prepaid savings banner */}
               {selectedMethod === "prepaid" && (
                 <div
-                  className={`flex items-start gap-2 p-3 rounded-xl mt-1 ${
+                  className={`flex flex-col gap-1.5 p-3 rounded-xl mt-1 ${
                     isEarlyAccess
                       ? "bg-purple-50 border border-purple-100"
                       : "bg-green-50 border border-green-100"
                   }`}
                 >
-                  <span className={isEarlyAccess ? "text-purple-600" : "text-green-600"}>
-                    ✦
-                  </span>
-                  <div>
-                    {isEarlyAccess ? (
-                      <>
-                        <p
-                          className="text-xs text-purple-700 font-semibold"
-                          style={{ fontFamily: "var(--font-body)" }}
-                        >
-                          🎉 You save ₹{prepaidDiscount.toLocaleString("en-IN")} ({totalPrepaidPercent}% off)
-                        </p>
-                        <p
-                          className="text-[10px] text-purple-600 mt-0.5"
-                          style={{ fontFamily: "var(--font-body)" }}
-                        >
-                          Early Access ({earlyAccessPercent}%) + Prepaid ({prepaidDiscountPercent}%) combined
-                        </p>
-                      </>
-                    ) : (
+                  {/* Launch discount saving */}
+                  {launchSaving > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-red-500 text-xs">🎉</span>
                       <p
-                        className="text-xs text-green-700 font-medium"
+                        className="text-xs text-red-600 font-semibold"
                         style={{ fontFamily: "var(--font-body)" }}
                       >
-                        You save ₹{prepaidDiscount.toLocaleString("en-IN")} with prepaid
+                        Launch Offer: ₹{launchSaving.toLocaleString("en-IN")} off on MRP
                       </p>
-                    )}
+                    </div>
+                  )}
+
+                  {/* Prepaid / early access saving */}
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm ${isEarlyAccess ? "text-purple-600" : "text-green-600"}`}>
+                      ✦
+                    </span>
+                    <p
+                      className={`text-xs font-medium ${isEarlyAccess ? "text-purple-700" : "text-green-700"}`}
+                      style={{ fontFamily: "var(--font-body)" }}
+                    >
+                      {isEarlyAccess
+                        ? `Extra ₹${prepaidDiscount.toLocaleString("en-IN")} off (${totalPrepaidPercent}% — Early Access + Prepaid)`
+                        : `Extra ₹${prepaidDiscount.toLocaleString("en-IN")} off with prepaid (5%)`
+                      }
+                    </p>
+                  </div>
+
+                  {/* Total savings line */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-white/50 mt-0.5">
+                    <p
+                      className="text-xs font-bold text-[#1A237E]"
+                      style={{ fontFamily: "var(--font-body)" }}
+                    >
+                      Total savings: ₹{(launchSaving + prepaidDiscount).toLocaleString("en-IN")} on this order
+                    </p>
                   </div>
                 </div>
               )}
