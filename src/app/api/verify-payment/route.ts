@@ -99,10 +99,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Step 3.5 — Send WhatsApp order confirmation
+    // Step 3.5 — Send WhatsApp
+    console.log('[verify-payment] Reached WhatsApp step')
     try {
-      const customerPhone = order_data.shipping_address?.phone || null
-      const customerName = order_data.shipping_address?.name || 'Customer'
+      const profile = await supabase
+        .from('profiles')
+        .select('phone_number')
+        .eq('id', order_data.user_id)
+        .single()
+
+      const customerPhone =
+        order_data.shipping_address?.phone ||
+        profile?.data?.phone_number ||
+        null
+
+      console.log('[verify-payment] Customer phone:', customerPhone)
+
+      const customerName =
+        order_data.shipping_address?.name || 'Customer'
 
       if (customerPhone) {
         await sendOrderConfirmation({
@@ -112,14 +126,20 @@ export async function POST(req: NextRequest) {
           total: order_data.total,
           paymentMethod: order_data.payment_method,
         })
-        console.log('[WhatsApp] Order confirmation sent ✓')
       } else {
-        console.log('[WhatsApp] No phone found — skipped')
+        console.log('[WhatsApp] No phone — skipped')
       }
     } catch (waErr: unknown) {
-      const msg = waErr instanceof Error ? waErr.message : String(waErr)
-      console.error('[WhatsApp] Failed to send:', msg)
-      // Never fail the order because of WhatsApp error
+      const msg = waErr instanceof Error
+        ? waErr.message : String(waErr)
+      const code = (waErr as any)?.code
+      console.error('[WhatsApp] FAILED:', {
+        message: msg,
+        code,
+        accountSid: process.env.TWILIO_ACCOUNT_SID?.slice(0, 8),
+        hasToken: !!process.env.TWILIO_AUTH_TOKEN,
+        from: process.env.TWILIO_WHATSAPP_FROM,
+      })
     }
 
     // Step 4 — Create Shiprocket shipment (non-blocking)
