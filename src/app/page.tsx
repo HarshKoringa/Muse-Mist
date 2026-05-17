@@ -13,7 +13,7 @@ export default async function Home() {
   const [{ data: products }, { count }] = await Promise.all([
     supabase
       .from("products")
-      .select("id, name, slug, price, mrp, description, category, stock_count, is_active, image_url, discount_percent, discount_label, discount_active")
+      .select("id, name, slug, price, mrp, description, category, stock_count, is_active, image_url, discount_percent, discount_label, discount_active, size")
       .eq("is_active", true)
       .order("created_at", { ascending: true }),
     adminSupabase

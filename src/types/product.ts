@@ -20,4 +20,5 @@ export type Product = {
   discount_percent: number | null
   discount_label: string | null
   discount_active: boolean
+  size: string | null
 }

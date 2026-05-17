@@ -19,6 +19,7 @@ type OrderItem = {
   quantity: number
   category: string
   image_url?: string | null
+  size?: string | null
 }
 
 type ShippingAddress = {
@@ -271,7 +272,7 @@ export default function OrderDetailClient({ order }: Props) {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-0.5">
-                      {item.category}
+                      {item.category}{item.size && ` · ${item.size}`}
                     </p>
                     <p className="text-base font-semibold text-[#1A237E]">
                       {item.name}

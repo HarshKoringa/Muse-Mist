@@ -11,6 +11,7 @@ export type CartItem = {
   quantity: number;
   stock_count: number;
   image_url?: string | null;
+  size?: string | null;
 };
 
 type CartStore = {

@@ -43,6 +43,7 @@ export default function PDPHero({ product }: Props) {
       category: product.category,
       stock_count: product.stock_count,
       image_url: product.image_url ?? null,
+      size: product.size ?? null,
     })
     setShowToast(true)
     setTimeout(() => setShowToast(false), 2000)
@@ -134,10 +135,17 @@ export default function PDPHero({ product }: Props) {
             transition={{ duration: 0.5 }}
           >
             {/* Category + name */}
-            <h1 style={{ fontFamily: 'var(--font-display)' }}
-                className="text-4xl font-light text-[#1A237E] leading-tight mb-1">
-              {product.category}
-            </h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 style={{ fontFamily: 'var(--font-display)' }}
+                  className="text-4xl font-light text-[#1A237E] leading-tight">
+                {product.category}
+              </h1>
+              {product.size && (
+                <span className="text-sm font-medium text-[#1A237E] bg-[#DCEFFF] border border-[#DCD9F8] px-3 py-1 rounded-full">
+                  {product.size}
+                </span>
+              )}
+            </div>
             <p style={{ fontFamily: 'var(--font-body)' }}
                className="text-sm text-[#1A237E]/60 font-medium tracking-wide mb-4">
               {product.name}

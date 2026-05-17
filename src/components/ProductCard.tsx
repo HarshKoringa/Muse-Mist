@@ -98,10 +98,17 @@ export default function ProductCard({ product, onQuickView }: Props) {
       {/* Card Body */}
       <div className="p-5 flex flex-col gap-3 flex-1">
         <div>
-          <h3 style={{ fontFamily: 'var(--font-display)' }}
-              className="text-xl font-light text-white leading-tight mb-1">
-            {product.category}
-          </h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 style={{ fontFamily: 'var(--font-display)' }}
+                className="text-xl font-light text-white leading-tight">
+              {product.category}
+            </h3>
+            {product.size && (
+              <span className="text-[10px] text-white/30 border border-white/10 px-1.5 py-0.5 rounded-full">
+                {product.size}
+              </span>
+            )}
+          </div>
           <p style={{ fontFamily: 'var(--font-body)' }}
              className="text-sm text-white/70 font-medium tracking-wide">
             {product.name}
@@ -176,6 +183,7 @@ export default function ProductCard({ product, onQuickView }: Props) {
                 category: product.category,
                 stock_count: product.stock_count,
                 image_url: product.image_url,
+                size: product.size ?? null,
               });
               setShowToast(true);
               setTimeout(() => setShowToast(false), 2000);

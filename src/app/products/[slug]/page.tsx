@@ -15,7 +15,7 @@ export default async function ProductPage({ params }: Props) {
 
   const { data: product } = await supabase
     .from('products')
-    .select('id, name, slug, price, mrp, description, category, stock_count, is_active, image_url, key_ingredients, how_to_use, skin_type, discount_percent, discount_label, discount_active')
+    .select('id, name, slug, price, mrp, description, category, stock_count, is_active, image_url, key_ingredients, how_to_use, skin_type, discount_percent, discount_label, discount_active, size')
     .eq('slug', slug)
     .single()
 

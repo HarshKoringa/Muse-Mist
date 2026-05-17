@@ -134,7 +134,7 @@ export default function CartPage() {
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-400 uppercase tracking-widest mb-0.5">
-                    {item.category}
+                    {item.category}{item.size && ` · ${item.size}`}
                   </p>
                   <h3 className="text-base font-semibold text-[#1A237E] truncate">
                     {item.name}
