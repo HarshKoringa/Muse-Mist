@@ -1,5 +1,3 @@
-import twilio from 'twilio'
-
 export async function sendWhatsAppMessage({
   phone,
   templateSid,
@@ -9,15 +7,27 @@ export async function sendWhatsAppMessage({
   templateSid: string
   variables: Record<string, string>
 }) {
-  const client = twilio(
+  // Use require instead of import for Twilio
+  // ES module import fails intermittently in
+  // Next.js 15 App Router server context
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Twilio = require('twilio')
+  const client = new Twilio(
     process.env.TWILIO_ACCOUNT_SID!,
     process.env.TWILIO_AUTH_TOKEN!
   )
 
-  // Normalize phone to 10 digits then add +91
   const digits = phone.replace(/\D/g, '').replace(/^91/, '')
   const toPhone = `whatsapp:+91${digits.slice(-10)}`
   const fromPhone = process.env.TWILIO_WHATSAPP_FROM!
+
+  console.log('[WhatsApp] Attempting:', {
+    to: toPhone,
+    from: fromPhone,
+    templateSid,
+    hasSid: !!process.env.TWILIO_ACCOUNT_SID,
+    hasToken: !!process.env.TWILIO_AUTH_TOKEN,
+  })
 
   const message = await client.messages.create({
     from: fromPhone,
