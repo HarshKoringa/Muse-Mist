@@ -99,176 +99,177 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Step 3.5 — Send WhatsApp
-    console.log('[verify-payment] Reached WhatsApp step')
-    try {
-      const profile = await supabase
-        .from('profiles')
-        .select('phone_number')
-        .eq('id', order_data.user_id)
-        .single()
+    // Return to customer immediately — don't make them wait for WhatsApp + Shiprocket
+    const response = NextResponse.json({ success: true, order_id: order.id })
 
-      const customerPhone =
-        order_data.shipping_address?.phone ||
-        profile?.data?.phone_number ||
-        null
+    // Run WhatsApp + Shiprocket + stock decrement in parallel after response
+    Promise.all([
+      // WhatsApp notification
+      (async () => {
+        console.log('[verify-payment] Reached WhatsApp step')
+        try {
+          const customerPhone =
+            order_data.shipping_address?.phone ||
+            null
+          const customerName =
+            order_data.shipping_address?.name || 'Customer'
 
-      console.log('[verify-payment] Customer phone:', customerPhone)
+          console.log('[verify-payment] Customer phone:', customerPhone)
 
-      const customerName =
-        order_data.shipping_address?.name || 'Customer'
+          if (customerPhone) {
+            await sendOrderConfirmation({
+              phone: customerPhone,
+              name: customerName,
+              orderId: order.id,
+              total: order_data.total,
+              paymentMethod: order_data.payment_method,
+            })
+            console.log('[WhatsApp] Sent ✓')
+          } else {
+            console.log('[WhatsApp] No phone — skipped')
+          }
+        } catch (waErr: any) {
+          const code = waErr?.code
+          console.error('[WhatsApp] FAILED:', {
+            message: waErr.message,
+            code,
+            accountSid: process.env.TWILIO_ACCOUNT_SID?.slice(0, 8),
+            hasToken: !!process.env.TWILIO_AUTH_TOKEN,
+            from: process.env.TWILIO_WHATSAPP_FROM,
+          })
+        }
+      })(),
 
-      if (customerPhone) {
-        await sendOrderConfirmation({
-          phone: customerPhone,
-          name: customerName,
-          orderId: order.id,
-          total: order_data.total,
-          paymentMethod: order_data.payment_method,
-        })
-      } else {
-        console.log('[WhatsApp] No phone — skipped')
-      }
-    } catch (waErr: unknown) {
-      const msg = waErr instanceof Error
-        ? waErr.message : String(waErr)
-      const code = (waErr as any)?.code
-      console.error('[WhatsApp] FAILED:', {
-        message: msg,
-        code,
-        accountSid: process.env.TWILIO_ACCOUNT_SID?.slice(0, 8),
-        hasToken: !!process.env.TWILIO_AUTH_TOKEN,
-        from: process.env.TWILIO_WHATSAPP_FROM,
-      })
-    }
+      // Shiprocket order creation
+      (async () => {
+        try {
+          let shiprocketPayload: Record<string, unknown> | null = null
 
-    // Step 4 — Create Shiprocket shipment (non-blocking)
-    // Defined outside try so catch block can log it for manual retry
-    let shiprocketPayload: Record<string, unknown> | null = null
+          const nameParts = (order_data.shipping_address?.name ?? 'Customer')
+            .trim().split(' ')
+          const firstName = nameParts[0] ?? 'Customer'
+          const lastName = nameParts.slice(1).join(' ') || 'Customer'
 
-    try {
-      const nameParts = (order_data.shipping_address?.name ?? 'Customer')
-        .trim().split(' ')
-      const firstName = nameParts[0] ?? 'Customer'
-      const lastName = nameParts.slice(1).join(' ') || 'Customer'
+          const rawPhone = (order_data.shipping_address?.phone ?? '')
+            .toString().replace(/\D/g, '').replace(/^91/, '')
+          const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
-      // Normalize phone — Shiprocket needs 10 digits, no country code
-      const rawPhone = (order_data.shipping_address?.phone ?? '')
-        .toString().replace(/\D/g, '').replace(/^91/, '')
-      const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
+          const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
+            'cleanse-clear-calm':    { gstRate: 5,  hsnCode: 34011190 },
+            'barrier-repair':        { gstRate: 18, hsnCode: 33049990 },
+            'reset-to-radiance':     { gstRate: 18, hsnCode: 33049990 },
+            'invisible-glow-shield': { gstRate: 18, hsnCode: 33049990 },
+            'smooth-and-spotless':   { gstRate: 18, hsnCode: 33049990 },
+          }
 
-      const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
-        'cleanse-clear-calm':    { gstRate: 5,  hsnCode: 34011190 },
-        'barrier-repair':        { gstRate: 18, hsnCode: 33049990 },
-        'reset-to-radiance':     { gstRate: 18, hsnCode: 33049990 },
-        'invisible-glow-shield': { gstRate: 18, hsnCode: 33049990 },
-        'smooth-and-spotless':   { gstRate: 18, hsnCode: 33049990 },
-      }
-      const DEFAULT_TAX = { gstRate: 18, hsnCode: 33049990 }
-
-      const totalDiscount = order_data.discount ?? 0
-      const totalItemsValue = order_data.items.reduce(
-        (s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0
-      )
-
-      shiprocketPayload = {
-        order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
-        order_date: new Date().toISOString().split('T')[0],
-        pickup_location: 'Home',
-        billing_customer_name: firstName,
-        billing_last_name: lastName,
-        billing_address: order_data.shipping_address?.address ?? '',
-        billing_city: order_data.shipping_address?.city ?? '',
-        billing_pincode: String(order_data.shipping_address?.pincode ?? ''),
-        billing_state: order_data.shipping_address?.state ?? '',
-        billing_country: 'India',
-        billing_email: order_data.shipping_address?.email || 'support@museandmist.in',
-        billing_phone: shiprocketPhone,
-        shipping_is_billing: true,
-        payment_method: isCOD ? 'COD' : 'Prepaid',
-        sub_total: order_data.subtotal,
-        discount: String(totalDiscount),
-        shipping_charges: order_data.delivery_charge ?? 0,
-        giftwrap_charges: 0,
-        transaction_charges: 0,
-        total_discount: String(totalDiscount),
-        length: 10,
-        breadth: 10,
-        height: 8,
-        weight: 0.3,
-        order_items: order_data.items.map((item: {
-          name: string; slug: string; quantity: number; price: number
-        }) => {
-          const taxConfig = PRODUCT_TAX_CONFIG[item.slug] ?? DEFAULT_TAX
-          const itemWeight = totalItemsValue > 0
-            ? (item.price * item.quantity) / totalItemsValue
-            : 0
-          const discountPerUnit = Math.round(
-            (totalDiscount * itemWeight) / item.quantity
+          const totalDiscount = order_data.discount ?? 0
+          const totalItemsValue = order_data.items.reduce(
+            (s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0
           )
 
-          return {
-            name: item.name,
-            sku: item.slug,
-            units: item.quantity,
-            selling_price: item.price,
-            discount: String(discountPerUnit),
-            tax: String(taxConfig.gstRate),
-            hsn: taxConfig.hsnCode,
+          shiprocketPayload = {
+            order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
+            order_date: new Date().toISOString().split('T')[0],
+            pickup_location: 'Home',
+            billing_customer_name: firstName,
+            billing_last_name: lastName,
+            billing_address: order_data.shipping_address?.address ?? '',
+            billing_city: order_data.shipping_address?.city ?? '',
+            billing_pincode: String(order_data.shipping_address?.pincode ?? ''),
+            billing_state: order_data.shipping_address?.state ?? '',
+            billing_country: 'India',
+            billing_email: order_data.shipping_address?.email || 'support@museandmist.in',
+            billing_phone: shiprocketPhone,
+            shipping_is_billing: true,
+            payment_method: isCOD ? 'COD' : 'Prepaid',
+            sub_total: order_data.subtotal,
+            discount: String(totalDiscount),
+            shipping_charges: order_data.delivery_charge ?? 0,
+            giftwrap_charges: 0,
+            transaction_charges: 0,
+            total_discount: String(totalDiscount),
+            length: 10,
+            breadth: 10,
+            height: 8,
+            weight: 0.3,
+            order_items: order_data.items.map((item: {
+              name: string; slug: string; quantity: number; price: number
+            }) => {
+              const taxConfig = PRODUCT_TAX_CONFIG[item.slug] ?? { gstRate: 18, hsnCode: 33049990 }
+              const itemWeight = totalItemsValue > 0
+                ? (item.price * item.quantity) / totalItemsValue : 0
+              const discountPerUnit = Math.round((totalDiscount * itemWeight) / item.quantity)
+              return {
+                name: item.name,
+                sku: item.slug,
+                units: item.quantity,
+                selling_price: item.price,
+                discount: String(discountPerUnit),
+                tax: String(taxConfig.gstRate),
+                hsn: taxConfig.hsnCode,
+              }
+            }),
           }
-        }),
-      }
 
-      console.log('[Shiprocket] FULL PAYLOAD:', JSON.stringify(shiprocketPayload, null, 2))
+          console.log('[Shiprocket] FULL PAYLOAD:', JSON.stringify(shiprocketPayload, null, 2))
 
-      const { orderId: shiprocketOrderId, awbCode } =
-        await createShiprocketOrder(shiprocketPayload as Parameters<typeof createShiprocketOrder>[0])
+          const { orderId: shiprocketOrderId, awbCode } =
+            await createShiprocketOrder(shiprocketPayload as Parameters<typeof createShiprocketOrder>[0])
 
-      console.log('[Shiprocket] SUCCESS:', shiprocketOrderId)
+          console.log('[Shiprocket] SUCCESS:', shiprocketOrderId)
 
-      const { error: updateErr } = await supabase
-        .from('orders')
-        .update({
-          shiprocket_order_id: shiprocketOrderId,
-          awb_code: awbCode,
-        })
-        .eq('id', order.id)
+          const supabaseAdmin = createAdminClient()
+          const { error: updateErr } = await supabaseAdmin
+            .from('orders')
+            .update({
+              shiprocket_order_id: shiprocketOrderId,
+              awb_code: awbCode,
+            })
+            .eq('id', order.id)
 
-      if (updateErr) {
-        console.error('[Shiprocket] DB UPDATE FAILED:', updateErr.message, updateErr.details)
-      } else {
-        console.log('[Shiprocket] Saved to DB ✓', shiprocketOrderId)
-      }
+          if (updateErr) {
+            console.error('[Shiprocket] DB UPDATE FAILED:', updateErr.message, updateErr.details)
+          } else {
+            console.log('[Shiprocket] Saved to DB ✓', shiprocketOrderId)
+          }
+        } catch (shipErr: any) {
+          console.error('[Shiprocket] FAILED for order:', order.id, '|', shipErr.message)
+          try {
+            const supabaseAdmin = createAdminClient()
+            await supabaseAdmin
+              .from('shiprocket_failures')
+              .insert({
+                order_id: order.id,
+                error_message: shipErr.message,
+                payload: {},
+                retry_count: 0,
+                resolved: false,
+              })
+            console.log('[Shiprocket] Failure logged to DB ✓')
+          } catch (logErr) {
+            console.error('[Shiprocket] Could not log failure:', logErr)
+          }
+        }
+      })(),
 
-    } catch (shipErr: unknown) {
-      const msg = shipErr instanceof Error ? shipErr.message : String(shipErr)
-      console.error('[Shiprocket] FAILED for order:', order.id, '|', msg)
+      // Stock decrement
+      (async () => {
+        try {
+          const supabaseAdmin = createAdminClient()
+          for (const item of order_data.items) {
+            await supabaseAdmin.rpc('decrement_stock', {
+              product_id: item.id,
+              quantity: item.quantity,
+            })
+          }
+          console.log('[Stock] Decremented ✓')
+        } catch (e: any) {
+          console.error('[Stock] Failed:', e.message)
+        }
+      })(),
+    ]).catch((e) => console.error('[Background] Unhandled error:', e))
 
-      try {
-        await supabase
-          .from('shiprocket_failures')
-          .insert({
-            order_id: order.id,
-            error_message: msg,
-            payload: shiprocketPayload,
-            retry_count: 0,
-            resolved: false,
-          })
-        console.log('[Shiprocket] Failure logged to DB ✓')
-      } catch (logErr) {
-        console.error('[Shiprocket] Could not log failure:', logErr)
-      }
-    }
-
-    // Step 5 — Decrement stock
-    for (const item of order_data.items) {
-      await supabase.rpc('decrement_stock', {
-        product_id: item.id,
-        quantity: item.quantity,
-      })
-    }
-
-    return NextResponse.json({ success: true, order_id: order.id })
+    return response
   } catch (err) {
     console.error('[Muse & Mist] /api/verify-payment error:', err)
     return NextResponse.json(
