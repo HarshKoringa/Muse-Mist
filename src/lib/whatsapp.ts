@@ -7,37 +7,51 @@ export async function sendWhatsAppMessage({
   templateSid: string
   variables: Record<string, string>
 }) {
-  // Use require instead of import for Twilio
-  // ES module import fails intermittently in
-  // Next.js 15 App Router server context
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const Twilio = require('twilio')
-  const client = new Twilio(
-    process.env.TWILIO_ACCOUNT_SID!,
-    process.env.TWILIO_AUTH_TOKEN!
-  )
+  const accountSid = process.env.TWILIO_ACCOUNT_SID
+  const authToken = process.env.TWILIO_AUTH_TOKEN
+  const fromPhone = process.env.TWILIO_WHATSAPP_FROM
+
+  if (!accountSid || !authToken || !fromPhone) {
+    throw new Error(`Missing Twilio credentials: sid=${!!accountSid} token=${!!authToken} from=${!!fromPhone}`)
+  }
 
   const digits = phone.replace(/\D/g, '').replace(/^91/, '')
   const toPhone = `whatsapp:+91${digits.slice(-10)}`
-  const fromPhone = process.env.TWILIO_WHATSAPP_FROM!
 
   console.log('[WhatsApp] Attempting:', {
     to: toPhone,
     from: fromPhone,
     templateSid,
-    hasSid: !!process.env.TWILIO_ACCOUNT_SID,
-    hasToken: !!process.env.TWILIO_AUTH_TOKEN,
+    hasSid: true,
+    hasToken: true,
   })
 
-  const message = await client.messages.create({
-    from: fromPhone,
-    to: toPhone,
-    contentSid: templateSid,
-    contentVariables: JSON.stringify(variables),
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
+
+  const body = new URLSearchParams({
+    From: fromPhone,
+    To: toPhone,
+    ContentSid: templateSid,
+    ContentVariables: JSON.stringify(variables),
   })
 
-  console.log('[WhatsApp] Message sent:', message.sid, '→', toPhone)
-  return message.sid
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body.toString(),
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(`Twilio API error: ${data.message || data.code || res.status}`)
+  }
+
+  console.log('[WhatsApp] Message sent:', data.sid, '→', toPhone)
+  return data.sid
 }
 
 export async function sendOrderConfirmation({
