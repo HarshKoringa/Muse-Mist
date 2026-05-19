@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Subtotal = sum of launch-discounted prices (before checkout discount)
     const subtotal = items.reduce(
       (sum: number, item: { price: number; quantity: number }) =>
         sum + item.price * item.quantity,
@@ -56,25 +57,41 @@ export async function POST(req: NextRequest) {
       console.log('[Checkout] No early access discount found')
     }
 
-    let discount = 0
+    // Determine discount percentage
+    let discountPercent = 0
     let delivery_charge = 0
-    let total = subtotal
 
     if (payment_method === 'prepaid') {
-      // Prepaid base 5% + early access 30% if applicable = up to 35%
-      const totalPercent = PREPAID_DISCOUNT_PERCENT + earlyAccessDiscount
-      discount = Math.round(subtotal * (totalPercent / 100))
+      discountPercent = PREPAID_DISCOUNT_PERCENT + earlyAccessDiscount
       delivery_charge = 0
-      total = subtotal - discount
     } else {
-      // COD — early access gets 30% off, regular gets none
-      discount = earlyAccessDiscount > 0
-        ? Math.round(subtotal * (earlyAccessDiscount / 100))
-        : 0
+      discountPercent = earlyAccessDiscount > 0 ? earlyAccessDiscount : 0
       delivery_charge = COD_CHARGE
-      total = subtotal - discount + delivery_charge
     }
 
+    // ═══════════════════════════════════════════════════
+    // CORE CHANGE: Calculate discount PER ITEM, then sum
+    // ═══════════════════════════════════════════════════
+    const multiplier = (100 - discountPercent) / 100
+
+    const itemsWithFinal = items.map(
+      (item: { price: number; quantity: number }) => ({
+        ...item,
+        final_price: Math.round(item.price * multiplier),
+      })
+    )
+
+    // Total = sum of per-item final prices (after discount)
+    const discountedTotal = itemsWithFinal.reduce(
+      (sum: number, item: { final_price: number; quantity: number }) =>
+        sum + item.final_price * item.quantity,
+      0
+    )
+
+    const discount = subtotal - discountedTotal
+    const total = discountedTotal + delivery_charge
+
+    // Create Razorpay order (prepaid only)
     let razorpay_order_id = null
 
     if (payment_method === 'prepaid') {
@@ -102,9 +119,8 @@ export async function POST(req: NextRequest) {
       is_early_access: earlyAccessDiscount > 0,
       early_access_percent: earlyAccessDiscount,
       prepaid_percent: payment_method === 'prepaid' ? PREPAID_DISCOUNT_PERCENT : 0,
-      total_discount_percent: payment_method === 'prepaid'
-        ? PREPAID_DISCOUNT_PERCENT + earlyAccessDiscount
-        : earlyAccessDiscount,
+      total_discount_percent: discountPercent,
+      items_with_final: itemsWithFinal,
     })
   } catch (err) {
     console.error('[Muse & Mist] /api/checkout error:', err)

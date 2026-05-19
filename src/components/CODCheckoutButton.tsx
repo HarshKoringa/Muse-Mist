@@ -30,30 +30,47 @@ export default function CODCheckoutButton({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0)
-      const discount = Math.round(subtotal * (totalDiscountPercent / 100))
-      // Use the exact total passed from cart (same value, avoids rounding drift)
-      const total = displayAmount ?? (subtotal - discount + COD_CHARGE)
+      // Call checkout API to get per-item final prices and discount percent
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })),
+          payment_method: 'cod',
+          user_id: user.id,
+        }),
+      })
+
+      const checkoutRes = await res.json()
+      if (!res.ok) throw new Error(checkoutRes.error ?? 'Checkout failed')
+
+      const discountPercent = checkoutRes.total_discount_percent ?? 0
+      const multiplier = (100 - discountPercent) / 100
+
+      const itemsForStorage = items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        slug: i.slug,
+        price: i.price,
+        mrp: i.mrp ?? null,
+        quantity: i.quantity,
+        category: i.category,
+        image_url: i.image_url ?? null,
+        stock_count: i.stock_count,
+        size: i.size ?? null,
+        final_price: Math.round(i.price * multiplier),
+      }))
 
       sessionStorage.setItem('checkout_data', JSON.stringify({
-        items: items.map((i) => ({
-          id: i.id,
-          name: i.name,
-          slug: i.slug,
-          price: i.price,
-          quantity: i.quantity,
-          category: i.category,
-          image_url: i.image_url ?? null,
-          stock_count: i.stock_count,
-        })),
+        items: itemsForStorage,
         payment_method: 'cod',
         user_id: user.id,
-        subtotal,
-        discount,
-        delivery_charge: COD_CHARGE,
-        total,
-        is_early_access: isEarlyAccess,
-        total_discount_percent: totalDiscountPercent,
+        subtotal: checkoutRes.subtotal,
+        discount: checkoutRes.discount,
+        delivery_charge: checkoutRes.delivery_charge,
+        total: checkoutRes.total,
+        is_early_access: checkoutRes.is_early_access,
+        total_discount_percent: checkoutRes.total_discount_percent,
       }))
 
       router.push('/checkout/address?method=cod')

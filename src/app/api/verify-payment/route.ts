@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     const isCOD = order_data.payment_method === 'cod'
 
-    // Step 1 — Verify Razorpay signature (prepaid only, skip for COD)
+    // Step 1 — Verify Razorpay signature (prepaid only)
     if (razorpay_order_id && razorpay_payment_id && razorpay_signature) {
       const expectedSignature = crypto
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
@@ -35,11 +35,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Step 2 — Save order to Supabase (admin client bypasses RLS)
+    // Step 2 — Save order to Supabase
     const supabase = createAdminClient()
-
-    // COD = payment collected on delivery → 'pending'
-    // Prepaid = payment already received → 'paid'
     const orderStatus = isCOD ? 'pending' : 'paid'
 
     const { data: order, error: orderError } = await supabase
@@ -71,48 +68,75 @@ export async function POST(req: NextRequest) {
       throw orderError
     }
 
-    // Step 3 — Mark early access discount as used if applicable
-    if (order_data.is_early_access) {
-      try {
-        const profile = await supabase
-          .from('profiles')
-          .select('phone_number')
-          .eq('id', order_data.user_id)
+    // Step 3 — Insert into order_items table
+    try {
+      const orderItemsRows = order_data.items.map(
+        (item: { id: string; quantity: number; final_price: number; mrp: number; price: number }) => ({
+          order_id: order.id,
+          product_id: item.id,
+          quantity: item.quantity,
+          price_at_purchase: item.final_price ?? item.price,
+          mrp: item.mrp ?? null,
+        })
+      )
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItemsRows)
+
+      if (itemsError) {
+        console.error('[OrderItems] Insert failed:', itemsError.message)
+      } else {
+        console.log('[OrderItems] Inserted', orderItemsRows.length, 'items ✓')
+      }
+    } catch (e: any) {
+      console.error('[OrderItems] Error:', e.message)
+    }
+
+    // Step 4 — Mark early access discount as used
+    try {
+      const profile = await supabase
+        .from('profiles')
+        .select('phone_number')
+        .eq('id', order_data.user_id)
+        .single()
+
+      if (profile.data?.phone_number) {
+        const rawPhone = profile.data.phone_number.replace(/\D/g, '')
+        const normalizedPhone = rawPhone.startsWith('91')
+          ? rawPhone
+          : '91' + rawPhone
+
+        const { data: muse } = await supabase
+          .from('muses')
+          .select('id, discount_used')
+          .eq('phone', normalizedPhone)
+          .eq('discount_used', false)
           .single()
 
-        if (profile.data?.phone_number) {
-          const rawPhone = profile.data.phone_number.replace(/\D/g, '')
-          const normalizedPhone = rawPhone.startsWith('91')
-            ? rawPhone
-            : '91' + rawPhone
-
+        if (muse) {
           await supabase
             .from('muses')
             .update({ discount_used: true })
-            .eq('phone', normalizedPhone)
-            .eq('discount_used', false)
-
-          console.log('[Order] Early access discount marked as used')
+            .eq('id', muse.id)
+          console.log('[Order] Early access discount marked as used ✓')
         }
-      } catch (e) {
-        console.log('[Order] Could not mark discount as used:', e)
       }
+    } catch (e) {
+      console.log('[Order] Early access check:', e)
     }
 
-    // Return to customer immediately — don't make them wait for WhatsApp + Shiprocket
+    // Return to customer immediately
     const response = NextResponse.json({ success: true, order_id: order.id })
 
-    // Run WhatsApp + Shiprocket + stock decrement in parallel after response
+    // Background tasks: WhatsApp + Shiprocket + Stock
     Promise.all([
       // WhatsApp notification
       (async () => {
         console.log('[verify-payment] Reached WhatsApp step')
         try {
-          const customerPhone =
-            order_data.shipping_address?.phone ||
-            null
-          const customerName =
-            order_data.shipping_address?.name || 'Customer'
+          const customerPhone = order_data.shipping_address?.phone || null
+          const customerName = order_data.shipping_address?.name || 'Customer'
 
           console.log('[verify-payment] Customer phone:', customerPhone)
 
@@ -129,10 +153,9 @@ export async function POST(req: NextRequest) {
             console.log('[WhatsApp] No phone — skipped')
           }
         } catch (waErr: any) {
-          const code = waErr?.code
           console.error('[WhatsApp] FAILED:', {
             message: waErr.message,
-            code,
+            code: waErr?.code,
             accountSid: process.env.TWILIO_ACCOUNT_SID?.slice(0, 8),
             hasToken: !!process.env.TWILIO_AUTH_TOKEN,
             from: process.env.TWILIO_WHATSAPP_FROM,
@@ -143,8 +166,6 @@ export async function POST(req: NextRequest) {
       // Shiprocket order creation
       (async () => {
         try {
-          let shiprocketPayload: Record<string, unknown> | null = null
-
           const nameParts = (order_data.shipping_address?.name ?? 'Customer')
             .trim().split(' ')
           const firstName = nameParts[0] ?? 'Customer'
@@ -154,6 +175,7 @@ export async function POST(req: NextRequest) {
             .toString().replace(/\D/g, '').replace(/^91/, '')
           const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
+          // Tax config per product
           const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
             'cleanse-clear-calm':    { gstRate: 5,  hsnCode: 34011190 },
             'barrier-repair':        { gstRate: 18, hsnCode: 33049990 },
@@ -162,12 +184,16 @@ export async function POST(req: NextRequest) {
             'smooth-and-spotless':   { gstRate: 18, hsnCode: 33049990 },
           }
 
-          const totalDiscount = order_data.discount ?? 0
-          const totalItemsValue = order_data.items.reduce(
-            (s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0
+          // ═══════════════════════════════════════════════════════
+          // FIXED: Use final_price as selling_price, ZERO discounts
+          // ═══════════════════════════════════════════════════════
+          const productTotal = order_data.items.reduce(
+            (sum: number, item: { final_price?: number; price: number; quantity: number }) =>
+              sum + (item.final_price ?? item.price) * item.quantity,
+            0
           )
 
-          shiprocketPayload = {
+          const shiprocketPayload = {
             order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
             order_date: new Date().toISOString().split('T')[0],
             pickup_location: 'Home',
@@ -182,29 +208,29 @@ export async function POST(req: NextRequest) {
             billing_phone: shiprocketPhone,
             shipping_is_billing: true,
             payment_method: isCOD ? 'COD' : 'Prepaid',
-            sub_total: order_data.subtotal,
-            discount: String(totalDiscount),
+            sub_total: productTotal,
+            discount: "0",
             shipping_charges: order_data.delivery_charge ?? 0,
             giftwrap_charges: 0,
             transaction_charges: 0,
-            total_discount: String(totalDiscount),
+            total_discount: "0",
             length: 10,
             breadth: 10,
             height: 8,
             weight: 0.3,
             order_items: order_data.items.map((item: {
-              name: string; slug: string; quantity: number; price: number
+              name: string; slug: string; quantity: number;
+              price: number; final_price?: number; mrp?: number
             }) => {
               const taxConfig = PRODUCT_TAX_CONFIG[item.slug] ?? { gstRate: 18, hsnCode: 33049990 }
-              const itemWeight = totalItemsValue > 0
-                ? (item.price * item.quantity) / totalItemsValue : 0
-              const discountPerUnit = Math.round((totalDiscount * itemWeight) / item.quantity)
+              const finalPrice = item.final_price ?? item.price
+
               return {
                 name: item.name,
                 sku: item.slug,
                 units: item.quantity,
-                selling_price: item.price,
-                discount: String(discountPerUnit),
+                selling_price: finalPrice,
+                discount: "0",
                 tax: String(taxConfig.gstRate),
                 hsn: taxConfig.hsnCode,
               }
@@ -228,7 +254,7 @@ export async function POST(req: NextRequest) {
             .eq('id', order.id)
 
           if (updateErr) {
-            console.error('[Shiprocket] DB UPDATE FAILED:', updateErr.message, updateErr.details)
+            console.error('[Shiprocket] DB UPDATE FAILED:', updateErr.message)
           } else {
             console.log('[Shiprocket] Saved to DB ✓', shiprocketOrderId)
           }
