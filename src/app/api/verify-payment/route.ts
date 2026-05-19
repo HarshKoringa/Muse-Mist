@@ -126,176 +126,154 @@ export async function POST(req: NextRequest) {
       console.log('[Order] Early access check:', e)
     }
 
-    // Return to customer immediately
-    const response = NextResponse.json({ success: true, order_id: order.id })
+    // ═══════════════════════════════════════════
+    // Run Shiprocket + WhatsApp + Stock BEFORE responding
+    // (Vercel kills background tasks after response)
+    // ═══════════════════════════════════════════
 
-    // Background tasks: WhatsApp + Shiprocket + Stock
-    Promise.all([
-      // WhatsApp notification
-      (async () => {
-        console.log('[verify-payment] Reached WhatsApp step')
-        try {
-          const customerPhone = order_data.shipping_address?.phone || null
-          const customerName = order_data.shipping_address?.name || 'Customer'
+    // 1. Stock decrement (fastest, most critical)
+    try {
+      for (const item of order_data.items) {
+        await supabase.rpc('decrement_stock', {
+          product_id: item.id,
+          quantity: item.quantity,
+        })
+      }
+      console.log('[Stock] Decremented ✓')
+    } catch (e: any) {
+      console.error('[Stock] Failed:', e.message)
+    }
 
-          console.log('[verify-payment] Customer phone:', customerPhone)
+    // 2. Shiprocket order creation
+    let shiprocketOrderId: string | null = null
+    let awbCode: string | null = null
+    try {
+      const nameParts = (order_data.shipping_address?.name ?? 'Customer')
+        .trim().split(' ')
+      const firstName = nameParts[0] ?? 'Customer'
+      const lastName = nameParts.slice(1).join(' ') || 'Customer'
 
-          if (customerPhone) {
-            await sendOrderConfirmation({
-              phone: customerPhone,
-              name: customerName,
-              orderId: order.id,
-              total: order_data.total,
-              paymentMethod: order_data.payment_method,
-            })
-            console.log('[WhatsApp] Sent ✓')
-          } else {
-            console.log('[WhatsApp] No phone — skipped')
-          }
-        } catch (waErr: any) {
-          console.error('[WhatsApp] FAILED:', {
-            message: waErr.message,
-            code: waErr?.code,
-            accountSid: process.env.TWILIO_ACCOUNT_SID?.slice(0, 8),
-            hasToken: !!process.env.TWILIO_AUTH_TOKEN,
-            from: process.env.TWILIO_WHATSAPP_FROM,
-          })
-        }
-      })(),
+      const rawPhone = (order_data.shipping_address?.phone ?? '')
+        .toString().replace(/\D/g, '').replace(/^91/, '')
+      const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
-      // Shiprocket order creation
-      (async () => {
-        try {
-          const nameParts = (order_data.shipping_address?.name ?? 'Customer')
-            .trim().split(' ')
-          const firstName = nameParts[0] ?? 'Customer'
-          const lastName = nameParts.slice(1).join(' ') || 'Customer'
+      const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
+        'cleanse-clear-calm':    { gstRate: 5,  hsnCode: 34011190 },
+        'barrier-repair':        { gstRate: 18, hsnCode: 33049990 },
+        'reset-to-radiance':     { gstRate: 18, hsnCode: 33049990 },
+        'invisible-glow-shield': { gstRate: 18, hsnCode: 33049990 },
+        'smooth-and-spotless':   { gstRate: 18, hsnCode: 33049990 },
+      }
 
-          const rawPhone = (order_data.shipping_address?.phone ?? '')
-            .toString().replace(/\D/g, '').replace(/^91/, '')
-          const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
+      const productTotal = order_data.items.reduce(
+        (sum: number, item: { final_price?: number; price: number; quantity: number }) =>
+          sum + (item.final_price ?? item.price) * item.quantity,
+        0
+      )
 
-          // Tax config per product
-          const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
-            'cleanse-clear-calm':    { gstRate: 5,  hsnCode: 34011190 },
-            'barrier-repair':        { gstRate: 18, hsnCode: 33049990 },
-            'reset-to-radiance':     { gstRate: 18, hsnCode: 33049990 },
-            'invisible-glow-shield': { gstRate: 18, hsnCode: 33049990 },
-            'smooth-and-spotless':   { gstRate: 18, hsnCode: 33049990 },
-          }
-
-          // ═══════════════════════════════════════════════════════
-          // FIXED: Use final_price as selling_price, ZERO discounts
-          // ═══════════════════════════════════════════════════════
-          const productTotal = order_data.items.reduce(
-            (sum: number, item: { final_price?: number; price: number; quantity: number }) =>
-              sum + (item.final_price ?? item.price) * item.quantity,
-            0
-          )
-
-          const shiprocketPayload = {
-            order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
-            order_date: new Date().toISOString().split('T')[0],
-            pickup_location: 'Home',
-            billing_customer_name: firstName,
-            billing_last_name: lastName,
-            billing_address: order_data.shipping_address?.address ?? '',
-            billing_city: order_data.shipping_address?.city ?? '',
-            billing_pincode: String(order_data.shipping_address?.pincode ?? ''),
-            billing_state: order_data.shipping_address?.state ?? '',
-            billing_country: 'India',
-            billing_email: order_data.shipping_address?.email || 'support@museandmist.in',
-            billing_phone: shiprocketPhone,
-            shipping_is_billing: true,
-            payment_method: isCOD ? 'COD' : 'Prepaid',
-            sub_total: productTotal,
+      const shiprocketPayload = {
+        order_id: `MM-${order.id.slice(0, 8).toUpperCase()}`,
+        order_date: new Date().toISOString().split('T')[0],
+        pickup_location: 'Home',
+        billing_customer_name: firstName,
+        billing_last_name: lastName,
+        billing_address: order_data.shipping_address?.address ?? '',
+        billing_city: order_data.shipping_address?.city ?? '',
+        billing_pincode: String(order_data.shipping_address?.pincode ?? ''),
+        billing_state: order_data.shipping_address?.state ?? '',
+        billing_country: 'India',
+        billing_email: order_data.shipping_address?.email || 'support@museandmist.in',
+        billing_phone: shiprocketPhone,
+        shipping_is_billing: true,
+        payment_method: isCOD ? 'COD' : 'Prepaid',
+        sub_total: productTotal,
+        discount: "0",
+        shipping_charges: order_data.delivery_charge ?? 0,
+        giftwrap_charges: 0,
+        transaction_charges: 0,
+        total_discount: "0",
+        length: 10,
+        breadth: 10,
+        height: 8,
+        weight: 0.3,
+        order_items: order_data.items.map((item: {
+          name: string; slug: string; quantity: number;
+          price: number; final_price?: number
+        }) => {
+          const taxConfig = PRODUCT_TAX_CONFIG[item.slug] ?? { gstRate: 18, hsnCode: 33049990 }
+          return {
+            name: item.name,
+            sku: item.slug,
+            units: item.quantity,
+            selling_price: item.final_price ?? item.price,
             discount: "0",
-            shipping_charges: order_data.delivery_charge ?? 0,
-            giftwrap_charges: 0,
-            transaction_charges: 0,
-            total_discount: "0",
-            length: 10,
-            breadth: 10,
-            height: 8,
-            weight: 0.3,
-            order_items: order_data.items.map((item: {
-              name: string; slug: string; quantity: number;
-              price: number; final_price?: number; mrp?: number
-            }) => {
-              const taxConfig = PRODUCT_TAX_CONFIG[item.slug] ?? { gstRate: 18, hsnCode: 33049990 }
-              const finalPrice = item.final_price ?? item.price
-
-              return {
-                name: item.name,
-                sku: item.slug,
-                units: item.quantity,
-                selling_price: finalPrice,
-                discount: "0",
-                tax: String(taxConfig.gstRate),
-                hsn: taxConfig.hsnCode,
-              }
-            }),
+            tax: String(taxConfig.gstRate),
+            hsn: taxConfig.hsnCode,
           }
+        }),
+      }
 
-          console.log('[Shiprocket] FULL PAYLOAD:', JSON.stringify(shiprocketPayload, null, 2))
+      console.log('[Shiprocket] FULL PAYLOAD:', JSON.stringify(shiprocketPayload, null, 2))
 
-          const { orderId: shiprocketOrderId, awbCode } =
-            await createShiprocketOrder(shiprocketPayload as Parameters<typeof createShiprocketOrder>[0])
+      const result = await createShiprocketOrder(
+        shiprocketPayload as Parameters<typeof createShiprocketOrder>[0]
+      )
+      shiprocketOrderId = result.orderId
+      awbCode = result.awbCode
 
-          console.log('[Shiprocket] SUCCESS:', shiprocketOrderId)
+      console.log('[Shiprocket] SUCCESS:', shiprocketOrderId)
 
-          const supabaseAdmin = createAdminClient()
-          const { error: updateErr } = await supabaseAdmin
-            .from('orders')
-            .update({
-              shiprocket_order_id: shiprocketOrderId,
-              awb_code: awbCode,
-            })
-            .eq('id', order.id)
+      await supabase
+        .from('orders')
+        .update({
+          shiprocket_order_id: shiprocketOrderId,
+          awb_code: awbCode,
+        })
+        .eq('id', order.id)
 
-          if (updateErr) {
-            console.error('[Shiprocket] DB UPDATE FAILED:', updateErr.message)
-          } else {
-            console.log('[Shiprocket] Saved to DB ✓', shiprocketOrderId)
-          }
-        } catch (shipErr: any) {
-          console.error('[Shiprocket] FAILED for order:', order.id, '|', shipErr.message)
-          try {
-            const supabaseAdmin = createAdminClient()
-            await supabaseAdmin
-              .from('shiprocket_failures')
-              .insert({
-                order_id: order.id,
-                error_message: shipErr.message,
-                payload: {},
-                retry_count: 0,
-                resolved: false,
-              })
-            console.log('[Shiprocket] Failure logged to DB ✓')
-          } catch (logErr) {
-            console.error('[Shiprocket] Could not log failure:', logErr)
-          }
-        }
-      })(),
+      console.log('[Shiprocket] Saved to DB ✓')
+    } catch (shipErr: any) {
+      console.error('[Shiprocket] FAILED:', order.id, '|', shipErr.message)
+      try {
+        await supabase
+          .from('shiprocket_failures')
+          .insert({
+            order_id: order.id,
+            error_message: shipErr.message,
+            payload: {},
+            retry_count: 0,
+            resolved: false,
+          })
+        console.log('[Shiprocket] Failure logged ✓')
+      } catch (logErr) {
+        console.error('[Shiprocket] Could not log failure:', logErr)
+      }
+    }
 
-      // Stock decrement
-      (async () => {
-        try {
-          const supabaseAdmin = createAdminClient()
-          for (const item of order_data.items) {
-            await supabaseAdmin.rpc('decrement_stock', {
-              product_id: item.id,
-              quantity: item.quantity,
-            })
-          }
-          console.log('[Stock] Decremented ✓')
-        } catch (e: any) {
-          console.error('[Stock] Failed:', e.message)
-        }
-      })(),
-    ]).catch((e) => console.error('[Background] Unhandled error:', e))
+    // 3. WhatsApp (non-critical — ok if it fails)
+    try {
+      const customerPhone = order_data.shipping_address?.phone || null
+      const customerName = order_data.shipping_address?.name || 'Customer'
+      if (customerPhone) {
+        await sendOrderConfirmation({
+          phone: customerPhone,
+          name: customerName,
+          orderId: order.id,
+          total: order_data.total,
+          paymentMethod: order_data.payment_method,
+        })
+        console.log('[WhatsApp] Sent ✓')
+      }
+    } catch (waErr: any) {
+      console.error('[WhatsApp] FAILED:', waErr.message)
+    }
 
-    return response
+    // NOW return response after everything is done
+    return NextResponse.json({
+      success: true,
+      order_id: order.id,
+      shiprocket_order_id: shiprocketOrderId,
+    })
   } catch (err) {
     console.error('[Muse & Mist] /api/verify-payment error:', err)
     return NextResponse.json(
