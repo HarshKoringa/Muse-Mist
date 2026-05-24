@@ -21,7 +21,7 @@ const gradientMap: Record<string, string> = {
 const COD_CHARGE = 50;
 
 export default function CartDrawer() {
-  const { isCartOpen, closeCart } = useCartUIStore();
+  const { isCartOpen, openCart, closeCart } = useCartUIStore();
   const items = useCartStore((state) => state.items);
   const removeItem = useCartStore((state) => state.removeItem);
   const increaseQty = useCartStore((state) => state.increaseQty);
