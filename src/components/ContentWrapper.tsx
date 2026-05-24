@@ -16,6 +16,7 @@ export default function ContentWrapper({ children }: { children: React.ReactNode
 
   return (
     <div
+      className="pb-16 lg:pb-0"
       style={{
         marginRight: isDesktop && isCartOpen ? "420px" : "0px",
         transition: "margin-right 0.3s ease",
