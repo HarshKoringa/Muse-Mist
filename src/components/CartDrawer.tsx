@@ -37,9 +37,17 @@ export default function CartDrawer() {
   const [isEarlyAccess, setIsEarlyAccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   // Auto-open when redirected back from Google OAuth with ?openCart=1
@@ -67,9 +75,9 @@ export default function CartDrawer() {
     });
   }, [isCartOpen]);
 
-  // Prevent body scroll while drawer is open
+  // Lock body scroll on mobile only — desktop keeps page scrollable
   useEffect(() => {
-    if (isCartOpen) {
+    if (isCartOpen && !isDesktop) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -77,7 +85,7 @@ export default function CartDrawer() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isCartOpen]);
+  }, [isCartOpen, isDesktop]);
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const totalItemCount = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -174,19 +182,25 @@ export default function CartDrawer() {
     <AnimatePresence>
       {isCartOpen && (
         <>
-          {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 z-50 bg-black/50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            onClick={closeCart}
-          />
+          {/* Backdrop — mobile only */}
+          {!isDesktop && (
+            <motion.div
+              className="fixed inset-0 z-50 bg-black/50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={closeCart}
+            />
+          )}
 
           {/* Drawer panel */}
           <motion.div
-            className="fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] bg-white flex flex-col shadow-2xl"
+            className={`fixed right-0 bg-white flex flex-col ${
+              isDesktop
+                ? "top-[65px] z-30 w-[420px] h-[calc(100vh-65px)] border-l border-[#E5E7EB] shadow-[-4px_0_24px_rgba(0,0,0,0.06)]"
+                : "top-0 bottom-0 z-50 w-full shadow-2xl"
+            }`}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}

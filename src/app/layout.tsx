@@ -6,6 +6,7 @@ import { ToastContainer } from "@/components/ToastContainer";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import ContentWrapper from "@/components/ContentWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -86,10 +87,12 @@ export default function RootLayout({
           <Header />
           <ToastContainer />
           <CartDrawer />
-          <main>
-            {children}
-          </main>
-          <Footer />
+          <ContentWrapper>
+            <main>
+              {children}
+            </main>
+            <Footer />
+          </ContentWrapper>
         </ToastProvider>
       </body>
     </html>
