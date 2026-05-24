@@ -12,6 +12,7 @@ import AddedToast from "./AddedToast";
 
 type Props = {
   product: Product;
+  variant?: "compact" | "full";
 };
 
 const gradientMap: Record<string, string> = {
@@ -20,8 +21,6 @@ const gradientMap: Record<string, string> = {
   Serum: "from-[#1A237E] via-[#3949AB] to-[#DCD9F8]",
   "Face Wash": "from-[#DCEFFF] via-white to-[#DCD9F8]",
 };
-
-
 
 const subtitleMap: Record<string, string> = {
   "invisible-glow-shield": "SPF 50+ PA+++ · Vitamin C · Fermented Rice Water",
@@ -51,7 +50,7 @@ function StockBadge({ count }: { count: number }) {
   );
 }
 
-export default function ProductCard({ product }: Props) {
+export default function ProductCard({ product, variant = "full" }: Props) {
   const gradient = gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
   const subtitle = subtitleMap[product.slug] ?? product.category;
   const addItem = useCartStore((state) => state.addItem);
@@ -79,6 +78,98 @@ export default function ProductCard({ product }: Props) {
     setTimeout(() => setShowToast(false), 2000);
   };
 
+  if (variant === "compact") {
+    return (
+      <>
+        <Link
+          href={`/products/${product.slug}`}
+          className="flex flex-col bg-white rounded-2xl overflow-hidden group"
+          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+        >
+          {/* 3:4 image */}
+          <div className="w-full relative overflow-hidden bg-[#F9FAFB]" style={{ aspectRatio: "3/4" }}>
+            {product.image_url ? (
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                sizes="65vw"
+              />
+            ) : (
+              <div className={`w-full h-full bg-linear-to-br ${gradient}`} />
+            )}
+          </div>
+
+          {/* Text area */}
+          <div className="px-3 pt-2.5 pb-3 flex flex-col">
+            <p
+              style={{ fontFamily: "var(--font-body)", fontSize: "10px" }}
+              className="text-[#6B7280] leading-tight truncate mb-0.5"
+            >
+              {product.category}
+              {product.size ? ` · ${product.size}` : ""}
+            </p>
+            <p
+              style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: 600, lineHeight: 1.3 }}
+              className="text-[#0D1117] line-clamp-2 mb-1.5"
+            >
+              {product.name}
+            </p>
+
+            {/* Discount badge */}
+            {product.discount_active && product.discount_percent && (
+              <span
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "9px",
+                  letterSpacing: "0.5px",
+                }}
+                className="inline-block font-bold uppercase px-2 py-0.5 rounded bg-red-600 text-white w-fit mb-1.5"
+              >
+                {product.discount_label ?? "Launch"} {product.discount_percent}% OFF
+              </span>
+            )}
+
+            {/* Price row */}
+            <div className="flex items-baseline gap-1.5 mb-2">
+              <span
+                style={{ fontFamily: "var(--font-body)", fontSize: "16px", fontWeight: 700 }}
+                className="text-[#0D1117]"
+              >
+                ₹{Number(product.price).toLocaleString("en-IN")}
+              </span>
+              {product.mrp && product.mrp > product.price && (
+                <span
+                  style={{ fontFamily: "var(--font-body)", fontSize: "12px" }}
+                  className="text-[#9CA3AF] line-through"
+                >
+                  ₹{Number(product.mrp).toLocaleString("en-IN")}
+                </span>
+              )}
+            </div>
+
+            {/* Add to Cart */}
+            <button
+              disabled={outOfStock}
+              onClick={handleAddToCart}
+              style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 600 }}
+              className={`w-full py-2 rounded-[10px] transition-colors cursor-pointer ${
+                outOfStock
+                  ? "bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed"
+                  : "bg-[#1A237E] text-white hover:bg-[#151c6b]"
+              }`}
+            >
+              {outOfStock ? "Sold Out" : "Add to Cart"}
+            </button>
+          </div>
+        </Link>
+        <AddedToast visible={showToast} productName={product.name} />
+      </>
+    );
+  }
+
+  // Full variant (desktop)
   return (
     <motion.div
       initial={{ opacity: 0, y: 32 }}
@@ -86,91 +177,10 @@ export default function ProductCard({ product }: Props) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* ── MOBILE CARD (hidden on lg+) ── */}
       <Link
         href={`/products/${product.slug}`}
-        className="lg:hidden flex flex-col bg-white rounded-xl overflow-hidden shadow-sm border border-[#F3F4F6] group"
+        className="flex flex-col bg-white/8 backdrop-blur-sm rounded-3xl overflow-hidden group border border-white/10 hover:border-white/25 transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
       >
-        {/* Image */}
-        <div className="w-full aspect-square relative overflow-hidden bg-[#F9FAFB]">
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <div className={`w-full h-full bg-linear-to-br ${gradient}`} />
-          )}
-          {/* Discount badge over image */}
-          {product.discount_active && product.discount_percent && (
-            <span
-              style={{ fontFamily: "var(--font-body)", fontSize: "9px" }}
-              className="absolute top-2 left-2 font-bold px-1.5 py-0.5 rounded bg-red-600 text-white uppercase tracking-wide"
-            >
-              {product.discount_percent}% OFF
-            </span>
-          )}
-        </div>
-
-        {/* Text area */}
-        <div className="px-2.5 pt-2 pb-2.5 flex flex-col gap-0.5">
-          <p
-            style={{ fontFamily: "var(--font-body)", fontSize: "10px" }}
-            className="text-[#6B7280] leading-tight truncate"
-          >
-            {product.category}
-            {product.size ? ` · ${product.size}` : ""}
-          </p>
-          <p
-            style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: 600 }}
-            className="text-[#0D1117] leading-snug line-clamp-2"
-          >
-            {product.name}
-          </p>
-
-          {/* Price row */}
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span
-              style={{ fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: 700 }}
-              className="text-[#0D1117]"
-            >
-              ₹{Number(product.price).toLocaleString("en-IN")}
-            </span>
-            {product.mrp && product.mrp > product.price && (
-              <span
-                style={{ fontFamily: "var(--font-body)", fontSize: "11px" }}
-                className="text-[#9CA3AF] line-through"
-              >
-                ₹{Number(product.mrp).toLocaleString("en-IN")}
-              </span>
-            )}
-          </div>
-
-          {/* Add to Cart */}
-          <button
-            disabled={outOfStock}
-            onClick={handleAddToCart}
-            style={{ fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: 500 }}
-            className={`w-full py-1.5 rounded-lg border mt-1.5 transition-colors cursor-pointer ${
-              outOfStock
-                ? "border-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
-                : "border-[#1A237E] text-[#1A237E] hover:bg-[#1A237E] hover:text-white"
-            }`}
-          >
-            {outOfStock ? "Sold Out" : "Add to Cart"}
-          </button>
-        </div>
-      </Link>
-
-      {/* ── DESKTOP CARD (hidden below lg) ── */}
-      <Link
-        href={`/products/${product.slug}`}
-        className="hidden lg:flex flex-col bg-white/8 backdrop-blur-sm rounded-3xl overflow-hidden group border border-white/10 hover:border-white/25 transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
-      >
-        {/* Image or Gradient Placeholder */}
         {product.image_url ? (
           <div className="w-full h-64 relative overflow-hidden">
             <Image
@@ -200,7 +210,6 @@ export default function ProductCard({ product }: Props) {
           </div>
         )}
 
-        {/* Card Body */}
         <div className="p-5 flex flex-col gap-3 flex-1">
           <div>
             <div className="flex items-center gap-2 mb-1">
