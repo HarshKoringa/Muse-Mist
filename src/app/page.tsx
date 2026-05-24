@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import ProductGrid from "@/components/ProductGrid";
 import ReviewsSection from "@/components/ReviewsSection";
-import HeroSection from "@/components/HeroSection";
+import HeroCarousel from "@/components/HeroCarousel";
 import PhilosophySection from "@/components/PhilosophySection";
 import EarlyAccessCTA from "@/components/EarlyAccessCTA";
 
@@ -23,7 +23,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-[#0D1117]">
-      <HeroSection />
+      <HeroCarousel products={products ?? []} />
 
       {/* Product section — Deep Ink Blue */}
       <section id="products" className="w-full px-6 sm:px-12 py-24 bg-[#1A237E]">
