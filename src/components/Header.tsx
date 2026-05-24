@@ -8,6 +8,7 @@ import { User, UserCircle2, ShoppingBag, Package, Menu, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useCartStore } from "@/store/cartStore";
+import { useCartUIStore } from "@/store/cartUIStore";
 
 export default function Header() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function Header() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const supabase = createClient();
   const [cartCount, setCartCount] = useState(0);
+  const openCart = useCartUIStore((state) => state.openCart);
 
   // Mount effect — must run first
   useEffect(() => {
@@ -184,17 +186,17 @@ export default function Header() {
             </Link>
 
             {/* Cart icon with badge */}
-            <Link href="/cart" className="relative">
+            <button onClick={openCart} className="relative cursor-pointer" aria-label="Open cart">
               <ShoppingBag
                 size={24}
-                className={`transition-colors duration-300 hover:opacity-70 cursor-pointer ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+                className={`transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
               />
               {mounted && cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#1A237E] text-white text-xs font-semibold flex items-center justify-center">
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* Orders icon — logged in only */}
             {mounted && user && (
@@ -235,7 +237,7 @@ export default function Header() {
 
           {/* Mobile: cart badge + hamburger */}
           <div className="md:hidden flex items-center gap-3">
-            <Link href="/cart" className="relative">
+            <button onClick={openCart} className="relative cursor-pointer" aria-label="Open cart">
               <ShoppingBag
                 size={22}
                 className={`transition-colors duration-300 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
@@ -245,7 +247,7 @@ export default function Header() {
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             <button
               onClick={() => setMobileMenuOpen((prev) => !prev)}

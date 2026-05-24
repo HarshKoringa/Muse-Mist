@@ -43,7 +43,7 @@ function AddressForm() {
   useEffect(() => {
     const raw = sessionStorage.getItem('checkout_data')
     if (!raw) {
-      router.push('/cart')
+      router.push('/')
       return
     }
     const parsed = JSON.parse(raw)

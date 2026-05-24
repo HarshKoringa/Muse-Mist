@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useCartStore } from '@/store/cartStore'
+import { useCartUIStore } from '@/store/cartUIStore'
 import AddedToast from '@/components/AddedToast'
 
 const gradientMap: Record<string, string> = {
@@ -31,6 +32,7 @@ export default function PDPHero({ product }: Props) {
   const subtitle = subtitleMap[product.slug] ?? ''
   const outOfStock = product.stock_count === 0
   const addItem = useCartStore((state) => state.addItem)
+  const openCart = useCartUIStore((state) => state.openCart)
   const [showToast, setShowToast] = useState(false)
 
   const handleAddToCart = () => {
@@ -45,6 +47,7 @@ export default function PDPHero({ product }: Props) {
       image_url: product.image_url ?? null,
       size: product.size ?? null,
     })
+    openCart()
     setShowToast(true)
     setTimeout(() => setShowToast(false), 2000)
   }
@@ -256,7 +259,6 @@ export default function PDPHero({ product }: Props) {
                   onClick={() => {
                     if (!outOfStock) {
                       handleAddToCart()
-                      window.location.href = '/cart'
                     }
                   }}
                   style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}

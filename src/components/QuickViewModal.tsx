@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
 import { useCartStore } from "@/store/cartStore";
+import { useCartUIStore } from "@/store/cartUIStore";
 import AddedToast from "@/components/AddedToast";
 
 type Props = {
@@ -33,6 +34,7 @@ export default function QuickViewModal({ product, onClose }: Props) {
     gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
   const subtitle = subtitleMap[product.slug] ?? "";
   const addItem = useCartStore((state) => state.addItem);
+  const openCart = useCartUIStore((state) => state.openCart);
   const [showToast, setShowToast] = useState(false);
   const outOfStock = product.stock_count === 0;
 
@@ -183,11 +185,10 @@ export default function QuickViewModal({ product, onClose }: Props) {
                       image_url: product.image_url,
                       size: product.size ?? null,
                     });
+                    openCart();
+                    onClose();
                     setShowToast(true);
-                    setTimeout(() => {
-                      setShowToast(false);
-                      onClose();
-                    }, 800);
+                    setTimeout(() => setShowToast(false), 2000);
                   }}
                   style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
                   className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-base font-semibold transition-all ${outOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#1A237E] text-white hover:opacity-90 cursor-pointer'}`}

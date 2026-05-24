@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import { useCartUIStore } from "@/store/cartUIStore";
 import AddedToast from "./AddedToast";
 
 type Props = {
@@ -53,6 +54,7 @@ export default function ProductCard({ product, onQuickView }: Props) {
   const gradient = gradientMap[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
   const subtitle = subtitleMap[product.slug] ?? product.category;
   const addItem = useCartStore((state) => state.addItem);
+  const openCart = useCartUIStore((state) => state.openCart);
   const [showToast, setShowToast] = useState(false);
   const outOfStock = product.stock_count === 0;
 
@@ -185,6 +187,7 @@ export default function ProductCard({ product, onQuickView }: Props) {
                 image_url: product.image_url,
                 size: product.size ?? null,
               });
+              openCart();
               setShowToast(true);
               setTimeout(() => setShowToast(false), 2000);
             }}
