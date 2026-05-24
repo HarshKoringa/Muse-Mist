@@ -7,6 +7,8 @@ import { Product } from "@/types/product";
 
 const ROTATION_INTERVAL = 3500;
 
+const EASE_OUT_QUAD = [0.25, 0.46, 0.45, 0.94] as const;
+
 const HEADLINE_MAP: Record<string, string> = {
   "cleanse-clear-calm": "Deep Detox. Zero Drama.",
   "invisible-glow-shield": "SPF 50+. Zero White Cast.",
@@ -28,6 +30,17 @@ const ROUTINE_ORDER = [
   "reset-to-radiance",
   "barrier-repair",
   "invisible-glow-shield",
+];
+
+// Shimmer dot positions (top%, left%, animation-delay in seconds)
+const SHIMMER_DOTS = [
+  { top: "15%", left: "8%", delay: 0 },
+  { top: "70%", left: "5%", delay: 1.2 },
+  { top: "30%", left: "35%", delay: 2.4 },
+  { top: "80%", left: "45%", delay: 0.8 },
+  { top: "20%", left: "75%", delay: 1.8 },
+  { top: "60%", left: "90%", delay: 3 },
+  { top: "45%", left: "18%", delay: 2 },
 ];
 
 type Props = { products: Product[] };
@@ -57,7 +70,6 @@ export default function HeroCarousel({ products }: Props) {
 
   const handleThumbnailClick = (index: number) => {
     setActiveIndex(index);
-    // Restart auto-rotation after one full interval
     setIsPaused(true);
     setTimeout(() => setIsPaused(false), ROTATION_INTERVAL);
   };
@@ -70,77 +82,140 @@ export default function HeroCarousel({ products }: Props) {
     return (
       <section
         className="w-full h-[66vh] lg:h-[85vh]"
-        style={{ background: "linear-gradient(135deg, #DCD9F8 0%, #DCEFFF 50%, #F0EAFF 100%)" }}
+        style={{ background: "linear-gradient(135deg, #E8E4F8 0%, #DCD9F8 25%, #DCEFFF 60%, #F0EAFF 100%)" }}
       />
     );
   }
+
+  // Thumbnail row height: 64px mobile, 90px desktop + padding
+  const thumbRowHeight = { mobile: 64 + 24, desktop: 90 + 32 };
+  void thumbRowHeight; // used only for mental model
 
   return (
     <section
       className="w-full relative flex flex-col overflow-hidden h-[66vh] lg:h-[85vh]"
       style={{
         paddingTop: "65px",
-        background: "linear-gradient(135deg, #DCD9F8 0%, #DCEFFF 50%, #F0EAFF 100%)",
+        background: "linear-gradient(135deg, #E8E4F8 0%, #DCD9F8 25%, #DCEFFF 60%, #F0EAFF 100%)",
       }}
     >
-      {/* Main content: brand text + large hero image */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0 px-6 sm:px-12 max-w-7xl mx-auto w-full">
+      {/* ── Background orbs ── */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "500px",
+          height: "500px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(220,217,248,0.8) 0%, transparent 70%)",
+          top: "-100px",
+          right: "-100px",
+          filter: "blur(60px)",
+        }}
+      />
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "400px",
+          height: "400px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(220,239,255,0.8) 0%, transparent 70%)",
+          bottom: "-50px",
+          left: "-100px",
+          filter: "blur(50px)",
+        }}
+      />
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "300px",
+          height: "300px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,230,240,0.4) 0%, transparent 70%)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          filter: "blur(80px)",
+        }}
+      />
 
-        {/* Brand text */}
-        <div className="flex-shrink-0 lg:w-2/5 flex flex-col justify-center py-2 lg:py-10 lg:pr-8">
+      {/* ── Shimmer dots ── */}
+      {SHIMMER_DOTS.map((dot, i) => (
+        <div
+          key={i}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            width: "6px",
+            height: "6px",
+            background: "rgba(26, 35, 126, 0.15)",
+            top: dot.top,
+            left: dot.left,
+            animation: `heroFloat 6s ease-in-out ${dot.delay}s infinite`,
+          }}
+        />
+      ))}
+
+      {/* ── Main content: brand text + large image ── */}
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 px-6 sm:px-12 max-w-7xl mx-auto w-full relative z-10">
+
+        {/* Brand text column */}
+        <div className="flex-shrink-0 lg:w-2/5 flex flex-col justify-center py-3 lg:py-10 lg:pr-8">
           <p
             style={{ fontFamily: "var(--font-display)", fontSize: "12px", letterSpacing: "4px" }}
-            className="uppercase text-[#1A237E]/50 mb-1"
+            className="uppercase text-[#6B7280] font-medium mb-1 lg:text-[15px] lg:mb-2"
           >
             Muse &amp; Mist
           </p>
           <p
             style={{ fontFamily: "var(--font-display)", fontSize: "14px" }}
-            className="italic text-[#6B7280] mb-2 lg:mb-3 hidden sm:block"
+            className="italic text-[#9CA3AF] mb-3 lg:text-[17px] lg:mb-4"
           >
             Where Science Meets Soul
           </p>
 
-          {/* Dynamic headline crossfades with product */}
+          {/* Dynamic headline */}
           <AnimatePresence mode="wait">
-            <motion.p
+            <motion.h1
               key={`headline-${activeIndex}`}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35 }}
-              style={{ fontFamily: "var(--font-display)" }}
-              className="text-[22px] lg:text-[38px] font-bold text-[#0D1117] leading-tight mb-3 lg:mb-6"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "28px",
+                lineHeight: 1.15,
+                maxWidth: "300px",
+              }}
+              className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[48px] lg:max-w-112.5"
             >
               {headline}
-            </motion.p>
+            </motion.h1>
           </AnimatePresence>
 
           <button
             onClick={handleScrollToProducts}
-            style={{ fontFamily: "var(--font-body)", fontSize: "14px", fontWeight: 600 }}
-            className="w-fit px-7 py-2.5 lg:py-3 rounded-full bg-[#1A237E] text-white hover:bg-[#151c6b] transition-colors cursor-pointer"
+            style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600 }}
+            className="w-fit px-7 py-2.5 lg:px-9 lg:py-3.5 lg:text-[15px] rounded-full bg-[#1A237E] text-white hover:bg-[#151c6b] transition-colors cursor-pointer"
           >
             Shop Now →
           </button>
         </div>
 
-        {/* Large hero image — crossfades between products */}
+        {/* Hero image column */}
         <div
           className="flex-1 relative min-h-0 cursor-pointer"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onClick={handleScrollToProducts}
-          title="Browse products"
         >
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {activeProduct && (
               <motion.div
                 key={`hero-img-${activeIndex}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.6, ease: EASE_OUT_QUAD }}
                 className="absolute inset-0 flex items-center justify-center"
               >
                 {activeProduct.image_url ? (
@@ -151,8 +226,8 @@ export default function HeroCarousel({ products }: Props) {
                       fill
                       className="object-contain"
                       style={{
-                        transform: "rotate(3deg)",
-                        filter: "drop-shadow(0 20px 40px rgba(26, 35, 126, 0.12))",
+                        transform: "rotate(2deg)",
+                        filter: "drop-shadow(0 25px 50px rgba(0,0,0,0.15))",
                       }}
                       sizes="(max-width: 1024px) 80vw, 55vw"
                       priority
@@ -160,8 +235,8 @@ export default function HeroCarousel({ products }: Props) {
                   </div>
                 ) : (
                   <div
-                    className={`w-32 h-48 lg:w-48 lg:h-64 rounded-2xl bg-linear-to-br ${GRADIENT_MAP[activeProduct.category] ?? "from-[#DCD9F8] to-[#DCEFFF]"}`}
-                    style={{ transform: "rotate(3deg)" }}
+                    className={`w-32 h-48 lg:w-52 lg:h-72 rounded-2xl bg-linear-to-br ${GRADIENT_MAP[activeProduct.category] ?? "from-[#DCD9F8] to-[#DCEFFF]"}`}
+                    style={{ transform: "rotate(2deg)" }}
                   />
                 )}
               </motion.div>
@@ -170,8 +245,8 @@ export default function HeroCarousel({ products }: Props) {
         </div>
       </div>
 
-      {/* Thumbnail row */}
-      <div className="flex-shrink-0 flex items-center justify-center gap-2 lg:gap-3 py-2.5 lg:py-3">
+      {/* ── Thumbnail row ── */}
+      <div className="flex-shrink-0 flex items-center justify-center gap-3 lg:gap-4 pb-4 lg:pb-6 pt-1 relative z-10">
         {displayProducts.map((product, i) => {
           const isActive = i === activeIndex;
           return (
@@ -179,33 +254,43 @@ export default function HeroCarousel({ products }: Props) {
               key={product.id}
               onClick={() => handleThumbnailClick(i)}
               aria-label={`View ${product.name}`}
-              className="flex-shrink-0 rounded-xl overflow-hidden cursor-pointer bg-white transition-all duration-300"
+              className="shrink-0 cursor-pointer bg-white w-16 h-16 lg:w-22.5 lg:h-22.5 rounded-xl lg:rounded-2xl overflow-hidden"
               style={{
-                width: "44px",
-                height: "44px",
-                border: isActive ? "2px solid #1A237E" : "2px solid transparent",
-                opacity: isActive ? 1 : 0.55,
+                padding: "4px",
+                border: isActive ? "3px solid #1A237E" : "3px solid transparent",
+                opacity: isActive ? 1 : 0.7,
                 transform: isActive ? "scale(1.1)" : "scale(1)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                boxShadow: isActive
+                  ? "0 4px 16px rgba(26, 35, 126, 0.3)"
+                  : "0 4px 12px rgba(0,0,0,0.10)",
+                transition: "all 0.3s ease",
               }}
             >
               {product.image_url ? (
                 <Image
                   src={product.image_url}
                   alt={product.name}
-                  width={44}
-                  height={44}
-                  className="w-full h-full object-cover"
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover rounded-lg"
                 />
               ) : (
                 <div
-                  className={`w-full h-full bg-linear-to-br ${GRADIENT_MAP[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]"}`}
+                  className={`w-full h-full rounded-lg bg-linear-to-br ${GRADIENT_MAP[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]"}`}
                 />
               )}
             </button>
           );
         })}
       </div>
+
+      {/* Float keyframe injected inline */}
+      <style>{`
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+          50% { transform: translateY(-20px) rotate(180deg); opacity: 0.6; }
+        }
+      `}</style>
     </section>
   );
 }
