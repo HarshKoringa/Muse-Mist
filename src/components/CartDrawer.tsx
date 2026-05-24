@@ -42,6 +42,17 @@ export default function CartDrawer() {
     setMounted(true);
   }, []);
 
+  // Auto-open when redirected back from Google OAuth with ?openCart=1
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('openCart') === '1') {
+      openCart();
+      const url = new URL(window.location.href);
+      url.searchParams.delete('openCart');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [openCart]);
+
   // Fetch discount info each time the drawer opens
   useEffect(() => {
     if (!isCartOpen) return;

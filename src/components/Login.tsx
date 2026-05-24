@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Loader2, Phone, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { useCartUIStore } from '@/store/cartUIStore'
 
 type Step = 'method' | 'phone' | 'otp'
 
@@ -17,6 +18,9 @@ export function Login() {
   const [error, setError] = useState('')
   const supabase = createClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect')
+  const openCart = useCartUIStore((state) => state.openCart)
 
   const handleSendOTP = async () => {
     setError('')
@@ -52,6 +56,7 @@ export function Login() {
         type: 'sms',
       })
       if (error) throw error
+      if (redirect === 'checkout') openCart()
       router.push('/')
       router.refresh()
     } catch (err: unknown) {
@@ -63,10 +68,13 @@ export function Login() {
 
   const handleGoogleLogin = async () => {
     setLoading(true)
+    const callbackUrl = redirect === 'checkout'
+      ? `${window.location.origin}/auth/callback?next=checkout`
+      : `${window.location.origin}/auth/callback`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
