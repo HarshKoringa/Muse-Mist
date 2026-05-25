@@ -7,9 +7,7 @@ export type CartItem = {
   slug: string;
   price: number;
   mrp?: number | null;
-  category: string;
   quantity: number;
-  stock_count: number;
   image_url?: string | null;
   size?: string | null;
 };
@@ -32,6 +30,8 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (product) => {
         const existing = get().items.find((i) => i.id === product.id);
+        const { id, name, slug, price, mrp, image_url, size } = product;
+        const stripped = { id, name, slug, price, mrp, image_url, size };
         if (existing) {
           set({
             items: get().items.map((i) =>
@@ -39,7 +39,7 @@ export const useCartStore = create<CartStore>()(
             ),
           });
         } else {
-          set({ items: [...get().items, { ...product, quantity: 1 }] });
+          set({ items: [...get().items, { ...stripped, quantity: 1 }] });
         }
       },
 
@@ -76,9 +76,9 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "muse-mist-cart",
-      version: 4,
+      version: 5,
       migrate: (persistedState: unknown, version: number) => {
-        if (version < 4) {
+        if (version < 5) {
           return { items: [] };
         }
         return persistedState as CartStore;

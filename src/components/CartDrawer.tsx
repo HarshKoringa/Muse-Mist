@@ -11,13 +11,6 @@ import { useCartUIStore } from "@/store/cartUIStore";
 import { createClient } from "@/utils/supabase/client";
 import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
 
-const gradientMap: Record<string, string> = {
-  Sunscreen: "from-[#DCEFFF] via-[#DCD9F8] to-white",
-  Moisturiser: "from-[#DCD9F8] via-[#DCEFFF] to-white",
-  Serum: "from-[#1A237E] via-[#3949AB] to-[#DCD9F8]",
-  "Face Wash": "from-[#DCEFFF] via-white to-[#DCD9F8]",
-};
-
 const COD_CHARGE = 50;
 
 export default function CartDrawer() {
@@ -116,16 +109,7 @@ export default function CartDrawer() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map((item) => ({
-            id: item.id,
-            name: item.name,
-            slug: item.slug,
-            price: item.price,
-            mrp: item.mrp,
-            quantity: item.quantity,
-            image_url: item.image_url,
-            size: item.size,
-          })),
+          items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
           payment_method: selectedMethod,
           user_id: user.id,
         }),
@@ -134,25 +118,10 @@ export default function CartDrawer() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Checkout failed");
 
-      const discountPercent = data.total_discount_percent ?? 0;
-      const multiplier = (100 - discountPercent) / 100;
-
       sessionStorage.setItem(
         "checkout_data",
         JSON.stringify({
-          items: items.map((item) => ({
-            id: item.id,
-            name: item.name,
-            slug: item.slug,
-            price: item.price,
-            mrp: item.mrp ?? null,
-            quantity: item.quantity,
-            category: item.category,
-            image_url: item.image_url ?? null,
-            stock_count: item.stock_count,
-            size: item.size ?? null,
-            final_price: Math.round(item.price * multiplier),
-          })),
+          items: data.verified_items,
           payment_method: selectedMethod,
           user_id: user.id,
           subtotal: data.subtotal,
@@ -253,8 +222,7 @@ export default function CartDrawer() {
                 <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0">
                   <AnimatePresence>
                     {items.map((item, i) => {
-                      const gradient =
-                        gradientMap[item.category] ?? "from-[#DCD9F8] to-[#DCEFFF]";
+                      const gradient = "from-[#DCD9F8] to-[#DCEFFF]";
                       return (
                         <motion.div
                           key={item.id}
@@ -332,13 +300,8 @@ export default function CartDrawer() {
                               </span>
                               <button
                                 onClick={() => increaseQty(item.id)}
-                                disabled={item.quantity >= item.stock_count}
                                 style={{ minWidth: "44px", minHeight: "44px" }}
-                                className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${
-                                  item.quantity >= item.stock_count
-                                    ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                                    : "border-[#E5E7EB] hover:border-[#1A237E] hover:text-[#1A237E] cursor-pointer text-[#0D1117]"
-                                }`}
+                                className="w-8 h-8 rounded-full border border-[#E5E7EB] flex items-center justify-center hover:border-[#1A237E] hover:text-[#1A237E] cursor-pointer text-[#0D1117] transition-colors"
                                 aria-label="Increase quantity"
                               >
                                 <Plus size={13} />

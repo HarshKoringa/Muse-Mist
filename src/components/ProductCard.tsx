@@ -68,8 +68,6 @@ export default function ProductCard({ product, variant = "full" }: Props) {
       slug: product.slug,
       price: product.price,
       mrp: product.mrp ?? null,
-      category: product.category,
-      stock_count: product.stock_count,
       image_url: product.image_url,
       size: product.size ?? null,
     });
