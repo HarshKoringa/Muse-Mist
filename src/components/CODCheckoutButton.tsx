@@ -30,12 +30,11 @@ export default function CODCheckoutButton({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      // Call checkout API to get per-item final prices and discount percent
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })),
+          items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
           payment_method: 'cod',
           user_id: user.id,
         }),
@@ -44,25 +43,8 @@ export default function CODCheckoutButton({
       const checkoutRes = await res.json()
       if (!res.ok) throw new Error(checkoutRes.error ?? 'Checkout failed')
 
-      const discountPercent = checkoutRes.total_discount_percent ?? 0
-      const multiplier = (100 - discountPercent) / 100
-
-      const itemsForStorage = items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        slug: i.slug,
-        price: i.price,
-        mrp: i.mrp ?? null,
-        quantity: i.quantity,
-        category: i.category,
-        image_url: i.image_url ?? null,
-        stock_count: i.stock_count,
-        size: i.size ?? null,
-        final_price: Math.round(i.price * multiplier),
-      }))
-
       sessionStorage.setItem('checkout_data', JSON.stringify({
-        items: itemsForStorage,
+        items: checkoutRes.verified_items,
         payment_method: 'cod',
         user_id: user.id,
         subtotal: checkoutRes.subtotal,
