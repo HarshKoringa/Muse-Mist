@@ -4,6 +4,9 @@ import { sendOrderConfirmation } from '@/lib/whatsapp'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
+const COD_CHARGE = 50
+const PREPAID_DISCOUNT_PERCENT = 5
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -14,43 +17,229 @@ export async function POST(req: NextRequest) {
       order_data,
     } = body
 
+    const supabase = createAdminClient()
     const isCOD = order_data.payment_method === 'cod'
 
-    // Step 1 — Verify Razorpay signature (prepaid only)
-    if (razorpay_order_id && razorpay_payment_id && razorpay_signature) {
+    // ══════════════════════════════════════════════════════
+    // STEP 1: Verify Razorpay signature (prepaid only)
+    // ══════════════════════════════════════════════════════
+    if (!isCOD) {
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return NextResponse.json(
+          { error: 'Missing payment data' },
+          { status: 400 }
+        )
+      }
+
       const expectedSignature = crypto
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
         .digest('hex')
 
       if (expectedSignature !== razorpay_signature) {
-        console.error('[Muse & Mist] Signature mismatch:', {
-          expected: expectedSignature,
-          received: razorpay_signature,
-        })
+        console.error('[SECURITY] Razorpay signature mismatch')
         return NextResponse.json(
-          { error: 'Payment verification failed — signature mismatch' },
+          { error: 'Payment verification failed' },
           { status: 400 }
         )
       }
     }
 
-    // Step 2 — Save order to Supabase
-    const supabase = createAdminClient()
+    // ══════════════════════════════════════════════════════
+    // STEP 2: Verify user
+    // ══════════════════════════════════════════════════════
+    const userId = order_data.user_id
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing user ID' }, { status: 400 })
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 3: Extract item IDs + quantities — ignore ALL client prices
+    // ══════════════════════════════════════════════════════
+    const clientItems: { id: string; quantity: number }[] = (order_data.items || []).map(
+      (item: { id: string; quantity: number }) => ({
+        id: item.id,
+        quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
+      })
+    )
+
+    if (!clientItems.length) {
+      return NextResponse.json({ error: 'No items in order' }, { status: 400 })
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 4: Fetch REAL product data from database
+    // ══════════════════════════════════════════════════════
+    const productIds = clientItems.map((i) => i.id)
+    const { data: products, error: prodErr } = await supabase
+      .from('products')
+      .select('id, name, slug, price, mrp, stock_count, is_active, image_url, size, category')
+      .in('id', productIds)
+
+    if (prodErr || !products?.length) {
+      console.error('[SECURITY] Products not found:', productIds)
+      return NextResponse.json({ error: 'Products not found' }, { status: 400 })
+    }
+
+    const productMap = new Map(products.map((p) => [p.id, p]))
+
+    for (const item of clientItems) {
+      const product = productMap.get(item.id)
+      if (!product || !product.is_active) {
+        return NextResponse.json(
+          { error: `Product unavailable: ${item.id}` },
+          { status: 400 }
+        )
+      }
+      if (product.stock_count < item.quantity) {
+        return NextResponse.json(
+          { error: `Insufficient stock for ${product.name}` },
+          { status: 400 }
+        )
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 5: Calculate early access discount from DB
+    // ══════════════════════════════════════════════════════
+    let earlyAccessDiscount = 0
+    let isEarlyAccess = false
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('phone_number')
+        .eq('id', userId)
+        .single()
+
+      if (profile?.phone_number) {
+        const rawPhone = profile.phone_number.replace(/\D/g, '')
+        const normalizedPhone = rawPhone.startsWith('91')
+          ? rawPhone
+          : '91' + rawPhone
+
+        const { data: muse } = await supabase
+          .from('muses')
+          .select('id, discount_percent, discount_used')
+          .eq('phone', normalizedPhone)
+          .eq('discount_used', false)
+          .single()
+
+        if (muse) {
+          earlyAccessDiscount = muse.discount_percent
+          isEarlyAccess = true
+        }
+      }
+    } catch (e) {
+      console.log('[Order] No early access discount')
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 6: SERVER-SIDE price calculation — trust NO client data
+    // ══════════════════════════════════════════════════════
+    let discountPercent = 0
+    let deliveryCharge = 0
+
+    if (!isCOD) {
+      discountPercent = PREPAID_DISCOUNT_PERCENT + earlyAccessDiscount
+      deliveryCharge = 0
+    } else {
+      discountPercent = earlyAccessDiscount > 0 ? earlyAccessDiscount : 0
+      deliveryCharge = COD_CHARGE
+    }
+
+    const multiplier = (100 - discountPercent) / 100
+
+    const serverItems = clientItems.map((item) => {
+      const product = productMap.get(item.id)!
+      const finalPrice = Math.round(product.price * multiplier)
+      return {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        mrp: product.mrp,
+        quantity: item.quantity,
+        final_price: finalPrice,
+        image_url: product.image_url,
+        size: product.size,
+        category: product.category,
+      }
+    })
+
+    const subtotal = serverItems.reduce(
+      (sum, item) => sum + item.price * item.quantity, 0
+    )
+    const discountedTotal = serverItems.reduce(
+      (sum, item) => sum + item.final_price * item.quantity, 0
+    )
+    const discount = subtotal - discountedTotal
+    const total = discountedTotal + deliveryCharge
+
+    // ══════════════════════════════════════════════════════
+    // STEP 7: Verify Razorpay payment amount (prepaid only)
+    // ══════════════════════════════════════════════════════
+    if (!isCOD && razorpay_order_id) {
+      try {
+        const { getRazorpayInstance } = await import('@/lib/razorpay')
+        const razorpay = getRazorpayInstance()
+        const rzpOrder = await razorpay.orders.fetch(razorpay_order_id)
+
+        const paidAmountPaise = Number(rzpOrder.amount)
+        const expectedAmountPaise = total * 100
+
+        if (paidAmountPaise !== expectedAmountPaise) {
+          console.error('[SECURITY] AMOUNT MISMATCH!', {
+            paid: paidAmountPaise,
+            expected: expectedAmountPaise,
+            razorpay_order_id,
+            user_id: userId,
+          })
+          return NextResponse.json(
+            { error: 'Payment amount mismatch — order rejected' },
+            { status: 400 }
+          )
+        }
+
+        console.log('[Security] Razorpay amount verified ✓', total)
+      } catch (rzpErr: any) {
+        console.error('[Security] Razorpay verification failed:', rzpErr.message)
+        return NextResponse.json(
+          { error: 'Payment verification failed' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 8: Validate shipping address
+    // ══════════════════════════════════════════════════════
+    const address = order_data.shipping_address || {}
+    if (!address.name || !address.phone || !address.address || !address.city ||
+        !address.state || !address.pincode) {
+      return NextResponse.json(
+        { error: 'Incomplete shipping address' },
+        { status: 400 }
+      )
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 9: Save order with SERVER-CALCULATED values
+    // ══════════════════════════════════════════════════════
     const orderStatus = isCOD ? 'pending' : 'paid'
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
-        user_id: order_data.user_id,
+        user_id: userId,
         payment_method: order_data.payment_method,
-        subtotal: order_data.subtotal ?? 0,
-        discount: order_data.discount ?? 0,
-        delivery_charge: order_data.delivery_charge ?? 0,
-        total: order_data.total ?? 0,
-        total_amount: order_data.total ?? 0,
-        items: order_data.items ?? [],
-        shipping_address: order_data.shipping_address ?? {},
+        subtotal: subtotal,
+        discount: discount,
+        delivery_charge: deliveryCharge,
+        total: total,
+        total_amount: total,
+        items: serverItems,
+        shipping_address: address,
         status: orderStatus,
         razorpay_order_id: razorpay_order_id ?? null,
         razorpay_payment_id: razorpay_payment_id ?? null,
@@ -59,33 +248,28 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (orderError) {
-      console.error('[Muse & Mist] Supabase order insert error:', {
-        message: orderError.message,
-        code: orderError.code,
-        details: orderError.details,
-        hint: orderError.hint,
-      })
+      console.error('[Order] Insert error:', orderError)
       throw orderError
     }
 
-    // Step 3 — Insert into order_items table
+    // ══════════════════════════════════════════════════════
+    // STEP 10: Insert order_items with SERVER prices
+    // ══════════════════════════════════════════════════════
     try {
-      const orderItemsRows = order_data.items.map(
-        (item: { id: string; quantity: number; final_price: number; mrp: number; price: number }) => ({
-          order_id: order.id,
-          product_id: item.id,
-          quantity: item.quantity,
-          price_at_purchase: item.final_price ?? item.price,
-          mrp: item.mrp ?? null,
-        })
-      )
+      const orderItemsRows = serverItems.map((item) => ({
+        order_id: order.id,
+        product_id: item.id,
+        quantity: item.quantity,
+        price_at_purchase: item.final_price,
+        mrp: item.mrp,
+      }))
 
-      const { error: itemsError } = await supabase
+      const { error: itemsErr } = await supabase
         .from('order_items')
         .insert(orderItemsRows)
 
-      if (itemsError) {
-        console.error('[OrderItems] Insert failed:', itemsError.message)
+      if (itemsErr) {
+        console.error('[OrderItems] Insert failed:', itemsErr.message)
       } else {
         console.log('[OrderItems] Inserted', orderItemsRows.length, 'items ✓')
       }
@@ -93,47 +277,41 @@ export async function POST(req: NextRequest) {
       console.error('[OrderItems] Error:', e.message)
     }
 
-    // Step 4 — Mark early access discount as used
-    try {
-      const profile = await supabase
-        .from('profiles')
-        .select('phone_number')
-        .eq('id', order_data.user_id)
-        .single()
-
-      if (profile.data?.phone_number) {
-        const rawPhone = profile.data.phone_number.replace(/\D/g, '')
-        const normalizedPhone = rawPhone.startsWith('91')
-          ? rawPhone
-          : '91' + rawPhone
-
-        const { data: muse } = await supabase
-          .from('muses')
-          .select('id, discount_used')
-          .eq('phone', normalizedPhone)
-          .eq('discount_used', false)
+    // ══════════════════════════════════════════════════════
+    // STEP 11: Mark early access discount as used
+    // ══════════════════════════════════════════════════════
+    if (isEarlyAccess) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone_number')
+          .eq('id', userId)
           .single()
 
-        if (muse) {
+        if (profile?.phone_number) {
+          const rawPhone = profile.phone_number.replace(/\D/g, '')
+          const normalizedPhone = rawPhone.startsWith('91')
+            ? rawPhone
+            : '91' + rawPhone
+
           await supabase
             .from('muses')
             .update({ discount_used: true })
-            .eq('id', muse.id)
+            .eq('phone', normalizedPhone)
+            .eq('discount_used', false)
+
           console.log('[Order] Early access discount marked as used ✓')
         }
+      } catch (e) {
+        console.log('[Order] Could not mark discount as used:', e)
       }
-    } catch (e) {
-      console.log('[Order] Early access check:', e)
     }
 
-    // ═══════════════════════════════════════════
-    // Run Shiprocket + WhatsApp + Stock BEFORE responding
-    // (Vercel kills background tasks after response)
-    // ═══════════════════════════════════════════
-
-    // 1. Stock decrement (fastest, most critical)
+    // ══════════════════════════════════════════════════════
+    // STEP 12: Stock decrement
+    // ══════════════════════════════════════════════════════
     try {
-      for (const item of order_data.items) {
+      for (const item of serverItems) {
         await supabase.rpc('decrement_stock', {
           product_id: item.id,
           quantity: item.quantity,
@@ -144,17 +322,18 @@ export async function POST(req: NextRequest) {
       console.error('[Stock] Failed:', e.message)
     }
 
-    // 2. Shiprocket order creation
+    // ══════════════════════════════════════════════════════
+    // STEP 13: Shiprocket order
+    // ══════════════════════════════════════════════════════
     let shiprocketOrderId: string | null = null
     let awbCode: string | null = null
+
     try {
-      const nameParts = (order_data.shipping_address?.name ?? 'Customer')
-        .trim().split(' ')
+      const nameParts = (address.name ?? 'Customer').trim().split(' ')
       const firstName = nameParts[0] ?? 'Customer'
       const lastName = nameParts.slice(1).join(' ') || 'Customer'
 
-      const rawPhone = (order_data.shipping_address?.phone ?? '')
-        .toString().replace(/\D/g, '').replace(/^91/, '')
+      const rawPhone = (address.phone ?? '').toString().replace(/\D/g, '').replace(/^91/, '')
       const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
       const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
@@ -165,10 +344,8 @@ export async function POST(req: NextRequest) {
         'smooth-and-spotless':   { gstRate: 18, hsnCode: 33049990 },
       }
 
-      const productTotal = order_data.items.reduce(
-        (sum: number, item: { final_price?: number; price: number; quantity: number }) =>
-          sum + (item.final_price ?? item.price) * item.quantity,
-        0
+      const productTotal = serverItems.reduce(
+        (sum, item) => sum + item.final_price * item.quantity, 0
       )
 
       const shiprocketPayload = {
@@ -177,18 +354,18 @@ export async function POST(req: NextRequest) {
         pickup_location: 'Home',
         billing_customer_name: firstName,
         billing_last_name: lastName,
-        billing_address: order_data.shipping_address?.address ?? '',
-        billing_city: order_data.shipping_address?.city ?? '',
-        billing_pincode: String(order_data.shipping_address?.pincode ?? ''),
-        billing_state: order_data.shipping_address?.state ?? '',
+        billing_address: address.address ?? '',
+        billing_city: address.city ?? '',
+        billing_pincode: String(address.pincode ?? ''),
+        billing_state: address.state ?? '',
         billing_country: 'India',
-        billing_email: order_data.shipping_address?.email || 'support@museandmist.in',
+        billing_email: address.email || 'support@museandmist.in',
         billing_phone: shiprocketPhone,
         shipping_is_billing: true,
         payment_method: isCOD ? 'COD' : 'Prepaid',
         sub_total: productTotal,
         discount: "0",
-        shipping_charges: order_data.delivery_charge ?? 0,
+        shipping_charges: deliveryCharge,
         giftwrap_charges: 0,
         transaction_charges: 0,
         total_discount: "0",
@@ -196,16 +373,13 @@ export async function POST(req: NextRequest) {
         breadth: 10,
         height: 8,
         weight: 0.3,
-        order_items: order_data.items.map((item: {
-          name: string; slug: string; quantity: number;
-          price: number; final_price?: number
-        }) => {
+        order_items: serverItems.map((item) => {
           const taxConfig = PRODUCT_TAX_CONFIG[item.slug] ?? { gstRate: 18, hsnCode: 33049990 }
           return {
             name: item.name,
             sku: item.slug,
             units: item.quantity,
-            selling_price: item.final_price ?? item.price,
+            selling_price: item.final_price,
             discount: "0",
             tax: String(taxConfig.gstRate),
             hsn: taxConfig.hsnCode,
@@ -225,10 +399,7 @@ export async function POST(req: NextRequest) {
 
       await supabase
         .from('orders')
-        .update({
-          shiprocket_order_id: shiprocketOrderId,
-          awb_code: awbCode,
-        })
+        .update({ shiprocket_order_id: shiprocketOrderId, awb_code: awbCode })
         .eq('id', order.id)
 
       console.log('[Shiprocket] Saved to DB ✓')
@@ -244,22 +415,23 @@ export async function POST(req: NextRequest) {
             retry_count: 0,
             resolved: false,
           })
-        console.log('[Shiprocket] Failure logged ✓')
       } catch (logErr) {
         console.error('[Shiprocket] Could not log failure:', logErr)
       }
     }
 
-    // 3. WhatsApp (non-critical — ok if it fails)
+    // ══════════════════════════════════════════════════════
+    // STEP 14: WhatsApp notification
+    // ══════════════════════════════════════════════════════
     try {
-      const customerPhone = order_data.shipping_address?.phone || null
-      const customerName = order_data.shipping_address?.name || 'Customer'
+      const customerPhone = address.phone || null
+      const customerName = address.name || 'Customer'
       if (customerPhone) {
         await sendOrderConfirmation({
           phone: customerPhone,
           name: customerName,
           orderId: order.id,
-          total: order_data.total,
+          total: total,
           paymentMethod: order_data.payment_method,
         })
         console.log('[WhatsApp] Sent ✓')
@@ -268,12 +440,12 @@ export async function POST(req: NextRequest) {
       console.error('[WhatsApp] FAILED:', waErr.message)
     }
 
-    // NOW return response after everything is done
     return NextResponse.json({
       success: true,
       order_id: order.id,
       shiprocket_order_id: shiprocketOrderId,
     })
+
   } catch (err) {
     console.error('[Muse & Mist] /api/verify-payment error:', err)
     return NextResponse.json(
