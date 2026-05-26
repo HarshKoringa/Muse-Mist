@@ -1,14 +1,25 @@
 import { getRazorpayInstance } from '@/lib/razorpay'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { rateLimit } from '@/lib/rateLimit'
 import { NextRequest, NextResponse } from 'next/server'
 
 const COD_CHARGE = 50
 const PREPAID_DISCOUNT_PERCENT = 5
+const MAX_QUANTITY_PER_ITEM = 10
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { items, payment_method, user_id } = body
+
+    // ── Rate limit: 10 checkout attempts per minute per user ─
+    const { allowed } = rateLimit(`checkout:${user_id}`, 10, 60 * 1000)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many checkout attempts. Please wait a moment.' },
+        { status: 429 }
+      )
+    }
 
     // ── Validate input ───────────────────────────────────
     if (!items?.length || !payment_method || !user_id) {
@@ -37,7 +48,7 @@ export async function POST(req: NextRequest) {
     const itemRequests: { id: string; quantity: number }[] = items.map(
       (item: { id: string; quantity: number }) => ({
         id: item.id,
-        quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
+        quantity: Math.min(MAX_QUANTITY_PER_ITEM, Math.max(1, Math.floor(Number(item.quantity) || 1))),
       })
     )
 

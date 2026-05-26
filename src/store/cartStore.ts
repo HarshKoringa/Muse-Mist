@@ -9,7 +9,6 @@ export type CartItem = {
   mrp?: number | null;
   category: string;
   quantity: number;
-  stock_count: number;
   image_url?: string | null;
   size?: string | null;
 };
@@ -31,16 +30,23 @@ export const useCartStore = create<CartStore>()(
       items: [],
 
       addItem: (product) => {
-        const existing = get().items.find((i) => i.id === product.id);
-        if (existing) {
-          set({
-            items: get().items.map((i) =>
-              i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
-            ),
-          });
-        } else {
-          set({ items: [...get().items, { ...product, quantity: 1 }] });
-        }
+        const { stock_count, is_active, key_ingredients, how_to_use,
+                skin_type, discount_percent, discount_label,
+                discount_active, ...safeProduct } = product as any
+
+        set((state) => {
+          const existing = state.items.find((i) => i.id === safeProduct.id)
+          if (existing) {
+            return {
+              items: state.items.map((i) =>
+                i.id === safeProduct.id
+                  ? { ...i, quantity: i.quantity + 1 }
+                  : i
+              ),
+            }
+          }
+          return { items: [...state.items, { ...safeProduct, quantity: 1 }] }
+        })
       },
 
       removeItem: (id) =>
