@@ -12,15 +12,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { items, payment_method, user_id } = body
 
-    // ── Rate limit: 10 checkout attempts per minute per user ─
-    const { allowed } = rateLimit(`checkout:${user_id}`, 10, 60 * 1000)
-    if (!allowed) {
-      return NextResponse.json(
-        { error: 'Too many checkout attempts. Please wait a moment.' },
-        { status: 429 }
-      )
-    }
-
     // ── Validate input ───────────────────────────────────
     if (!items?.length || !payment_method || !user_id) {
       return NextResponse.json(
@@ -33,6 +24,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid payment method' },
         { status: 400 }
+      )
+    }
+
+    // ── Rate limit: 10 checkout attempts per minute per user ─
+    const { allowed } = rateLimit(`checkout:${user_id}`, 10, 60 * 1000)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many checkout attempts. Please wait a moment.' },
+        { status: 429 }
       )
     }
 

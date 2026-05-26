@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/utils/supabase/admin'
-import { createClient as createServerClient } from '@/utils/supabase/server'
 import { createShiprocketOrder } from '@/lib/shiprocket'
 import { sendOrderConfirmation } from '@/lib/whatsapp'
 import { rateLimit } from '@/lib/rateLimit'
@@ -12,6 +11,21 @@ const MAX_QUANTITY_PER_ITEM = 10
 
 export async function POST(req: NextRequest) {
   try {
+    // ══════════════════════════════════════════════════════
+    // STEP 1: Authenticate the caller — BEFORE reading body
+    // Prevents unauthenticated requests from consuming resources
+    // ══════════════════════════════════════════════════════
+    const { createClient: createServerClient } = await import('@/utils/supabase/server')
+    const serverSupabase = await createServerClient()
+    const { data: { user: sessionUser } } = await serverSupabase.auth.getUser()
+
+    if (!sessionUser) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 2: Parse request body
+    // ══════════════════════════════════════════════════════
     const body = await req.json()
     const {
       razorpay_order_id,
@@ -21,15 +35,8 @@ export async function POST(req: NextRequest) {
     } = body
 
     // ══════════════════════════════════════════════════════
-    // STEP 1: Authenticate the caller
+    // STEP 3: Verify caller matches claimed user_id (anti-spoofing)
     // ══════════════════════════════════════════════════════
-    const serverSupabase = await createServerClient()
-    const { data: { user: sessionUser } } = await serverSupabase.auth.getUser()
-
-    if (!sessionUser) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-
     if (sessionUser.id !== order_data?.user_id) {
       console.error('[SECURITY] User ID spoofing attempt:', {
         session_user: sessionUser.id,
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 2: Rate limit — 5 verifications per minute per user
+    // STEP 4: Rate limit — 5 payment verifications per minute per user
     // ══════════════════════════════════════════════════════
     const { allowed } = rateLimit(`verify:${sessionUser.id}`, 5, 60 * 1000)
     if (!allowed) {
@@ -53,7 +60,7 @@ export async function POST(req: NextRequest) {
     const isCOD = order_data.payment_method === 'cod'
 
     // ══════════════════════════════════════════════════════
-    // STEP 3: Verify Razorpay signature (prepaid only)
+    // STEP 5: Verify Razorpay signature (prepaid only)
     // ══════════════════════════════════════════════════════
     if (!isCOD) {
       if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -78,7 +85,8 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 4: Block replay attacks — same payment ID used twice
+    // STEP 6: Replay attack prevention — block reuse of same payment ID
+    // DB unique constraint (orders_razorpay_payment_id_unique) also enforces this
     // ══════════════════════════════════════════════════════
     if (razorpay_payment_id) {
       const { data: existingOrder } = await supabase
@@ -97,16 +105,10 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 5: Verify user
+    // STEP 7: Extract item IDs + quantities — ignore ALL client prices
     // ══════════════════════════════════════════════════════
     const userId = order_data.user_id
-    if (!userId) {
-      return NextResponse.json({ error: 'Missing user ID' }, { status: 400 })
-    }
 
-    // ══════════════════════════════════════════════════════
-    // STEP 6: Extract item IDs + quantities — ignore ALL client prices
-    // ══════════════════════════════════════════════════════
     const clientItems: { id: string; quantity: number }[] = (order_data.items || []).map(
       (item: { id: string; quantity: number }) => ({
         id: item.id,
@@ -119,7 +121,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 7: Fetch REAL product data from database
+    // STEP 8: Fetch REAL product data from database
     // ══════════════════════════════════════════════════════
     const productIds = clientItems.map((i) => i.id)
     const { data: products, error: prodErr } = await supabase
@@ -151,7 +153,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 8: Calculate early access discount from DB
+    // STEP 9: Calculate early access discount from DB
     // ══════════════════════════════════════════════════════
     let earlyAccessDiscount = 0
     let isEarlyAccess = false
@@ -186,7 +188,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 9: SERVER-SIDE price calculation — trust NO client data
+    // STEP 10: SERVER-SIDE price calculation — trust NO client data
     // ══════════════════════════════════════════════════════
     let discountPercent = 0
     let deliveryCharge = 0
@@ -228,7 +230,7 @@ export async function POST(req: NextRequest) {
     const total = discountedTotal + deliveryCharge
 
     // ══════════════════════════════════════════════════════
-    // STEP 10: Verify Razorpay payment amount (prepaid only)
+    // STEP 11: Verify Razorpay payment amount (prepaid only)
     // ══════════════════════════════════════════════════════
     if (!isCOD && razorpay_order_id) {
       try {
@@ -263,7 +265,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 11: Validate shipping address
+    // STEP 12: Validate shipping address
     // ══════════════════════════════════════════════════════
     const address = order_data.shipping_address || {}
 
@@ -271,8 +273,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
     }
 
-    const phone = String(address.phone || '').replace(/\D/g, '').slice(-10)
-    if (!/^[6-9]\d{9}$/.test(phone)) {
+    const cleanPhone = String(address.phone || '').replace(/\D/g, '').slice(-10)
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
       return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
     }
 
@@ -294,8 +296,9 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 12: Atomic stock decrement — BEFORE creating the order
-    // Two simultaneous orders cannot both succeed if stock is 1
+    // STEP 13: Atomic stock decrement — BEFORE creating the order
+    // decrement_stock returns boolean; false means insufficient stock
+    // Rollback any already-decremented items if one fails
     // ══════════════════════════════════════════════════════
     for (const item of serverItems) {
       const { data: success, error: stockErr } = await supabase.rpc('decrement_stock', {
@@ -306,7 +309,6 @@ export async function POST(req: NextRequest) {
       if (stockErr || success === false) {
         console.error('[Stock] Insufficient stock for:', item.name)
 
-        // Rollback: re-increment any items already decremented in this loop
         for (const prevItem of serverItems) {
           if (prevItem.id === item.id) break
           await supabase.rpc('increment_stock', {
@@ -324,7 +326,7 @@ export async function POST(req: NextRequest) {
     console.log('[Stock] Decremented ✓')
 
     // ══════════════════════════════════════════════════════
-    // STEP 13: Save order with SERVER-CALCULATED values
+    // STEP 14: Save order with SERVER-CALCULATED values
     // ══════════════════════════════════════════════════════
     const orderStatus = isCOD ? 'pending' : 'paid'
 
@@ -353,7 +355,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 14: Insert order_items with SERVER prices
+    // STEP 15: Insert order_items with SERVER prices
     // ══════════════════════════════════════════════════════
     try {
       const orderItemsRows = serverItems.map((item) => ({
@@ -378,7 +380,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 15: Mark early access discount as used
+    // STEP 16: Mark early access discount as used
     // ══════════════════════════════════════════════════════
     if (isEarlyAccess) {
       try {
@@ -408,7 +410,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 16: Shiprocket order
+    // STEP 17: Shiprocket order
     // ══════════════════════════════════════════════════════
     let shiprocketOrderId: string | null = null
     let awbCode: string | null = null
@@ -506,7 +508,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
-    // STEP 17: WhatsApp notification
+    // STEP 18: WhatsApp notification
     // ══════════════════════════════════════════════════════
     try {
       const customerPhone = address.phone || null
