@@ -170,9 +170,9 @@ export default function CartPage() {
                     </span>
                     <button
                       onClick={() => increaseQty(item.id)}
-                      disabled={item.quantity >= 10}
+                      disabled={item.quantity >= item.stock_count}
                       className={`w-7 h-7 rounded-full border flex items-center justify-center transition-colors ${
-                        item.quantity >= 10
+                        item.quantity >= item.stock_count
                           ? "border-gray-100 text-gray-300 cursor-not-allowed"
                           : "border-gray-200 hover:border-[#1A237E] hover:text-[#1A237E] cursor-pointer"
                       }`}
