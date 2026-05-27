@@ -199,7 +199,7 @@ export default function HeroCarousel({ products }: Props) {
       </div>
 
       {/* ── Thumbnail row ── */}
-      <div className="shrink-0 flex items-center justify-center gap-2.5 lg:gap-4 pb-4 lg:pb-6 pt-1 relative z-10">
+      <div className="shrink-0 flex items-center justify-center gap-3 lg:gap-4 pb-4 lg:pb-6 pt-1 relative z-10">
         {displayProducts.map((product, i) => {
           const isActive = i === activeIndex;
           return (
@@ -207,36 +207,48 @@ export default function HeroCarousel({ products }: Props) {
               key={product.id}
               onClick={() => handleThumbnailClick(i)}
               aria-label={`View ${product.name}`}
-              className="shrink-0 cursor-pointer rounded-2xl overflow-hidden"
+              className="shrink-0 group w-18 h-18 lg:w-25 lg:h-25"
               style={{
-                width: "56px",
-                height: "56px",
-                padding: "4px",
-                borderRadius: "12px",
+                padding: "8px",
+                borderRadius: "16px",
                 background: isActive
                   ? "rgba(255,255,255,0.9)"
                   : "rgba(255,255,255,0.6)",
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(8px)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
                 boxShadow: isActive
-                  ? "0 0 0 2px rgba(26,35,126,0.3), 0 4px 20px rgba(26,35,126,0.15)"
+                  ? "0 0 0 2px rgba(26,35,126,0.25), 0 8px 24px rgba(26,35,126,0.12)"
                   : "0 2px 12px rgba(0,0,0,0.06)",
-                opacity: isActive ? 1 : 0.65,
-                transform: isActive ? "translateY(-3px) scale(1.05)" : "scale(1)",
+                border: "none",
+                opacity: isActive ? 1 : 0.55,
+                transform: isActive ? "translateY(-4px) scale(1.08)" : "translateY(0) scale(1)",
+                cursor: "pointer",
                 transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLButtonElement).style.opacity = "0.8";
+                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px) scale(1)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLButtonElement).style.opacity = "0.55";
+                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0) scale(1)";
+                }
               }}
             >
               {product.image_url ? (
                 <Image
                   src={product.image_url}
                   alt={product.name}
-                  width={56}
-                  height={56}
-                  className="w-full h-full object-contain rounded-lg"
+                  width={100}
+                  height={100}
+                  className="w-full h-full object-contain rounded-xl"
                 />
               ) : (
                 <div
-                  className={`w-full h-full rounded-lg bg-linear-to-br ${GRADIENT_MAP[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]"}`}
+                  className={`w-full h-full rounded-xl bg-linear-to-br ${GRADIENT_MAP[product.category] ?? "from-[#DCD9F8] to-[#DCEFFF]"}`}
                 />
               )}
             </button>
