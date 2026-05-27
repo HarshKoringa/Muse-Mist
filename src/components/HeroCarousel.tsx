@@ -8,8 +8,6 @@ import { Product } from "@/types/product";
 const ROTATION_INTERVAL = 3500;
 const EASE_OUT_QUAD = [0.25, 0.46, 0.45, 0.94] as const;
 
-// Per-product tilt angles for the photo-frame effect
-const FRAME_ROTATIONS = [2, -1.5, 3, -2, 1];
 
 const HEADLINE_MAP: Record<string, string> = {
   "cleanse-clear-calm": "Deep Detox. Zero Drama.",
@@ -17,6 +15,19 @@ const HEADLINE_MAP: Record<string, string> = {
   "barrier-repair": "72H Hydration. Zero Stickiness.",
   "smooth-and-spotless": "Dark Spots? Consider Them Gone.",
   "reset-to-radiance": "15% Vitamin C. 24H Glow.",
+};
+
+const HERO_IMAGES: Record<string, string> = {
+  "cleanse-clear-calm":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-cleanse-clear-calm.png",
+  "invisible-glow-shield":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-invisible-glow-shield.png",
+  "smooth-and-spotless":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-smooth-and-spotless.png",
+  "barrier-repair":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-barrier-repair.png",
+  "reset-to-radiance":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-reset-to-radiance.png",
 };
 
 const GRADIENT_MAP: Record<string, string> = {
@@ -74,7 +85,6 @@ export default function HeroCarousel({ products }: Props) {
     ? (HEADLINE_MAP[activeProduct.slug] ?? activeProduct.name)
     : "";
 
-  const frameRotation = FRAME_ROTATIONS[activeIndex % FRAME_ROTATIONS.length];
 
   return (
     <section
@@ -164,34 +174,24 @@ export default function HeroCarousel({ products }: Props) {
             {activeProduct && (
               <motion.div
                 key={`hero-img-${activeIndex}`}
-                initial={{ opacity: 0, scale: 0.95, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: frameRotation }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.02 }}
                 transition={{ duration: 0.6, ease: EASE_OUT_QUAD }}
                 style={{
-                  background: "white",
-                  padding: "12px",
-                  borderRadius: "4px",
-                  boxShadow:
-                    "0 4px 6px rgba(0,0,0,0.05), 0 10px 30px rgba(0,0,0,0.10), 0 20px 60px rgba(0,0,0,0.05)",
-                  width: "clamp(200px, 55vw, 320px)",
+                  maxWidth: "320px",
+                  maxHeight: "300px",
                 }}
-                className="lg:w-112.5"
+                className="lg:max-w-137.5 lg:max-h-125"
               >
-                {activeProduct.image_url ? (
-                  <Image
-                    src={activeProduct.image_url}
-                    alt={activeProduct.name}
-                    width={500}
-                    height={500}
-                    className="w-full h-auto rounded-sm block"
-                    priority
-                  />
-                ) : (
-                  <div
-                    className={`w-full aspect-square rounded-sm bg-linear-to-br ${GRADIENT_MAP[activeProduct.category] ?? "from-[#DCD9F8] to-[#DCEFFF]"}`}
-                  />
-                )}
+                <Image
+                  src={HERO_IMAGES[activeProduct.slug] ?? activeProduct.image_url ?? ""}
+                  alt={activeProduct.name}
+                  width={550}
+                  height={500}
+                  className="w-full h-full object-contain block"
+                  priority
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -207,34 +207,27 @@ export default function HeroCarousel({ products }: Props) {
               key={product.id}
               onClick={() => handleThumbnailClick(i)}
               aria-label={`View ${product.name}`}
-              className="shrink-0 group w-18 h-18 lg:w-25 lg:h-25"
+              className="shrink-0 w-20 h-20 lg:w-30 lg:h-30"
               style={{
-                padding: "8px",
-                borderRadius: "16px",
-                background: isActive
-                  ? "rgba(255,255,255,0.9)"
-                  : "rgba(255,255,255,0.6)",
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-                boxShadow: isActive
-                  ? "0 0 0 2px rgba(26,35,126,0.25), 0 8px 24px rgba(26,35,126,0.12)"
-                  : "0 2px 12px rgba(0,0,0,0.06)",
+                background: "transparent",
                 border: "none",
-                opacity: isActive ? 1 : 0.55,
-                transform: isActive ? "translateY(-4px) scale(1.08)" : "translateY(0) scale(1)",
+                padding: 0,
                 cursor: "pointer",
+                opacity: isActive ? 1 : 0.5,
+                transform: isActive ? "scale(1.1)" : "scale(1)",
+                filter: isActive
+                  ? "drop-shadow(0 4px 12px rgba(26,35,126,0.25))"
+                  : "none",
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLButtonElement).style.opacity = "0.8";
-                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px) scale(1)";
+                  (e.currentTarget as HTMLButtonElement).style.opacity = "0.75";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLButtonElement).style.opacity = "0.55";
-                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0) scale(1)";
+                  (e.currentTarget as HTMLButtonElement).style.opacity = "0.5";
                 }
               }}
             >
@@ -242,9 +235,9 @@ export default function HeroCarousel({ products }: Props) {
                 <Image
                   src={product.image_url}
                   alt={product.name}
-                  width={100}
-                  height={100}
-                  className="w-full h-full object-contain rounded-xl"
+                  width={120}
+                  height={120}
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <div
