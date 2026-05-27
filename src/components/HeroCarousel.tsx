@@ -121,7 +121,7 @@ export default function HeroCarousel({ products }: Props) {
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 px-6 sm:px-12 max-w-7xl mx-auto w-full relative z-10">
 
         {/* Brand text column */}
-        <div className="shrink-0 lg:w-2/5 flex flex-col justify-center py-3 lg:py-10 lg:pr-8">
+        <div className="shrink-0 lg:w-2/5 flex flex-col justify-center py-3 lg:py-10 lg:pr-8" style={{ minHeight: "200px" }}>
           <p
             style={{ fontFamily: "var(--font-display)", fontSize: "11px", letterSpacing: "4px" }}
             className="uppercase text-[#6B7280] font-medium mb-1 lg:text-[16px] lg:tracking-[5px] lg:mb-2"
@@ -135,24 +135,26 @@ export default function HeroCarousel({ products }: Props) {
             Where Science Meets Soul
           </p>
 
-          <AnimatePresence mode="wait">
-            <motion.h1
-              key={`headline-${activeIndex}`}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "24px",
-                lineHeight: 1.15,
-                maxWidth: "280px",
-              }}
-              className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[52px] lg:max-w-[520px]"
-            >
-              {headline}
-            </motion.h1>
-          </AnimatePresence>
+          <div style={{ minHeight: "70px" }} className="lg:min-h-32.5">
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={`headline-${activeIndex}`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "24px",
+                  lineHeight: 1.15,
+                  maxWidth: "280px",
+                }}
+                className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[52px] lg:max-w-130"
+              >
+                {headline}
+              </motion.h1>
+            </AnimatePresence>
+          </div>
 
           <button
             onClick={handleScrollToProducts}
@@ -181,7 +183,7 @@ export default function HeroCarousel({ products }: Props) {
                 style={{
                   maxWidth: "240px",
                 }}
-                className="lg:max-w-150"
+                className="lg:max-w-162.5"
               >
                 <Image
                   src={HERO_IMAGES[activeProduct.slug] ?? activeProduct.image_url ?? ""}
