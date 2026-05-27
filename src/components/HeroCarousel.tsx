@@ -35,9 +35,9 @@ const ROUTINE_ORDER = [
 ];
 
 const BG_DESKTOP =
-  "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-bg-desktop-v2.png";
+  "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-bg-desktop-v2.jpg";
 const BG_MOBILE =
-  "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-bg-mobile-v2.png";
+  "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-bg-mobile-v2.jpg";
 
 type Props = { products: Product[] };
 
