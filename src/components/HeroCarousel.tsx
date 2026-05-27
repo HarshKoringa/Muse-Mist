@@ -19,15 +19,15 @@ const HEADLINE_MAP: Record<string, string> = {
 
 const HERO_IMAGES: Record<string, string> = {
   "cleanse-clear-calm":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-cleanse-clear-calm.png",
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-foam-facewash.png",
   "invisible-glow-shield":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-invisible-glow-shield.png",
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-sunscreen.png",
   "smooth-and-spotless":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-smooth-and-spotless.png",
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-niacinamied.png",
   "barrier-repair":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-barrier-repair.png",
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-moisturizer.png",
   "reset-to-radiance":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-reset-to-radiance.png",
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-vitaminC.png",
 };
 
 const GRADIENT_MAP: Record<string, string> = {
