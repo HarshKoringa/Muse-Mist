@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -i \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(git rm *)",
+      "Bash(git pull *)",
+      "Bash(dir \"C:\\\\Users\\\\ASUS\\\\Desktop\\\\M&M\\\\Muse-Mist\\\\src\\\\components\\\\CartDrawer.tsx\")",
+      "Bash(ls /c/Users/ASUS/Desktop/M+M/Muse-Mist/src/components/ 2>/dev/null || ls \"/c/Users/ASUS/Desktop/M&M/Muse-Mist/src/components/\" 2>/dev/null)",
+      "Read(//c/Users/ASUS/Desktop/M+M/Muse-Mist/src/**)",
+      "Bash(npm audit *)",
+      "Bash(git -C \"/c/Users/ASUS/Desktop/M&M/Muse-Mist\" log --all --oneline -- \"*.env*\" \".env\" \".env.local\" \".env.production\")",
+      "Bash(git -C \"/c/Users/ASUS/Desktop/M&M/Muse-Mist\" log --all --full-history -- \"**/.env\" \".env*\")",
+      "Bash(git merge *)"
+    ]
+  }
+}
