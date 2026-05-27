@@ -124,13 +124,13 @@ export default function HeroCarousel({ products }: Props) {
         <div className="shrink-0 lg:w-2/5 flex flex-col justify-center py-3 lg:py-10 lg:pr-8" style={{ minHeight: "200px" }}>
           <p
             style={{ fontFamily: "var(--font-display)", fontSize: "11px", letterSpacing: "4px" }}
-            className="uppercase text-[#6B7280] font-medium mb-1 lg:text-[16px] lg:tracking-[5px] lg:mb-2"
+            className="uppercase text-[#6B7280] font-medium mb-1 lg:text-[18px] lg:tracking-[6px] lg:mb-2"
           >
             Muse &amp; Mist
           </p>
           <p
             style={{ fontFamily: "var(--font-display)", fontSize: "13px" }}
-            className="italic text-[#9CA3AF] mb-3 lg:text-[18px] lg:mb-4"
+            className="italic text-[#9CA3AF] mb-3 lg:text-[20px] lg:mb-4"
           >
             Where Science Meets Soul
           </p>
@@ -138,10 +138,10 @@ export default function HeroCarousel({ products }: Props) {
           <div style={{ minHeight: "70px" }} className="lg:min-h-32.5">
             <AnimatePresence mode="wait">
               <motion.h1
-                key={`headline-${activeIndex}`}
-                initial={{ opacity: 0, y: 15 }}
+                key={activeIndex}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 style={{
                   fontFamily: "var(--font-display)",
@@ -149,7 +149,7 @@ export default function HeroCarousel({ products }: Props) {
                   lineHeight: 1.15,
                   maxWidth: "280px",
                 }}
-                className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[52px] lg:max-w-130"
+                className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[56px] lg:leading-[1.1] lg:max-w-130"
               >
                 {headline}
               </motion.h1>
@@ -159,7 +159,7 @@ export default function HeroCarousel({ products }: Props) {
           <button
             onClick={handleScrollToProducts}
             style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600, padding: "10px 28px" }}
-            className="w-fit rounded-full bg-[#1A237E] text-white hover:bg-[#151c6b] transition-colors cursor-pointer lg:text-[16px] lg:px-10 lg:py-3.5"
+            className="w-fit rounded-full bg-[#1A237E] text-white hover:bg-[#151c6b] transition-colors cursor-pointer lg:text-[17px] lg:px-11 lg:py-4"
           >
             Shop Now →
           </button>
@@ -175,11 +175,11 @@ export default function HeroCarousel({ products }: Props) {
           <AnimatePresence mode="wait">
             {activeProduct && (
               <motion.div
-                key={`hero-img-${activeIndex}`}
-                initial={{ opacity: 0, scale: 0.95 }}
+                key={activeIndex}
+                initial={{ opacity: 0, scale: 0.93 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                transition={{ duration: 0.6, ease: EASE_OUT_QUAD }}
+                exit={{ opacity: 0, scale: 1.03 }}
+                transition={{ duration: 0.7, ease: EASE_OUT_QUAD }}
                 className="max-w-60 lg:max-w-162.5 w-full"
               >
                 <Image
