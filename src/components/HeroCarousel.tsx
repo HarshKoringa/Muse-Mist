@@ -167,7 +167,7 @@ export default function HeroCarousel({ products }: Props) {
 
         {/* Photo-frame image column */}
         <div
-          className="flex-1 relative min-h-0 flex items-center justify-center cursor-pointer"
+          className="flex-1 lg:w-3/5 relative min-h-0 flex items-center justify-center cursor-pointer"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onClick={handleScrollToProducts}
@@ -180,17 +180,14 @@ export default function HeroCarousel({ products }: Props) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.02 }}
                 transition={{ duration: 0.6, ease: EASE_OUT_QUAD }}
-                style={{
-                  maxWidth: "240px",
-                }}
-                className="lg:max-w-162.5"
+                className="max-w-60 lg:max-w-162.5 w-full"
               >
                 <Image
                   src={HERO_IMAGES[activeProduct.slug] ?? activeProduct.image_url ?? ""}
                   alt={activeProduct.name}
-                  width={550}
-                  height={500}
-                  className="w-full h-full object-contain block"
+                  width={700}
+                  height={700}
+                  className="w-full h-auto object-contain block"
                   priority
                 />
               </motion.div>
