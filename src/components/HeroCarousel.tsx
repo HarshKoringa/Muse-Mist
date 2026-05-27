@@ -123,14 +123,14 @@ export default function HeroCarousel({ products }: Props) {
         {/* Brand text column */}
         <div className="shrink-0 lg:w-2/5 flex flex-col justify-center py-3 lg:py-10 lg:pr-8">
           <p
-            style={{ fontFamily: "var(--font-display)", fontSize: "12px", letterSpacing: "4px" }}
-            className="uppercase text-[#6B7280] font-medium mb-1 lg:text-[15px] lg:mb-2"
+            style={{ fontFamily: "var(--font-display)", fontSize: "11px", letterSpacing: "4px" }}
+            className="uppercase text-[#6B7280] font-medium mb-1 lg:text-[16px] lg:tracking-[5px] lg:mb-2"
           >
             Muse &amp; Mist
           </p>
           <p
-            style={{ fontFamily: "var(--font-display)", fontSize: "14px" }}
-            className="italic text-[#9CA3AF] mb-3 lg:text-[17px] lg:mb-4"
+            style={{ fontFamily: "var(--font-display)", fontSize: "13px" }}
+            className="italic text-[#9CA3AF] mb-3 lg:text-[18px] lg:mb-4"
           >
             Where Science Meets Soul
           </p>
@@ -144,11 +144,11 @@ export default function HeroCarousel({ products }: Props) {
               transition={{ duration: 0.5, ease: "easeOut" }}
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "28px",
+                fontSize: "24px",
                 lineHeight: 1.15,
-                maxWidth: "300px",
+                maxWidth: "280px",
               }}
-              className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[48px] lg:max-w-112.5"
+              className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[52px] lg:max-w-[520px]"
             >
               {headline}
             </motion.h1>
@@ -156,8 +156,8 @@ export default function HeroCarousel({ products }: Props) {
 
           <button
             onClick={handleScrollToProducts}
-            style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600 }}
-            className="w-fit px-7 py-2.5 lg:px-9 lg:py-3.5 lg:text-[15px] rounded-full bg-[#1A237E] text-white hover:bg-[#151c6b] transition-colors cursor-pointer"
+            style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600, padding: "10px 28px" }}
+            className="w-fit rounded-full bg-[#1A237E] text-white hover:bg-[#151c6b] transition-colors cursor-pointer lg:text-[16px] lg:px-10 lg:py-3.5"
           >
             Shop Now →
           </button>
@@ -179,10 +179,9 @@ export default function HeroCarousel({ products }: Props) {
                 exit={{ opacity: 0, scale: 1.02 }}
                 transition={{ duration: 0.6, ease: EASE_OUT_QUAD }}
                 style={{
-                  maxWidth: "320px",
-                  maxHeight: "300px",
+                  maxWidth: "240px",
                 }}
-                className="lg:max-w-137.5 lg:max-h-125"
+                className="lg:max-w-150"
               >
                 <Image
                   src={HERO_IMAGES[activeProduct.slug] ?? activeProduct.image_url ?? ""}
@@ -207,7 +206,7 @@ export default function HeroCarousel({ products }: Props) {
               key={product.id}
               onClick={() => handleThumbnailClick(i)}
               aria-label={`View ${product.name}`}
-              className="shrink-0 w-20 h-20 lg:w-30 lg:h-30"
+              className="shrink-0 w-14 h-14 lg:w-25 lg:h-25"
               style={{
                 background: "transparent",
                 border: "none",
