@@ -488,10 +488,14 @@ export default function CartDrawer() {
                     )}
                   </button>
 
-                  <p style={{ fontFamily: "var(--font-body)" }} className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1">
-                    <Lock size={10} />
-                    Secure checkout · Powered by Razorpay &amp; Shiprocket
-                  </p>
+                  <div className="flex items-center justify-center gap-1.5 mt-3 bg-[#F0EEFF] rounded-lg py-2 px-4">
+                    <Lock size={14} className="text-[#1A237E]" />
+                    <span className="text-xs font-semibold text-[#1A237E]">Secure checkout</span>
+                    <span className="text-xs text-gray-400">·</span>
+                    <span className="text-xs text-gray-600">
+                      Powered by <strong className="text-[#1A237E]">Razorpay</strong> &amp; <strong className="text-[#1A237E]">Shiprocket</strong>
+                    </span>
+                  </div>
                 </div>
               </>
             )}
