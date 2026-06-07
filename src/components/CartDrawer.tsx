@@ -449,38 +449,38 @@ export default function CartDrawer() {
                   <button
                     onClick={handleProceed}
                     disabled={loading || items.length === 0}
-                    style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
-                    className={`w-full py-4 px-5 rounded-xl text-base font-semibold flex items-center justify-between transition-opacity ${
+                    style={{ fontFamily: "var(--font-body)" }}
+                    className={`w-full py-3.5 px-4 rounded-xl font-semibold flex flex-row items-center justify-center gap-4 flex-nowrap transition-opacity ${
                       loading || items.length === 0
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-[#1A237E] text-white hover:opacity-90 cursor-pointer"
                     }`}
                   >
                     {loading ? (
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 text-[15px]">
                         <Loader2 size={18} className="animate-spin" />
                         Processing...
                       </span>
                     ) : (
                       <>
-                        <span className="font-bold whitespace-nowrap">
+                        <span className="text-[15px] font-bold whitespace-nowrap">
                           {selectedMethod === "cod"
                             ? `Proceed to Checkout — ₹${displayTotal.toLocaleString("en-IN")}`
                             : `Checkout Now — ₹${displayTotal.toLocaleString("en-IN")}`}
                         </span>
                         {selectedMethod !== "cod" && (
-                          <div className="flex flex-row items-center gap-2 shrink-0 ml-3">
-                            <div className="bg-white rounded-md p-1">
+                          <div className="flex flex-row items-center shrink-0 -space-x-1.5">
+                            <div className="bg-white rounded-md p-0.5 border-2 border-[#1A237E] relative z-30">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Gpay-icon.png" alt="GPay" className="h-6 w-auto" />
+                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Gpay-icon.png" alt="GPay" className="h-5 w-5 object-contain" />
                             </div>
-                            <div className="bg-white rounded-md p-1">
+                            <div className="bg-white rounded-md p-0.5 border-2 border-[#1A237E] relative z-20">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Visa-icon.png" alt="Visa" className="h-6 w-auto" />
+                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Visa-icon.png" alt="Visa" className="h-5 w-5 object-contain" />
                             </div>
-                            <div className="bg-white rounded-md p-1">
+                            <div className="bg-white rounded-md p-0.5 border-2 border-[#1A237E] relative z-10">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Paytm-icon.png" alt="Paytm" className="h-6 w-auto" />
+                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Paytm-icon.png" alt="Paytm" className="h-5 w-5 object-contain" />
                             </div>
                           </div>
                         )}
@@ -488,12 +488,15 @@ export default function CartDrawer() {
                     )}
                   </button>
 
-                  <div className="flex items-center justify-center gap-1.5 mt-3 bg-[#F0EEFF] rounded-lg py-2 px-4">
-                    <Lock size={14} className="text-[#1A237E]" />
-                    <span className="text-xs font-semibold text-[#1A237E]">Secure checkout</span>
-                    <span className="text-xs text-gray-400">·</span>
-                    <span className="text-xs text-gray-600">
-                      Powered by <strong className="text-[#1A237E]">Razorpay</strong> &amp; <strong className="text-[#1A237E]">Shiprocket</strong>
+                  <div className="flex items-center justify-center gap-2 mt-2.5 bg-[#F0EEFF] rounded-lg py-2 px-3">
+                    <Lock size={13} className="text-[#1A237E] shrink-0" />
+                    <span className="text-[11px] text-center leading-tight">
+                      <strong className="text-[#1A237E]">Secure checkout</strong>
+                      <span className="text-gray-400"> · </span>
+                      <span className="text-gray-500">Powered by </span>
+                      <strong className="text-[#1A237E]">Razorpay</strong>
+                      <span className="text-gray-500"> &amp; </span>
+                      <strong className="text-[#1A237E]">Shiprocket</strong>
                     </span>
                   </div>
                 </div>
