@@ -68,9 +68,8 @@ function AddressForm() {
         .single()
         .then(({ data: profile }) => {
           if (profile) {
-            const phone = (profile.phone_number || '')
-              .replace(/\D/g, '')
-              .replace(/^91/, '')
+            const allDigits = (profile.phone_number || '').replace(/\D/g, '')
+            const phone = allDigits.length > 10 && allDigits.startsWith('91') ? allDigits.slice(2) : allDigits
             setForm(prev => ({
               ...prev,
               name: profile.full_name || '',
