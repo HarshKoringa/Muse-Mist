@@ -450,35 +450,40 @@ export default function CartDrawer() {
                     onClick={handleProceed}
                     disabled={loading || items.length === 0}
                     style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
-                    className={`w-full py-4 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-opacity ${
+                    className={`w-full py-4 px-5 rounded-xl text-base font-semibold flex items-center justify-between transition-opacity ${
                       loading || items.length === 0
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-[#1A237E] text-white hover:opacity-90 cursor-pointer"
                     }`}
                   >
                     {loading ? (
-                      <>
+                      <span className="flex items-center gap-2">
                         <Loader2 size={18} className="animate-spin" />
                         Processing...
-                      </>
-                    ) : selectedMethod === "cod" ? (
-                      `Proceed to Checkout — ₹${displayTotal.toLocaleString("en-IN")}`
+                      </span>
                     ) : (
-                      `Proceed to Payment — ₹${displayTotal.toLocaleString("en-IN")}`
+                      <>
+                        <span className="font-bold">
+                          {selectedMethod === "cod"
+                            ? `Proceed to Checkout — ₹${displayTotal.toLocaleString("en-IN")}`
+                            : `Proceed to Payment — ₹${displayTotal.toLocaleString("en-IN")}`}
+                        </span>
+                        {selectedMethod !== "cod" && (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {["GPay", "VISA", "Paytm", "UPI"].map((label) => (
+                              <span key={label} style={{ fontFamily: "var(--font-body)", fontSize: "9px" }} className="font-bold bg-white/20 px-1.5 py-0.5 rounded">
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </button>
 
-                  {/* Trust signals */}
-                  <div className="flex items-center justify-center gap-3 mt-1">
-                    {["GPay", "Visa", "Mastercard", "Paytm", "UPI", "RuPay"].map((label) => (
-                      <span key={label} style={{ fontFamily: "var(--font-body)" }} className="text-[10px] text-gray-400 font-medium">
-                        {label}
-                      </span>
-                    ))}
-                  </div>
                   <p style={{ fontFamily: "var(--font-body)" }} className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1">
                     <Lock size={10} />
-                    100% Secure Payment | COD Available
+                    Secure checkout · Powered by Razorpay &amp; Shiprocket
                   </p>
                 </div>
               </>
