@@ -15,7 +15,8 @@ export async function sendWhatsAppMessage({
     throw new Error(`Missing Twilio credentials: sid=${!!accountSid} token=${!!authToken} from=${!!fromPhone}`)
   }
 
-  const digits = phone.replace(/\D/g, '').replace(/^91/, '')
+  const allDigits = phone.replace(/\D/g, '')
+  const digits = allDigits.length > 10 && allDigits.startsWith('91') ? allDigits.slice(2) : allDigits
   const toPhone = `whatsapp:+91${digits.slice(-10)}`
 
   console.log('[WhatsApp] Attempting:', {

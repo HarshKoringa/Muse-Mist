@@ -420,7 +420,8 @@ export async function POST(req: NextRequest) {
       const firstName = nameParts[0] ?? 'Customer'
       const lastName = nameParts.slice(1).join(' ') || 'Customer'
 
-      const rawPhone = (address.phone ?? '').toString().replace(/\D/g, '').replace(/^91/, '')
+      const allDigits = (address.phone ?? '').toString().replace(/\D/g, '')
+      const rawPhone = allDigits.length > 10 && allDigits.startsWith('91') ? allDigits.slice(2) : allDigits
       const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
 
       const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
