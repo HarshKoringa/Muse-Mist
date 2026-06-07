@@ -3,12 +3,27 @@
 import { motion } from 'framer-motion'
 import { CheckCircle2, ArrowRight, Clock } from 'lucide-react'
 import Link from 'next/link'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { trackPurchase } from '@/lib/pixel'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('order_id')
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem('pixel_purchase_data')
+    if (!raw) return
+    try {
+      const data = JSON.parse(raw)
+      trackPurchase({
+        orderId: data.order_id || orderId || 'unknown',
+        total: data.total,
+        items: data.items || [],
+      })
+    } catch {}
+    sessionStorage.removeItem('pixel_purchase_data')
+  }, [orderId])
 
   return (
     <main className="min-h-screen bg-[#DCEFFF] flex items-center justify-center px-4 pt-20">

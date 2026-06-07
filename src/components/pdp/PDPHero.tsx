@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { useCartStore } from '@/store/cartStore'
 import { useCartUIStore } from '@/store/cartUIStore'
 import AddedToast from '@/components/AddedToast'
+import { trackAddToCart } from '@/lib/pixel'
 
 const gradientMap: Record<string, string> = {
   Sunscreen:   'from-[#DCEFFF] via-[#DCD9F8] to-white',
@@ -45,6 +46,7 @@ export default function PDPHero({ product }: Props) {
       image_url: product.image_url ?? null,
       size: product.size ?? null,
     })
+    trackAddToCart({ name: product.name, slug: product.slug, price: product.price, quantity: 1 })
     openCart()
     setShowToast(true)
     setTimeout(() => setShowToast(false), 2000)

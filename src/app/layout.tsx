@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import ContentWrapper from "@/components/ContentWrapper";
 import BottomNav from "@/components/BottomNav";
+import MetaPixel from "@/components/MetaPixel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,6 +86,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${dmSans.variable} antialiased`}
       >
         <ToastProvider>
+          <MetaPixel />
           <Header />
           <ToastContainer />
           <CartDrawer />

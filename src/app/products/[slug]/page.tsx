@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import PDPHero from '@/components/pdp/PDPHero'
 import PDPIngredients from '@/components/pdp/PDPIngredients'
 import PDPRoutine from '@/components/pdp/PDPRoutine'
+import PixelViewContent from '@/components/PixelViewContent'
 import { Product } from '@/types/product'
 
 type Props = {
@@ -23,6 +24,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-white">
+      <PixelViewContent product={product as Product} />
       <PDPHero product={product as Product} />
       <PDPIngredients product={product as Product} />
       <PDPRoutine product={product as Product} />

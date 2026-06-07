@@ -146,6 +146,12 @@ function AddressForm() {
         const verifyData = await verifyRes.json()
         if (verifyData.error) throw new Error(verifyData.error)
 
+        try {
+          const cd = JSON.parse(sessionStorage.getItem('checkout_data') || '{}')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          sessionStorage.setItem('pixel_purchase_data', JSON.stringify({ order_id: verifyData.order_id, total: cd.total, items: (cd.items || []).map((i: any) => ({ slug: i.slug, quantity: i.quantity, price: i.final_price ?? i.price })) }))
+        } catch {}
+
         sessionStorage.removeItem('checkout_data')
         clearCart()
         router.push(`/checkout/success?order_id=${verifyData.order_id}`)
@@ -194,6 +200,11 @@ function AddressForm() {
             alert('Order confirmation failed. Please contact support.')
             return
           }
+          try {
+            const cd = JSON.parse(sessionStorage.getItem('checkout_data') || '{}')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sessionStorage.setItem('pixel_purchase_data', JSON.stringify({ order_id: verifyData.order_id, total: cd.total, items: (cd.items || []).map((i: any) => ({ slug: i.slug, quantity: i.quantity, price: i.final_price ?? i.price })) }))
+          } catch {}
           sessionStorage.removeItem('checkout_data')
           clearCart()
           router.push(`/checkout/success?order_id=${verifyData.order_id}`)

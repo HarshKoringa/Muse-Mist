@@ -10,6 +10,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
 import { createClient } from "@/utils/supabase/client";
 import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
+import { trackInitiateCheckout } from "@/lib/pixel";
 
 const COD_CHARGE = 50;
 
@@ -104,6 +105,12 @@ export default function CartDrawer() {
         router.push("/login?redirect=checkout");
         return;
       }
+
+      trackInitiateCheckout({
+        slugs: items.map((i) => i.slug),
+        total: displayTotal,
+        numItems: totalItemCount,
+      });
 
       const res = await fetch("/api/checkout", {
         method: "POST",

@@ -9,6 +9,7 @@ import { ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
 import AddedToast from "./AddedToast";
+import { trackAddToCart } from "@/lib/pixel";
 
 type Props = {
   product: Product;
@@ -71,6 +72,7 @@ export default function ProductCard({ product, variant = "full" }: Props) {
       image_url: product.image_url,
       size: product.size ?? null,
     });
+    trackAddToCart({ name: product.name, slug: product.slug, price: product.price, quantity: 1 });
     openCart();
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
