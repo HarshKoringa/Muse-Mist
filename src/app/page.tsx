@@ -26,19 +26,18 @@ export default async function Home() {
       <HeroCarousel products={products ?? []} />
 
       {/* Product section — White */}
-      <section id="products" className="w-full px-6 sm:px-12 py-24 bg-white">
+      <section id="products" className="w-full px-6 sm:px-12 pt-8 sm:pt-12 pb-0 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-16 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 sm:mb-6 gap-1 sm:gap-4">
             <div>
-              <p className="text-xs tracking-[0.3em] uppercase text-[#1A237E] mb-3 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
+              <p className="text-[11px] tracking-[0.3em] uppercase text-[#1A237E] mb-2 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
                 The Edit
               </p>
-              <h2 style={{ fontFamily: 'var(--font-display)' }} className="text-[52px] sm:text-[64px] font-light text-[#0D1117] leading-tight">
-                Five formulas.<br />
-                <em className="text-[#1A237E]">One ritual.</em>
+              <h2 style={{ fontFamily: 'var(--font-display)' }} className="text-2xl sm:text-[32px] font-light text-[#0D1117] leading-tight">
+                Five formulas. <em className="text-[#1A237E]">One ritual.</em>
               </h2>
             </div>
-            <p style={{ fontFamily: 'var(--font-body)' }} className="text-sm text-[#4B5563] max-w-xs leading-relaxed font-light sm:text-right">
+            <p style={{ fontFamily: 'var(--font-body)' }} className="text-[13px] text-[#4B5563] max-w-[300px] leading-relaxed font-light sm:text-right">
               Skin that speaks before you do. Each product designed
               to work alone or as a complete ritual.
             </p>
