@@ -470,12 +470,18 @@ export default function CartDrawer() {
                         </span>
                         {selectedMethod !== "cod" && (
                           <div className="flex flex-row items-center gap-2 shrink-0 ml-3">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Gpay-icon.png" alt="GPay" className="h-5 rounded-sm" />
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Visa-icon.png" alt="Visa" className="h-5 rounded-sm" />
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Paytm-icon.png" alt="Paytm" className="h-5 rounded-sm" />
+                            <div className="bg-white rounded-md p-1">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Gpay-icon.png" alt="GPay" className="h-6 w-auto" />
+                            </div>
+                            <div className="bg-white rounded-md p-1">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Visa-icon.png" alt="Visa" className="h-6 w-auto" />
+                            </div>
+                            <div className="bg-white rounded-md p-1">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Paytm-icon.png" alt="Paytm" className="h-6 w-auto" />
+                            </div>
                           </div>
                         )}
                       </>
