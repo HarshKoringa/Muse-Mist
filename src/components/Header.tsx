@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
@@ -10,16 +10,15 @@ import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
 
+const LOGO_ICON = "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/logo-icon.png";
+const LOGO_TEXT = "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/logo-text.png";
+
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const isDarkHero = pathname === '/' || pathname === '/routine' || pathname === '/about';
 
   const [mounted, setMounted] = useState(false);
-  const [active, setActive] = useState<string>("");
-  const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const supabase = createClient();
   const [cartCount, setCartCount] = useState(0);
@@ -64,7 +63,6 @@ export default function Header() {
 
     const onScroll = () => {
       const currentY = window.scrollY;
-      setScrolled(currentY > 80);
 
       if (!ticking) {
         window.requestAnimationFrame(() => {
@@ -85,82 +83,46 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    const sections = Array.from(
-      document.querySelectorAll("section[id]"),
-    ) as HTMLElement[];
-
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActive(entry.target.id);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: "-30% 0px -60% 0px",
-        threshold: [0, 0.25, 0.5],
-      },
-    );
-
-    sections.forEach((s) => observerRef.current?.observe(s));
-
-    const handleHash = () =>
-      setActive(window.location.hash.replace("#", "") || "");
-    handleHash();
-    window.addEventListener("hashchange", handleHash);
-
-    return () => {
-      observerRef.current?.disconnect();
-      window.removeEventListener("hashchange", handleHash);
-    };
-  }, []);
-
-  const isDark = mounted && isDarkHero && !scrolled;
-
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-40 transform transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"} ${isDark ? 'bg-white/70 backdrop-blur-sm border-b border-white/40' : 'bg-white/80 backdrop-blur-xl border-b border-white/40 shadow-sm shadow-black/5'}`}
+      className={`fixed top-0 left-0 right-0 z-40 transform transition-all duration-300 bg-white/85 backdrop-blur-[10px] border-b border-white/50 shadow-sm shadow-black/5 ${hidden ? "-translate-y-full" : "translate-y-0"}`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-1.5 lg:gap-2">
           <Image
-            src="/logo.png"
+            src={LOGO_ICON}
             alt="Muse & Mist"
-            width={36}
-            height={36}
-            className="object-contain"
+            width={40}
+            height={40}
+            className="w-9 h-9 lg:w-12 lg:h-12 object-contain"
           />
-          <span
-            style={{ fontFamily: 'var(--font-display)' }}
-            className={`text-xl font-semibold hidden sm:block transition-colors duration-300 ${mounted && isDarkHero && !scrolled ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
-          >
-            Muse &amp; Mist
-          </span>
+          <Image
+            src={LOGO_TEXT}
+            alt="Muse & Mist"
+            width={140}
+            height={32}
+            className="w-30 h-7 lg:w-40 lg:h-9 object-contain"
+          />
         </Link>
 
         {/* Desktop nav */}
         <div className="hidden md:flex gap-8 items-center">
           <button
             onClick={handleShopClick}
-            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 cursor-pointer ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
+            className="text-base font-medium text-[#0D1117] transition-opacity hover:opacity-60 cursor-pointer"
           >
             Shop
           </button>
           <Link
             href="/routine"
-            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
+            className="text-base font-medium text-[#0D1117] transition-opacity hover:opacity-60"
           >
             Routine
           </Link>
           <Link
             href="/about"
-            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
+            className="text-base font-medium text-[#0D1117] transition-opacity hover:opacity-60"
           >
             About
           </Link>
@@ -169,7 +131,7 @@ export default function Header() {
           <button onClick={openCart} className="relative cursor-pointer" aria-label="Open cart">
             <ShoppingBag
               size={24}
-              className={`transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
+              className="text-[#0D1117] transition-opacity hover:opacity-60"
             />
             {mounted && cartCount > 0 && (
               <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#1A237E] text-white text-xs font-semibold flex items-center justify-center">
@@ -187,18 +149,18 @@ export default function Header() {
                   alt="Profile"
                   width={36}
                   height={36}
-                  className={`rounded-full border-2 object-cover cursor-pointer hover:opacity-90 transition-opacity w-9 h-9 ${isDark ? 'border-white' : 'border-[#1A237E]'}`}
+                  className="rounded-full border-2 border-[#1A237E] object-cover cursor-pointer hover:opacity-90 transition-opacity w-9 h-9"
                 />
               ) : (
-                <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity ${isDark ? 'border-white bg-white/10' : 'border-[#1A237E] bg-[#DCD9F8]'}`}>
-                  <UserCircle2 size={22} className={isDark ? 'text-white' : 'text-[#1A237E]'} />
+                <div className="w-9 h-9 rounded-full border-2 border-[#1A237E] bg-[#DCD9F8] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
+                  <UserCircle2 size={22} className="text-[#1A237E]" />
                 </div>
               )}
             </Link>
           ) : mounted ? (
             <Link
               href="/login"
-              className={`px-5 py-2.5 rounded-xl text-base font-medium transition-all duration-300 hover:opacity-90 ${isDark ? 'bg-[#0D1117]/10 text-[#0D1117] border border-[#0D1117]/20 hover:bg-[#0D1117]/20' : 'bg-[#1A237E] text-white'}`}
+              className="px-5 py-2.5 rounded-xl text-base font-medium bg-[#1A237E] text-white transition-opacity hover:opacity-90"
             >
               Sign In
             </Link>
@@ -208,10 +170,7 @@ export default function Header() {
         {/* Mobile: cart icon only */}
         <div className="md:hidden">
           <button onClick={openCart} className="relative cursor-pointer" aria-label="Open cart">
-            <ShoppingBag
-              size={22}
-              className={`transition-colors duration-300 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
-            />
+            <ShoppingBag size={22} className="text-[#0D1117]" />
             {mounted && cartCount > 0 && (
               <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#1A237E] text-white text-[10px] font-semibold flex items-center justify-center">
                 {cartCount > 9 ? "9+" : cartCount}
