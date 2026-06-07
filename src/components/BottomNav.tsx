@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ShoppingBag, Sparkles, User } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { scrollToProducts } from "@/lib/scroll";
 
 type Tab = "shop" | "routine" | "account";
 
@@ -34,11 +35,7 @@ export default function BottomNav() {
 
   const handleShop = () => {
     if (pathname === "/") {
-      const el = document.getElementById("products");
-      if (el) {
-        const top = el.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top, behavior: "smooth" });
-      }
+      scrollToProducts();
     } else {
       router.push("/#products");
     }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Loader2, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -17,8 +17,6 @@ export function Login() {
   const [error, setError] = useState('')
   const supabase = createClient()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect')
   const handleSendOTP = async () => {
     setError('')
     if (!/^[6-9]\d{9}$/.test(phone)) {
@@ -53,9 +51,6 @@ export function Login() {
         type: 'sms',
       })
       if (error) throw error
-      if (redirect === 'checkout') {
-        sessionStorage.setItem('open_cart_after_login', 'true')
-      }
       router.push('/')
       router.refresh()
     } catch (err: unknown) {

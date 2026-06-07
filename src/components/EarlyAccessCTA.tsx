@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { scrollToProducts } from '@/lib/scroll'
 
 type Props = { count: number }
 
@@ -23,15 +24,7 @@ export default function EarlyAccessCTA({ count }: Props) {
           </p>
           <div className="flex flex-col items-center gap-4 mt-10">
             <button
-              onClick={() => {
-                const el = document.getElementById('products')
-                if (el) {
-                  const top = el.getBoundingClientRect().top + window.scrollY - 80
-                  window.scrollTo({ top, behavior: 'smooth' })
-                } else {
-                  window.location.href = '/#products'
-                }
-              }}
+              onClick={scrollToProducts}
               style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold hover:opacity-90 transition-opacity cursor-pointer"
             >

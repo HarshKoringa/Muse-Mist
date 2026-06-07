@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { scrollToProducts } from '@/lib/scroll'
 
 export default function HeroSection() {
   return (
@@ -114,26 +115,14 @@ export default function HeroSection() {
               className="flex flex-wrap items-center gap-4"
             >
               <button
-                onClick={() => {
-                  const el = document.getElementById('products')
-                  if (el) {
-                    const top = el.getBoundingClientRect().top + window.scrollY - 80
-                    window.scrollTo({ top, behavior: 'smooth' })
-                  }
-                }}
+                onClick={scrollToProducts}
                 style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
                 className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#DCD9F8] text-[#1A237E] text-base font-semibold hover:opacity-90 transition-opacity cursor-pointer"
               >
                 Shop The Edit →
               </button>
               <button
-                onClick={() => {
-                  const el = document.getElementById('products')
-                  if (el) {
-                    const top = el.getBoundingClientRect().top + window.scrollY - 80
-                    window.scrollTo({ top, behavior: 'smooth' })
-                  }
-                }}
+                onClick={scrollToProducts}
                 style={{ fontFamily: 'var(--font-body)' }}
                 className="flex items-center gap-2 text-white/50 hover:text-white/80 transition-colors text-base cursor-pointer group"
               >

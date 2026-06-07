@@ -44,13 +44,8 @@ export default function CartDrawer() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Auto-open after login redirect — sessionStorage flag (phone OTP) or URL param (legacy OAuth)
+  // Legacy: URL param from OAuth flows
   useEffect(() => {
-    const shouldOpen = sessionStorage.getItem('open_cart_after_login');
-    if (shouldOpen === 'true') {
-      sessionStorage.removeItem('open_cart_after_login');
-      setTimeout(() => openCart(), 500);
-    }
     const params = new URLSearchParams(window.location.search);
     if (params.get('openCart') === '1') {
       openCart();
@@ -106,8 +101,9 @@ export default function CartDrawer() {
       } = await supabase.auth.getUser();
 
       if (!user) {
+        localStorage.setItem('mm_open_cart', 'true');
         closeCart();
-        router.push("/login?redirect=checkout");
+        router.push('/login');
         return;
       }
 

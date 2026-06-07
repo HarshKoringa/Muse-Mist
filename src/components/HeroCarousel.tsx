@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { scrollToProducts } from "@/lib/scroll";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Product } from "@/types/product";
@@ -70,14 +71,6 @@ export default function HeroCarousel({ products }: Props) {
     }, ROTATION_INTERVAL);
     return () => clearInterval(timer);
   }, [isPaused, displayProducts.length]);
-
-  const scrollToProducts = () => {
-    const el = document.getElementById("products");
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  };
 
   const handleScrollToProducts = () => {
     scrollToProducts();

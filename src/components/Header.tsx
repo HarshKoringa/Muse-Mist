@@ -9,6 +9,7 @@ import { createClient } from "@/utils/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
+import { scrollToProducts } from "@/lib/scroll";
 
 const LOGO_ICON = "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/logo-icon.png";
 const LOGO_TEXT = "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/logo-text.png";
@@ -39,11 +40,7 @@ export default function Header() {
 
   const handleShopClick = () => {
     if (pathname === "/") {
-      const el = document.getElementById("products");
-      if (el) {
-        const top = el.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top, behavior: "smooth" });
-      }
+      scrollToProducts();
     } else {
       router.push("/#products");
     }

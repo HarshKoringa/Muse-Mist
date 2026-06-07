@@ -9,6 +9,7 @@ import CartDrawer from "@/components/CartDrawer";
 import ContentWrapper from "@/components/ContentWrapper";
 import BottomNav from "@/components/BottomNav";
 import MetaPixel from "@/components/MetaPixel";
+import CartAutoOpen from "@/components/CartAutoOpen";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,6 +88,7 @@ export default function RootLayout({
       >
         <ToastProvider>
           <MetaPixel />
+          <CartAutoOpen />
           <Header />
           <ToastContainer />
           <CartDrawer />
