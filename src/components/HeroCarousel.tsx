@@ -123,14 +123,14 @@ export default function HeroCarousel({ products }: Props) {
         {/* Brand text column */}
         <div className="shrink-0 lg:w-2/5 flex flex-col justify-center py-3 lg:py-10 lg:pr-8" style={{ minHeight: "200px" }}>
           <p
-            style={{ fontFamily: "var(--font-display)", fontSize: "11px", letterSpacing: "4px" }}
-            className="uppercase text-[#6B7280] font-medium mb-1 lg:text-[18px] lg:tracking-[6px] lg:mb-2"
+            style={{ fontFamily: "var(--font-display)" }}
+            className="uppercase text-[11px] tracking-[4px] text-[#1A237E] font-medium mb-1 lg:text-[18px] lg:tracking-[6px] lg:mb-2"
           >
             Muse &amp; Mist
           </p>
           <p
-            style={{ fontFamily: "var(--font-display)", fontSize: "13px" }}
-            className="italic text-[#9CA3AF] mb-3 lg:text-[20px] lg:mb-4"
+            style={{ fontFamily: "var(--font-display)" }}
+            className="italic text-[13px] text-[#374151] mb-3 lg:text-[20px] lg:mb-4"
           >
             Where Science Meets Soul
           </p>
@@ -145,11 +145,9 @@ export default function HeroCarousel({ products }: Props) {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 style={{
                   fontFamily: "var(--font-display)",
-                  fontSize: "24px",
-                  lineHeight: 1.15,
-                  maxWidth: "280px",
+                  textShadow: "0 1px 2px rgba(255,255,255,0.5)",
                 }}
-                className="font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[56px] lg:leading-[1.1] lg:max-w-130"
+                className="text-[24px] leading-[1.15] max-w-70 font-bold text-[#0D1117] mb-4 lg:mb-6 lg:text-[56px] lg:font-extrabold lg:leading-[1.1] lg:max-w-130"
               >
                 {headline}
               </motion.h1>
@@ -167,7 +165,7 @@ export default function HeroCarousel({ products }: Props) {
 
         {/* Photo-frame image column */}
         <div
-          className="flex-1 lg:w-3/5 relative min-h-0 flex items-center justify-center cursor-pointer"
+          className="flex-1 lg:w-3/5 relative min-h-45 lg:min-h-100 flex items-center justify-center cursor-pointer"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onClick={handleScrollToProducts}

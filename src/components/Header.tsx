@@ -124,7 +124,7 @@ export default function Header() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-40 transform transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"} ${isDark ? 'bg-white/5 backdrop-blur-md border-b border-white/10' : 'bg-white/80 backdrop-blur-xl border-b border-white/40 shadow-sm shadow-black/5'}`}
+      className={`fixed top-0 left-0 right-0 z-40 transform transition-all duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"} ${isDark ? 'bg-white/70 backdrop-blur-sm border-b border-white/40' : 'bg-white/80 backdrop-blur-xl border-b border-white/40 shadow-sm shadow-black/5'}`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
@@ -138,7 +138,7 @@ export default function Header() {
           />
           <span
             style={{ fontFamily: 'var(--font-display)' }}
-            className={`text-xl font-semibold hidden sm:block transition-colors duration-300 ${mounted && isDarkHero && !scrolled ? 'text-[#1A237E]/70' : 'text-[#1A237E]'}`}
+            className={`text-xl font-semibold hidden sm:block transition-colors duration-300 ${mounted && isDarkHero && !scrolled ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
           >
             Muse &amp; Mist
           </span>
@@ -148,19 +148,19 @@ export default function Header() {
         <div className="hidden md:flex gap-8 items-center">
           <button
             onClick={handleShopClick}
-            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 cursor-pointer ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 cursor-pointer ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
           >
             Shop
           </button>
           <Link
             href="/routine"
-            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
           >
             Routine
           </Link>
           <Link
             href="/about"
-            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+            className={`text-base font-medium transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
           >
             About
           </Link>
@@ -169,7 +169,7 @@ export default function Header() {
           <button onClick={openCart} className="relative cursor-pointer" aria-label="Open cart">
             <ShoppingBag
               size={24}
-              className={`transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+              className={`transition-colors duration-300 hover:opacity-70 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
             />
             {mounted && cartCount > 0 && (
               <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#1A237E] text-white text-xs font-semibold flex items-center justify-center">
@@ -198,7 +198,7 @@ export default function Header() {
           ) : mounted ? (
             <Link
               href="/login"
-              className={`px-5 py-2.5 rounded-xl text-base font-medium transition-all duration-300 hover:opacity-90 ${isDark ? 'bg-white/15 backdrop-blur-sm text-white border border-white/20 hover:bg-white/25' : 'bg-[#1A237E] text-white'}`}
+              className={`px-5 py-2.5 rounded-xl text-base font-medium transition-all duration-300 hover:opacity-90 ${isDark ? 'bg-[#0D1117]/10 text-[#0D1117] border border-[#0D1117]/20 hover:bg-[#0D1117]/20' : 'bg-[#1A237E] text-white'}`}
             >
               Sign In
             </Link>
@@ -210,7 +210,7 @@ export default function Header() {
           <button onClick={openCart} className="relative cursor-pointer" aria-label="Open cart">
             <ShoppingBag
               size={22}
-              className={`transition-colors duration-300 ${isDark ? 'text-white/90' : 'text-[#1A237E]'}`}
+              className={`transition-colors duration-300 ${isDark ? 'text-[#0D1117]' : 'text-[#1A237E]'}`}
             />
             {mounted && cartCount > 0 && (
               <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-[#1A237E] text-white text-[10px] font-semibold flex items-center justify-center">
