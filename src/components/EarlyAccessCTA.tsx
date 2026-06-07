@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Link from 'next/link'
 
 type Props = { count: number }
 
@@ -23,13 +22,20 @@ export default function EarlyAccessCTA({ count }: Props) {
             Skincare designed for real skin, real life.
           </p>
           <div className="flex flex-col items-center gap-4 mt-10">
-            <Link
-              href="/#products"
+            <button
+              onClick={() => {
+                const el = document.getElementById('products')
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' })
+                } else {
+                  window.location.href = '/#products'
+                }
+              }}
               style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold hover:opacity-90 transition-opacity cursor-pointer"
             >
               Shop Now →
-            </Link>
+            </button>
           </div>
         </motion.div>
       </div>
