@@ -79,7 +79,7 @@ export default function ReviewsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.08 }}
-              className="min-w-[280px] sm:min-w-0 bg-[#DCEFFF]/50 rounded-2xl p-6 border border-[#DCD9F8] flex flex-col gap-3 hover:bg-[#DCD9F8]/30 transition-colors"
+              className="min-w-[280px] sm:min-w-0 bg-[#DCEFFF] rounded-2xl p-6 border border-[#DCD9F8] flex flex-col gap-3 hover:bg-[#DCD9F8]/40 transition-colors"
             >
               <StarRating count={review.rating} />
 

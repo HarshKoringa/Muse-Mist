@@ -33,7 +33,7 @@ const founders = [
 
 export default function AboutFounder() {
   return (
-    <section className="w-full px-6 sm:px-12 py-24 bg-[#0D1117]">
+    <section className="w-full px-6 sm:px-12 py-24 bg-white">
       <div className="max-w-4xl mx-auto flex flex-col gap-24">
 
         <motion.div
@@ -41,12 +41,12 @@ export default function AboutFounder() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs tracking-[0.35em] uppercase text-white/30 mb-4 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
+          <p className="text-xs tracking-[0.35em] uppercase text-[#1A237E]/40 mb-4 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
             The Team
           </p>
-          <h2 style={{ fontFamily: 'var(--font-display)' }} className="text-[52px] sm:text-[64px] font-light text-white leading-tight">
+          <h2 style={{ fontFamily: 'var(--font-display)' }} className="text-[52px] sm:text-[64px] font-light text-[#0D1117] leading-tight">
             The minds<br />
-            <em className="text-white/30">behind the mist.</em>
+            <em className="text-[#1A237E]/40">behind the mist.</em>
           </h2>
         </motion.div>
 
@@ -60,7 +60,7 @@ export default function AboutFounder() {
             className={`flex flex-col ${founder.reverse ? 'sm:flex-row-reverse' : 'sm:flex-row'} gap-10 items-center`}
           >
             {/* Avatar */}
-            <div className="w-44 h-44 rounded-full overflow-hidden flex-shrink-0 shadow-2xl border-4 border-white/10">
+            <div className="w-44 h-44 rounded-full overflow-hidden flex-shrink-0 shadow-2xl border-4 border-[#DCD9F8]">
               {founder.image ? (
                 <Image
                   src={founder.image}
@@ -84,17 +84,17 @@ export default function AboutFounder() {
             {/* Text */}
             <div className={`flex flex-col gap-4 flex-1 ${founder.reverse ? 'sm:text-right' : ''}`}>
               <div>
-                <span className="inline-block text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 font-medium mb-3" style={{ fontFamily: 'var(--font-body)' }}>
+                <span className="inline-block text-xs px-3 py-1.5 rounded-full bg-[#DCD9F8]/50 border border-[#DCD9F8] text-[#1A237E]/70 font-medium mb-3" style={{ fontFamily: 'var(--font-body)' }}>
                   {founder.title}
                 </span>
-                <h3 style={{ fontFamily: 'var(--font-display)' }} className="text-[40px] font-light text-white leading-tight">
+                <h3 style={{ fontFamily: 'var(--font-display)' }} className="text-[40px] font-light text-[#0D1117] leading-tight">
                   {founder.name}
                 </h3>
               </div>
-              <p style={{ fontFamily: 'var(--font-body)' }} className="text-base text-white/50 leading-relaxed font-light">
+              <p style={{ fontFamily: 'var(--font-body)' }} className="text-base text-[#374151] leading-relaxed font-light">
                 {founder.bio1}
               </p>
-              <p style={{ fontFamily: 'var(--font-body)' }} className="text-base text-white/40 leading-relaxed font-light">
+              <p style={{ fontFamily: 'var(--font-body)' }} className="text-base text-[#4B5563] leading-relaxed font-light">
                 {founder.bio2}
               </p>
             </div>

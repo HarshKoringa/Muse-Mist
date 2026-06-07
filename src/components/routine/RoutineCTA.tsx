@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react'
 
 export default function RoutineCTA() {
   return (
-    <section className="w-full px-6 sm:px-12 py-32 bg-white flex items-center justify-center">
+    <section className="w-full px-6 sm:px-12 py-32 bg-[#DCEFFF] flex items-center justify-center">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}

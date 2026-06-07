@@ -177,7 +177,7 @@ export default function ProductCard({ product, variant = "full" }: Props) {
     >
       <Link
         href={`/products/${product.slug}`}
-        className="flex flex-col bg-white/8 backdrop-blur-sm rounded-3xl overflow-hidden group border border-white/10 hover:border-white/25 transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1"
+        className="flex flex-col bg-white rounded-3xl overflow-hidden group border border-[#DCD9F8] hover:border-[#1A237E]/20 transition-all duration-300 hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1"
       >
         {product.image_url ? (
           <div className="w-full h-64 relative overflow-hidden">
@@ -213,30 +213,30 @@ export default function ProductCard({ product, variant = "full" }: Props) {
             <div className="flex items-center gap-2 mb-1">
               <h3
                 style={{ fontFamily: "var(--font-display)" }}
-                className="text-xl font-light text-white leading-tight"
+                className="text-xl font-light text-[#0D1117] leading-tight"
               >
                 {product.category}
               </h3>
               {product.size && (
-                <span className="text-[10px] text-white/30 border border-white/10 px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] text-[#6B7280] border border-[#DCD9F8] px-1.5 py-0.5 rounded-full">
                   {product.size}
                 </span>
               )}
             </div>
             <p
               style={{ fontFamily: "var(--font-body)" }}
-              className="text-sm text-white/70 font-medium tracking-wide"
+              className="text-sm text-[#0D1117] font-medium tracking-wide"
             >
               {product.name}
             </p>
-            <p className="text-xs text-[#DCD9F8]/60 mt-0.5 font-medium">{subtitle}</p>
-            <p className="text-sm text-white/40 mt-2 line-clamp-2 font-light">
+            <p className="text-xs text-[#1A237E]/60 mt-0.5 font-medium">{subtitle}</p>
+            <p className="text-sm text-[#4B5563] mt-2 line-clamp-2 font-light">
               {product.description}
             </p>
           </div>
 
           <div
-            className="flex flex-col gap-1 mt-auto pt-3 border-t border-white/10"
+            className="flex flex-col gap-1 mt-auto pt-3 border-t border-[#DCD9F8]"
             onClick={(e) => e.preventDefault()}
           >
             {product.discount_active && product.discount_percent && (
@@ -249,29 +249,29 @@ export default function ProductCard({ product, variant = "full" }: Props) {
 
             <div className="flex items-baseline gap-2">
               <div className="flex items-baseline gap-0.5">
-                <span className="text-xs text-white/60">₹</span>
+                <span className="text-xs text-[#0D1117]/60">₹</span>
                 <span
-                  className="text-2xl font-semibold text-white"
+                  className="text-2xl font-semibold text-[#0D1117]"
                   style={{ fontFamily: "var(--font-body)" }}
                 >
                   {Number(product.price).toLocaleString("en-IN")}
                 </span>
               </div>
               {product.discount_active && product.mrp && (
-                <span className="text-sm text-white/30 line-through">
+                <span className="text-sm text-[#9CA3AF] line-through">
                   ₹{Number(product.mrp).toLocaleString("en-IN")}
                 </span>
               )}
             </div>
 
             <p
-              className="text-[10px] text-white/30"
+              className="text-[10px] text-[#6B7280]"
               style={{ fontFamily: "var(--font-body)" }}
             >
               Incl. of all taxes
             </p>
 
-            <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/20 w-fit mt-1">
+            <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-green-500/15 text-green-700 border border-green-500/20 w-fit mt-1">
               Extra 5% off prepaid
             </span>
 
@@ -281,8 +281,8 @@ export default function ProductCard({ product, variant = "full" }: Props) {
               style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
               className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-base font-semibold transition-all cursor-pointer mt-2 ${
                 outOfStock
-                  ? "bg-white/10 text-white/30 cursor-not-allowed"
-                  : "bg-[#DCD9F8] text-[#1A237E] hover:bg-white hover:opacity-90"
+                  ? "bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed"
+                  : "bg-[#1A237E] text-white hover:bg-[#151c6b]"
               }`}
             >
               <ShoppingBag size={16} />

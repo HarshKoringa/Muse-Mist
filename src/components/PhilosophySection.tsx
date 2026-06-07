@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export default function PhilosophySection() {
   return (
-    <section className="w-full bg-[#DCEFFF] py-24 px-6 sm:px-12">
+    <section className="w-full bg-[#DCD9F8] py-24 px-6 sm:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
