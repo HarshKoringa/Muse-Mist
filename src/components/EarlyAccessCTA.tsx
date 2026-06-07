@@ -26,7 +26,8 @@ export default function EarlyAccessCTA({ count }: Props) {
               onClick={() => {
                 const el = document.getElementById('products')
                 if (el) {
-                  el.scrollIntoView({ behavior: 'smooth' })
+                  const top = el.getBoundingClientRect().top + window.scrollY - 80
+                  window.scrollTo({ top, behavior: 'smooth' })
                 } else {
                   window.location.href = '/#products'
                 }

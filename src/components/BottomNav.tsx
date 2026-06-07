@@ -36,7 +36,8 @@ export default function BottomNav() {
     if (pathname === "/") {
       const el = document.getElementById("products");
       if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, behavior: "smooth" });
       }
     } else {
       router.push("/#products");

@@ -44,8 +44,13 @@ export default function CartDrawer() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Auto-open when redirected back from Google OAuth with ?openCart=1
+  // Auto-open after login redirect — sessionStorage flag (phone OTP) or URL param (legacy OAuth)
   useEffect(() => {
+    const shouldOpen = sessionStorage.getItem('open_cart_after_login');
+    if (shouldOpen === 'true') {
+      sessionStorage.removeItem('open_cart_after_login');
+      setTimeout(() => openCart(), 500);
+    }
     const params = new URLSearchParams(window.location.search);
     if (params.get('openCart') === '1') {
       openCart();

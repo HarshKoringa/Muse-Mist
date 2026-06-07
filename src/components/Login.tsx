@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Loader2, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { useCartUIStore } from '@/store/cartUIStore'
 
 type Step = 'phone' | 'otp'
 
@@ -20,8 +19,6 @@ export function Login() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect')
-  const openCart = useCartUIStore((state) => state.openCart)
-
   const handleSendOTP = async () => {
     setError('')
     if (!/^[6-9]\d{9}$/.test(phone)) {
@@ -56,7 +53,9 @@ export function Login() {
         type: 'sms',
       })
       if (error) throw error
-      if (redirect === 'checkout') openCart()
+      if (redirect === 'checkout') {
+        sessionStorage.setItem('open_cart_after_login', 'true')
+      }
       router.push('/')
       router.refresh()
     } catch (err: unknown) {

@@ -71,15 +71,23 @@ export default function HeroCarousel({ products }: Props) {
     return () => clearInterval(timer);
   }, [isPaused, displayProducts.length]);
 
+  const scrollToProducts = () => {
+    const el = document.getElementById("products");
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
   const handleScrollToProducts = () => {
-    document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+    scrollToProducts();
   };
 
   const handleThumbnailClick = (index: number) => {
     setActiveIndex(index);
     setIsPaused(true);
     setTimeout(() => setIsPaused(false), ROTATION_INTERVAL);
-    document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+    scrollToProducts();
   };
 
   const headline = activeProduct

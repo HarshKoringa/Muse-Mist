@@ -39,7 +39,11 @@ export default function Header() {
 
   const handleShopClick = () => {
     if (pathname === "/") {
-      document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+      const el = document.getElementById("products");
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
     } else {
       router.push("/#products");
     }
