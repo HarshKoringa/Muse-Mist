@@ -157,6 +157,7 @@ export async function POST(req: NextRequest) {
     // ══════════════════════════════════════════════════════
     let earlyAccessDiscount = 0
     let isEarlyAccess = false
+    let verifiedPhone: string | null = null
 
     try {
       const { data: profile } = await supabase
@@ -167,6 +168,7 @@ export async function POST(req: NextRequest) {
 
       if (profile?.phone_number) {
         const rawPhone = profile.phone_number.replace(/\D/g, '')
+        verifiedPhone = rawPhone.length > 10 && rawPhone.startsWith('91') ? rawPhone.slice(2) : rawPhone
         const normalizedPhone = rawPhone.startsWith('91')
           ? rawPhone
           : '91' + rawPhone
@@ -420,9 +422,7 @@ export async function POST(req: NextRequest) {
       const firstName = nameParts[0] ?? 'Customer'
       const lastName = nameParts.slice(1).join(' ') || 'Customer'
 
-      const allDigits = (address.phone ?? '').toString().replace(/\D/g, '')
-      const rawPhone = allDigits.length > 10 && allDigits.startsWith('91') ? allDigits.slice(2) : allDigits
-      const shiprocketPhone = rawPhone.slice(-10) || '9000000000'
+      const shiprocketPhone = (verifiedPhone ?? '').slice(-10) || '9000000000'
 
       const PRODUCT_TAX_CONFIG: Record<string, { gstRate: number; hsnCode: number }> = {
         'cleanse-clear-calm':    { gstRate: 5,  hsnCode: 34011190 },
@@ -512,7 +512,7 @@ export async function POST(req: NextRequest) {
     // STEP 18: WhatsApp notification
     // ══════════════════════════════════════════════════════
     try {
-      const customerPhone = address.phone || null
+      const customerPhone = verifiedPhone || null
       const customerName = address.name || 'Customer'
       if (customerPhone) {
         await sendOrderConfirmation({

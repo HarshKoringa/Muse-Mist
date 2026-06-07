@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Check } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { useCartStore } from '@/store/cartStore'
 import Script from 'next/script'
@@ -215,8 +215,6 @@ function AddressForm() {
   }
 
   const fields: { name: keyof typeof form; label: string; type: string; required: boolean }[] = [
-    { name: 'name',    label: 'Full Name',       type: 'text',  required: true  },
-    { name: 'phone',   label: 'Mobile Number',   type: 'tel',   required: true  },
     { name: 'email',   label: 'Email Address',   type: 'email', required: false },
     { name: 'address', label: 'Street Address',  type: 'text',  required: true  },
     { name: 'city',    label: 'City',            type: 'text',  required: true  },
@@ -293,6 +291,46 @@ function AddressForm() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-4"
           >
+            {/* Name */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-sm font-medium text-[#1A237E]"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Full Name <span className="text-red-400 ml-1">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                style={{ fontSize: '16px', fontFamily: 'var(--font-body)' }}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200
+                           text-gray-700 outline-none
+                           focus:border-[#1A237E] transition-colors"
+              />
+            </div>
+
+            {/* Phone — verified, read-only */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-sm font-medium text-[#1A237E]"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Mobile Number <span className="text-red-400 ml-1">*</span>
+              </label>
+              <div
+                style={{ fontSize: '16px', fontFamily: 'var(--font-body)' }}
+                className="w-full px-4 py-3 rounded-xl border border-[#DCD9F8] bg-[#DCEFFF]/30 text-gray-700 flex items-center justify-between"
+              >
+                <span>{form.phone ? `${form.phone.slice(0, 5)} ${form.phone.slice(5)}` : '—'}</span>
+                <span className="flex items-center gap-1 text-green-600 text-xs font-semibold">
+                  <Check size={13} /> Verified
+                </span>
+              </div>
+            </div>
+
+            {/* Email, address, city, state, pincode */}
             {fields.map((field) => (
               <div key={field.name} className="flex flex-col gap-1.5">
                 <label

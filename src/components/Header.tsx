@@ -143,19 +143,9 @@ export default function Header() {
           {/* User account */}
           {mounted && user ? (
             <Link href="/profile">
-              {user.user_metadata?.avatar_url ? (
-                <Image
-                  src={user.user_metadata.avatar_url}
-                  alt="Profile"
-                  width={36}
-                  height={36}
-                  className="rounded-full border-2 border-[#1A237E] object-cover cursor-pointer hover:opacity-90 transition-opacity w-9 h-9"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-full border-2 border-[#1A237E] bg-[#DCD9F8] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
-                  <UserCircle2 size={22} className="text-[#1A237E]" />
-                </div>
-              )}
+              <div className="w-9 h-9 rounded-full border-2 border-[#1A237E] bg-[#DCD9F8] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
+                <UserCircle2 size={22} className="text-[#1A237E]" />
+              </div>
             </Link>
           ) : mounted ? (
             <Link
