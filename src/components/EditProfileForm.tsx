@@ -162,7 +162,6 @@ export default function EditProfileForm({ profile, userEmail, userPhone }: Props
           {/* Prompt for phone users with no name */}
           {isPhoneUser && !displayName && (
             <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
-              <span className="text-lg shrink-0">👋</span>
               <div>
                 <p style={{ fontFamily: 'var(--font-body)' }} className="text-sm font-semibold text-amber-700 mb-0.5">
                   Complete your profile

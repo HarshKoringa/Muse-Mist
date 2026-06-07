@@ -2,7 +2,7 @@
 
 import { Product } from '@/types/product'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ShoppingBag, Zap } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, Zap, Truck, Lock } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -193,7 +193,7 @@ export default function PDPHero({ product }: Props) {
                 <span className="inline-flex items-center text-xs font-bold
                                  px-3 py-1.5 rounded-full bg-red-500 text-white
                                  uppercase tracking-wide w-fit">
-                  🎉 {product.discount_label ?? 'Sale'} · {product.discount_percent}% OFF
+                  {product.discount_label ?? 'Sale'} · {product.discount_percent}% OFF
                 </span>
               )}
 
@@ -230,7 +230,8 @@ export default function PDPHero({ product }: Props) {
                 <span className="flex items-center gap-1.5 text-xs font-semibold
                                  px-3 py-1.5 rounded-full
                                  bg-blue-50 text-blue-700 border border-blue-200">
-                  🚚 Free shipping on prepaid
+                  <Truck size={12} />
+                  Free shipping on prepaid
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-medium
                                  px-3 py-1.5 rounded-full
@@ -267,8 +268,9 @@ export default function PDPHero({ product }: Props) {
                 </button>
               </div>
 
-              <p className="text-xs text-gray-400 text-center">
-                🔒 Secure checkout · Powered by Razorpay &amp; Shiprocket
+              <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
+                <Lock size={11} />
+                Secure checkout · Powered by Razorpay &amp; Shiprocket
               </p>
             </div>
           </motion.div>

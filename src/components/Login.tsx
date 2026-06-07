@@ -203,7 +203,7 @@ export function Login() {
 
               <div className="flex gap-2">
                 <div className="flex items-center px-4 rounded-2xl bg-white/8 border border-white/10 text-white/60 text-base font-medium shrink-0">
-                  🇮🇳 +91
+                  +91
                 </div>
                 <input
                   type="tel"

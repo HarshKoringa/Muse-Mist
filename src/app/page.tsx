@@ -31,7 +31,7 @@ export default async function Home() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 sm:mb-6 gap-1 sm:gap-4">
             <div>
               <p className="text-[11px] tracking-[0.3em] uppercase text-[#1A237E] mb-2 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
-                The Edit
+                Our Products
               </p>
               <h2 style={{ fontFamily: 'var(--font-display)' }} className="text-2xl sm:text-[32px] font-light text-[#0D1117] leading-tight">
                 Five formulas. <em className="text-[#1A237E]">One ritual.</em>

@@ -5,7 +5,7 @@ import {
   ArrowLeft, Package, MapPin,
   CreditCard, ExternalLink,
   CheckCircle2, Truck, Home,
-  XCircle,
+  XCircle, Phone,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -336,8 +336,8 @@ export default function OrderDetailClient({ order }: Props) {
               <CreditCard size={14} className="text-gray-400" />
               <p className="text-xs text-gray-400">
                 {order.payment_method === 'cod'
-                  ? '📦 Cash on Delivery'
-                  : '✓ Paid Online'}
+                  ? 'Cash on Delivery'
+                  : 'Paid Online'}
               </p>
             </div>
           </div>
@@ -366,8 +366,9 @@ export default function OrderDetailClient({ order }: Props) {
                 {order.shipping_address?.state} —{' '}
                 {order.shipping_address?.pincode}
               </p>
-              <p className="text-sm text-gray-400 mt-1">
-                📞 {order.shipping_address?.phone}
+              <p className="text-sm text-gray-400 mt-1 flex items-center gap-1.5">
+                <Phone size={13} className="shrink-0" />
+                {order.shipping_address?.phone}
               </p>
             </div>
           </div>

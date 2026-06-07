@@ -79,6 +79,7 @@ export default function HeroCarousel({ products }: Props) {
     setActiveIndex(index);
     setIsPaused(true);
     setTimeout(() => setIsPaused(false), ROTATION_INTERVAL);
+    document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const headline = activeProduct

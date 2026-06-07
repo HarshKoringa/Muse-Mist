@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Trash2, Plus, Minus, ShoppingBag, Loader2 } from "lucide-react";
+import { X, Trash2, Plus, Minus, ShoppingBag, Loader2, Check, Lock, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
@@ -331,24 +331,26 @@ export default function CartDrawer() {
                     <button
                       onClick={() => setSelectedMethod("prepaid")}
                       style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all border cursor-pointer ${
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all border cursor-pointer flex items-center justify-center gap-1.5 ${
                         selectedMethod === "prepaid"
                           ? "bg-[#1A237E] text-white border-[#1A237E]"
                           : "bg-white text-[#0D1117] border-[#E5E7EB] hover:border-[#1A237E]"
                       }`}
                     >
-                      Prepaid {selectedMethod === "prepaid" && "✓"}
+                      {selectedMethod === "prepaid" && <Check size={13} />}
+                      Prepaid
                     </button>
                     <button
                       onClick={() => setSelectedMethod("cod")}
                       style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all border cursor-pointer ${
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all border cursor-pointer flex items-center justify-center gap-1.5 ${
                         selectedMethod === "cod"
                           ? "bg-[#1A237E] text-white border-[#1A237E]"
                           : "bg-white text-[#0D1117] border-[#E5E7EB] hover:border-[#1A237E]"
                       }`}
                     >
-                      COD {selectedMethod === "cod" && "✓"}
+                      {selectedMethod === "cod" && <Check size={13} />}
+                      COD
                     </button>
                   </div>
 
@@ -356,9 +358,10 @@ export default function CartDrawer() {
                   {selectedMethod === "prepaid" ? (
                     <p
                       style={{ fontFamily: "var(--font-body)" }}
-                      className="text-xs text-green-600 font-medium"
+                      className="text-xs text-green-600 font-medium flex items-center gap-1"
                     >
-                      ✓ Extra 5% off + Free shipping
+                      <Check size={11} />
+                      Extra 5% off + Free shipping
                     </p>
                   ) : (
                     <p
@@ -458,16 +461,24 @@ export default function CartDrawer() {
                         <Loader2 size={18} className="animate-spin" />
                         Processing...
                       </>
+                    ) : selectedMethod === "cod" ? (
+                      `Proceed to Checkout — ₹${displayTotal.toLocaleString("en-IN")}`
                     ) : (
                       `Proceed to Payment — ₹${displayTotal.toLocaleString("en-IN")}`
                     )}
                   </button>
 
-                  <p
-                    style={{ fontFamily: "var(--font-body)" }}
-                    className="text-[10px] text-gray-400 text-center"
-                  >
-                    🔒 Secure checkout · Powered by Razorpay &amp; Shiprocket
+                  {/* Trust signals */}
+                  <div className="flex items-center justify-center gap-3 mt-1">
+                    {["GPay", "Visa", "Mastercard", "Paytm", "UPI", "RuPay"].map((label) => (
+                      <span key={label} style={{ fontFamily: "var(--font-body)" }} className="text-[10px] text-gray-400 font-medium">
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                  <p style={{ fontFamily: "var(--font-body)" }} className="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1">
+                    <Lock size={10} />
+                    100% Secure Payment | COD Available
                   </p>
                 </div>
               </>

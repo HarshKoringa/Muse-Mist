@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 
 const steps = [
   { label: 'Checking your profile...', icon: '✦', color: '#1A237E' },
-  { label: 'Unlocking your discount...', icon: '🎉', color: '#7C3AED' },
+  { label: 'Unlocking your discount...', icon: '◆', color: '#7C3AED' },
   { label: 'Calculating best price...', icon: '◈', color: '#1A237E' },
   { label: 'Your deal is ready!', icon: '✓', color: '#16A34A' },
 ]

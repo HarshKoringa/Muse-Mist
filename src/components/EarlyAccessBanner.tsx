@@ -30,7 +30,7 @@ export default function EarlyAccessBanner() {
 
         {/* Text */}
         <p className="text-xs sm:text-sm text-white/80 font-medium text-center leading-snug" style={{ fontFamily: 'var(--font-body)' }}>
-          🚀 Launching soon —{' '}
+          Launching soon —{' '}
           <button
             onClick={() => setIsOpen(true)}
             className="text-[#DCD9F8] font-semibold underline underline-offset-2 hover:text-white transition-colors cursor-pointer"

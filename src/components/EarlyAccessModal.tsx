@@ -50,7 +50,7 @@ export default function EarlyAccessModal({ isOpen, onClose, productName }: Props
 
       if (data.error) {
         if (data.code === 'already_registered') {
-          setError("This number is already registered! You're on the list 🎉")
+          setError("This number is already registered! You're already on the list.")
         } else {
           setError(data.error)
         }
@@ -123,7 +123,7 @@ export default function EarlyAccessModal({ isOpen, onClose, productName }: Props
                   {/* Offer badge */}
                   <div className="p-4 rounded-2xl bg-gradient-to-r from-[#1A237E] to-[#3949AB] mb-6">
                     <p className="text-white text-base font-semibold">
-                      🎉 30% off your first order
+                      30% off your first order
                     </p>
                     <p className="text-white/60 text-xs mt-1">
                       Discount auto-applies when we launch. No code needed.
@@ -153,7 +153,7 @@ export default function EarlyAccessModal({ isOpen, onClose, productName }: Props
                       </label>
                       <div className="flex gap-2">
                         <div className="flex items-center px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-500 font-medium">
-                          🇮🇳 +91
+                          +91
                         </div>
                         <input
                           type="tel"
@@ -209,7 +209,7 @@ export default function EarlyAccessModal({ isOpen, onClose, productName }: Props
 
                   <div>
                     <h2 className="text-2xl font-semibold text-[#1A237E] mb-2">
-                      You&apos;re a Muse! 🎉
+                      You&apos;re a Muse!
                     </h2>
                     <p className="text-base text-gray-500 leading-relaxed">
                       Welcome to the inner circle, {form.name.split(' ')[0]}.
