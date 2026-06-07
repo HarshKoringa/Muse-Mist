@@ -463,17 +463,21 @@ export default function CartDrawer() {
                       </span>
                     ) : (
                       <>
-                        <span className="font-bold">
+                        <span className="font-bold whitespace-nowrap">
                           {selectedMethod === "cod"
                             ? `Proceed to Checkout — ₹${displayTotal.toLocaleString("en-IN")}`
-                            : `Proceed to Payment — ₹${displayTotal.toLocaleString("en-IN")}`}
+                            : `Checkout Now — ₹${displayTotal.toLocaleString("en-IN")}`}
                         </span>
                         {selectedMethod !== "cod" && (
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {["GPay", "VISA", "Paytm", "UPI"].map((label) => (
-                              <span key={label} style={{ fontFamily: "var(--font-body)", fontSize: "9px" }} className="font-bold bg-white/20 px-1.5 py-0.5 rounded">
-                                {label}
-                              </span>
+                          <div className="flex flex-row items-center gap-2 shrink-0 ml-3">
+                            {[
+                              { src: "https://cdn.razorpay.com/static/assets/pay-methods/google-pay.svg", alt: "GPay" },
+                              { src: "https://cdn.razorpay.com/static/assets/pay-methods/visa.svg", alt: "Visa" },
+                              { src: "https://cdn.razorpay.com/static/assets/pay-methods/paytm.svg", alt: "Paytm" },
+                              { src: "https://cdn.razorpay.com/static/assets/pay-methods/upi.svg", alt: "UPI" },
+                            ].map(({ src, alt }) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img key={alt} src={src} alt={alt} className="h-5 rounded-sm bg-white p-0.5" />
                             ))}
                           </div>
                         )}
