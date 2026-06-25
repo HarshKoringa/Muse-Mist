@@ -46,8 +46,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <PhilosophySection />
       <ReviewsSection />
+      <PhilosophySection />
       <EarlyAccessCTA count={count ?? 0} />
     </div>
   );
