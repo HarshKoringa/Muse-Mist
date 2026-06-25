@@ -40,7 +40,7 @@ const REVIEWS = [
     product: 'Invisible Glow Shield Sunscreen',
   },
   {
-    image: `${BASE}review-arsphene.png`,
+    image: `${BASE}review-rutvik.png`,
     username: '@whatswrongwith',
     excerpt: "Lightweight for everyday use, fragrance free, doesn't get oily in heat.",
     product: 'Invisible Glow Shield Sunscreen',
