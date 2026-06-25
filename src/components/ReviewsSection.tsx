@@ -1,124 +1,146 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+const BASE = 'https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/';
 
-const reviews = [
+const REVIEWS = [
   {
-    id: 1,
-    name: 'Nirali K.',
-    location: 'Ahmedabad',
-    rating: 5,
-    product: 'On our brand vision',
-    review: 'This is the skincare brand India has been waiting for. Science-backed, honest about ingredients, and actually designed for our climate. I\'ve been following since day one.',
+    image: `${BASE}review-kinal.png`,
+    username: '@kinal_narodiya',
+    excerpt: 'Face wash acne marks faded in 15 days. Sunscreen is miraculous — no white cast.',
+    product: 'Face Wash, Niacinamide Serum, Sunscreen',
   },
   {
-    id: 2,
-    name: 'Pulkit B.',
-    location: 'Jaipur',
-    rating: 5,
-    product: 'On our Hybrid Harmony philosophy',
-    review: 'The idea of combining high-performance actives with calming botanicals makes so much sense. Most brands do one or the other. Muse & Mist is doing both — and explaining exactly why.',
+    image: `${BASE}review-pulkit.png`,
+    username: '@_pulkitbohra',
+    excerpt: 'Deep Detox feels super gentle yet leaves skin fresh. Handwritten note made it special.',
+    product: 'Face Wash, Niacinamide Serum',
   },
   {
-    id: 3,
-    name: 'Somya K.',
-    location: 'Gurugram',
-    rating: 5,
-    product: 'On our ingredient transparency',
-    review: 'I love that they tell you exactly what\'s in each product and at what concentration. No proprietary blends, no vague claims. Just honest formulation. Refreshing.',
+    image: `${BASE}review-nairuti.png`,
+    username: '@nairuti_hedamba',
+    excerpt: 'Sunscreen is lightweight, blends well, no greasy feel. Comfortable for daily use.',
+    product: 'Invisible Glow Shield Sunscreen',
   },
   {
-    id: 4,
-    name: 'Tushar S.',
-    location: 'Bangalore',
-    rating: 5,
-    product: 'On our 5-step ritual',
-    review: 'Finally a brand that says STOP buying more products. The 5-step ritual concept is exactly what the Indian skincare community needs to hear right now.',
+    image: `${BASE}review-trupti.png`,
+    username: '@trupti',
+    excerpt: 'Loved the products. Really felt like my skin type. Would definitely recommend.',
+    product: 'Full Routine',
   },
   {
-    id: 5,
-    name: 'Neel M.',
-    location: 'Mumbai',
-    rating: 5,
-    product: 'On our founder story',
-    review: 'Having an MSc chemist as co-founder gives me so much confidence. This isn\'t just a pretty brand — the science is real. Can\'t wait to try everything at launch.',
+    image: `${BASE}review-bhakti.png`,
+    username: '@itssbhaktii',
+    excerpt: 'Cloud foam texture, non-sticky serums, matte moisturizer. Recommend to everyone.',
+    product: 'Full Routine',
+  },
+  {
+    image: `${BASE}review-somya.png`,
+    username: '@_arsphene_',
+    excerpt: 'Lightweight, no white cast, not oily. Really good and genuine product.',
+    product: 'Invisible Glow Shield Sunscreen',
+  },
+  {
+    image: `${BASE}review-arsphene.png`,
+    username: '@whatswrongwith',
+    excerpt: "Lightweight for everyday use, fragrance free, doesn't get oily in heat.",
+    product: 'Invisible Glow Shield Sunscreen',
+  },
+  {
+    image: `${BASE}review-tushar.png`,
+    username: '@tushar_sukhwal',
+    excerpt: 'Face wash feels light, cleans properly without tight feeling. So far, so good.',
+    product: 'Deep Detox Face Wash',
   },
 ];
 
-function StarRating({ count }: { count: number }) {
-  return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} size={14} className={i < count ? "fill-yellow-400 text-yellow-400" : "text-gray-200 fill-gray-200"} />
-      ))}
-    </div>
-  );
-}
-
 export default function ReviewsSection() {
   return (
-    <section className="w-full px-6 sm:px-12 py-24 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 style={{ fontFamily: 'var(--font-display)' }} className="text-[52px] sm:text-[64px] font-light text-[#1A237E] leading-tight">
-            What our community<br />
-            <em>is already saying.</em>
-          </h2>
-          <p className="text-sm text-gray-400 mt-4 font-light" style={{ fontFamily: 'var(--font-body)' }}>
-            From people who believe in what we&apos;re building.
-          </p>
-        </div>
-
-        {/* Scrollable row on mobile, 3-column grid on desktop */}
-        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
-          {reviews.map((review, index) => (
-            <motion.div
-              key={review.id}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
-              className="min-w-[280px] sm:min-w-0 bg-[#DCEFFF] rounded-2xl p-6 border border-[#DCD9F8] flex flex-col gap-3 hover:bg-[#DCD9F8]/40 transition-colors"
-            >
-              <StarRating count={review.rating} />
-
-              <p className="text-base text-gray-600 leading-relaxed flex-1" style={{ fontFamily: 'var(--font-body)' }}>
-                &ldquo;{review.review}&rdquo;
-              </p>
-
-              <div className="pt-3 border-t border-[#DCD9F8]">
-                <p className="text-lg font-medium text-[#1A237E]" style={{ fontFamily: 'var(--font-display)' }}>
-                  {review.name}
-                </p>
-                <p className="text-xs text-gray-400" style={{ fontFamily: 'var(--font-body)' }}>
-                  {review.location} &middot; {review.product}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Aggregate rating */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex flex-col items-center gap-2 mt-16 p-8 rounded-3xl bg-[#1A237E]"
+    <section className="w-full py-[60px] sm:py-[40px] bg-[#F8F7FD]">
+      {/* Header */}
+      <div className="px-6 sm:px-12 mb-8">
+        <p
+          className="text-[12px] uppercase tracking-[3px] text-[#1A237E] mb-2 font-medium"
+          style={{ fontFamily: 'var(--font-body)' }}
         >
-          <div className="flex gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={20} className="fill-[#DCD9F8] text-[#DCD9F8]" />
-            ))}
-          </div>
-          <p className="text-3xl font-light text-white" style={{ fontFamily: 'var(--font-display)' }}>
-            Now Live
-          </p>
-          <p className="text-sm text-white/40" style={{ fontFamily: 'var(--font-body)' }}>
-            Join 100+ muses already shopping
-          </p>
-        </motion.div>
+          Real Reviews
+        </p>
+        <h2
+          className="text-[32px] sm:text-[32px] text-[24px] font-light text-[#0D1117] leading-tight"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          What our customers say.
+        </h2>
       </div>
+
+      {/* Scroll container */}
+      <div
+        className="reviews-scroll flex overflow-x-auto gap-5 px-6 sm:px-10 pb-2"
+        style={{
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {REVIEWS.map((review, i) => (
+          <div
+            key={i}
+            className="review-card flex-none bg-white rounded-2xl overflow-hidden"
+            style={{
+              width: '280px',
+              scrollSnapAlign: 'start',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            }}
+          >
+            {/* Screenshot image */}
+            <div style={{ maxHeight: '400px', overflow: 'hidden', borderRadius: '16px 16px 0 0' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={review.image}
+                alt={`Review by ${review.username}`}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+            </div>
+
+            {/* Info */}
+            <div style={{ padding: '12px 16px' }}>
+              <p
+                className="font-semibold text-[#1A237E]"
+                style={{ fontFamily: 'var(--font-body)', fontSize: '13px' }}
+              >
+                {review.username}
+              </p>
+              <p
+                className="text-[#6B7280] mt-1 line-clamp-2"
+                style={{ fontFamily: 'var(--font-body)', fontSize: '12px' }}
+              >
+                {review.excerpt}
+              </p>
+              <p
+                className="text-[#9CA3AF] mt-1"
+                style={{ fontFamily: 'var(--font-body)', fontSize: '11px' }}
+              >
+                {review.product}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <style jsx>{`
+        .reviews-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        @media (max-width: 640px) {
+          .review-card {
+            width: 85% !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
