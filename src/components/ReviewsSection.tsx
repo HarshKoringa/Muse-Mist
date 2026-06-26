@@ -4,12 +4,6 @@ const BASE = 'https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/
 
 const REVIEWS = [
   {
-    image: `${BASE}review-kinal.png`,
-    username: '@kinal_narodiya',
-    excerpt: 'Face wash acne marks faded in 15 days. Sunscreen is miraculous — no white cast.',
-    product: 'Face Wash, Niacinamide Serum, Sunscreen',
-  },
-  {
     image: `${BASE}review-pulkit.png`,
     username: '@_pulkitbohra',
     excerpt: 'Deep Detox feels super gentle yet leaves skin fresh. Handwritten note made it special.',
