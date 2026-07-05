@@ -18,14 +18,17 @@ const HEADLINE_MAP: Record<string, string> = {
   "reset-to-radiance": "15% Vitamin C. 24H Glow.",
 };
 
-const SUPABASE_IMG = 'https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images'
-
 const HERO_IMAGES: Record<string, string> = {
-  "cleanse-clear-calm":    `${SUPABASE_IMG}/FaceWash01.png`,
-  "invisible-glow-shield": `${SUPABASE_IMG}/SunScreen01.png`,
-  "smooth-and-spotless":   `${SUPABASE_IMG}/Niacinamied01.png`,
-  "barrier-repair":        `${SUPABASE_IMG}/Moisturizer01.png`,
-  "reset-to-radiance":     `${SUPABASE_IMG}/VitaminC01.png`,
+  "cleanse-clear-calm":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-foam-facewash.png",
+  "invisible-glow-shield":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-sunscreen.png",
+  "smooth-and-spotless":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-niacinamied.png",
+  "barrier-repair":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-moisturizer.png",
+  "reset-to-radiance":
+    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-vitaminC.png",
 };
 
 const GRADIENT_MAP: Record<string, string> = {
