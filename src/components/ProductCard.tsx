@@ -10,6 +10,8 @@ import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
 import AddedToast from "./AddedToast";
 import { trackAddToCart } from "@/lib/pixel";
+import ProductImageCarousel from "./ProductImageCarousel";
+import { getProductImages } from "@/lib/productImages";
 
 type Props = {
   product: Product;
@@ -86,19 +88,15 @@ export default function ProductCard({ product, variant = "full" }: Props) {
           className="flex flex-col bg-white rounded-2xl overflow-hidden group"
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
         >
-          {/* 3:4 image */}
-          <div className="w-full relative overflow-hidden bg-[#F9FAFB]" style={{ aspectRatio: "3/4" }}>
-            {product.image_url ? (
-              <Image
-                src={product.image_url}
-                alt={product.name}
-                fill
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                sizes="65vw"
-              />
-            ) : (
-              <div className={`w-full h-full bg-linear-to-br ${gradient}`} />
-            )}
+          {/* Image carousel */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+          >
+            <ProductImageCarousel
+              images={getProductImages(product.slug, product.image_url ?? '')}
+              alt={product.name}
+            />
           </div>
 
           {/* Text area */}
@@ -181,34 +179,20 @@ export default function ProductCard({ product, variant = "full" }: Props) {
         href={`/products/${product.slug}`}
         className="flex flex-col bg-white rounded-3xl overflow-hidden group border border-[#DCD9F8] hover:border-[#1A237E]/20 transition-all duration-300 hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1"
       >
-        {product.image_url ? (
-          <div className="w-full h-64 relative overflow-hidden">
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-              sizes="33vw"
-            />
-            <div className="absolute top-3 right-3">
-              <StockBadge count={product.stock_count} />
-            </div>
+        {/* Image carousel */}
+        <div
+          className="relative"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        >
+          <ProductImageCarousel
+            images={getProductImages(product.slug, product.image_url ?? '')}
+            alt={product.name}
+          />
+          <div className="absolute top-3 right-3 z-10">
+            <StockBadge count={product.stock_count} />
           </div>
-        ) : (
-          <div className={`w-full h-64 bg-linear-to-br ${gradient} relative flex flex-col justify-between p-4`}>
-            <div className="flex justify-end">
-              <StockBadge count={product.stock_count} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase text-[#1A237E] opacity-30">
-                Muse &amp; Mist
-              </p>
-              <p className="text-sm font-medium text-[#1A237E] opacity-60 mt-0.5">
-                {product.name}
-              </p>
-            </div>
-          </div>
-        )}
+        </div>
 
         <div className="p-5 flex flex-col gap-3 flex-1">
           <div>
