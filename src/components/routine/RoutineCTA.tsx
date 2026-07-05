@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 
 export default function RoutineCTA() {
   return (
@@ -23,6 +24,14 @@ export default function RoutineCTA() {
           Made in India, for Indian skin.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/#products"
+            className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold hover:opacity-90 transition-opacity"
+            style={{ fontFamily: 'var(--font-body)' }}
+          >
+            Shop The Edit
+            <ArrowRight size={18} />
+          </Link>
           <Link
             href="/about"
             className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl border-2 border-[#1A237E] text-[#1A237E] text-base font-semibold hover:bg-[#1A237E] hover:text-white transition-all"

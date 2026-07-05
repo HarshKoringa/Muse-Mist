@@ -376,7 +376,7 @@ export default function OrderDetailClient({ order }: Props) {
 
         {/* Back to shopping */}
         <Link
-          href="/"
+          href="/#products"
           className="w-full py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold text-center hover:opacity-90 transition-opacity"
         >
           Continue Shopping

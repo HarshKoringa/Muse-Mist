@@ -85,7 +85,7 @@ function SuccessContent() {
 
         <div className="flex flex-col w-full gap-3">
           <Link
-            href="/"
+            href="/#products"
             className="w-full py-4 rounded-xl bg-[#1A237E] text-white
                        text-base font-semibold text-center
                        hover:opacity-90 transition-opacity
