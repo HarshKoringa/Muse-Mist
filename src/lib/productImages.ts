@@ -6,7 +6,7 @@ export const PRODUCT_IMAGES: Record<string, string[]> = {
     `${SUPABASE_IMG}/SunScreen02.png`,
     `${SUPABASE_IMG}/SunScreen03.png`,
     `${SUPABASE_IMG}/SunScreen04.png`,
-    `${SUPABASE_IMG}/SunScreen05.png`,
+    `${SUPABASE_IMG}/SunScreen05.jpeg`,
     `${SUPABASE_IMG}/SunScreen06.png`,
   ],
   'reset-to-radiance': [
