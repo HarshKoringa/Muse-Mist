@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { scrollToProducts } from '@/lib/scroll'
 
 export default function HeroSection() {
   return (
@@ -35,19 +34,6 @@ export default function HeroSection() {
             transition={{ duration: 1 }}
             className="flex flex-col gap-8"
           >
-            {/* Announcement pill */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm w-fit mb-6"
-            >
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <p className="text-sm text-white/80 font-medium" style={{ fontFamily: 'var(--font-body)' }}>
-                Now Live — Shop The Edit
-              </p>
-            </motion.div>
-
             {/* Eyebrow */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -106,30 +92,6 @@ export default function HeroSection() {
               High-performance actives meet calming botanicals.
               Skincare designed for real skin, real life.
             </motion.p>
-
-            {/* CTA buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.6 }}
-              className="flex flex-wrap items-center gap-4"
-            >
-              <button
-                onClick={scrollToProducts}
-                style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
-                className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#DCD9F8] text-[#1A237E] text-base font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-              >
-                Shop The Edit →
-              </button>
-              <button
-                onClick={scrollToProducts}
-                style={{ fontFamily: 'var(--font-body)' }}
-                className="flex items-center gap-2 text-white/50 hover:text-white/80 transition-colors text-base cursor-pointer group"
-              >
-                View products
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </button>
-            </motion.div>
 
             {/* Stats row */}
             <motion.div

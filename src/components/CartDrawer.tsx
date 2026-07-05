@@ -11,7 +11,6 @@ import { useCartUIStore } from "@/store/cartUIStore";
 import { createClient } from "@/utils/supabase/client";
 import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
 import { trackInitiateCheckout } from "@/lib/pixel";
-import { scrollToProducts } from "@/lib/scroll";
 
 const COD_CHARGE = 50;
 
@@ -211,16 +210,6 @@ export default function CartDrawer() {
                 >
                   Your cart is empty
                 </p>
-                <button
-                  onClick={() => {
-                    closeCart();
-                    scrollToProducts();
-                  }}
-                  style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
-                  className="mt-2 px-6 py-3 rounded-xl bg-[#1A237E] text-white text-base font-medium hover:opacity-90 transition-opacity cursor-pointer"
-                >
-                  Shop Now
-                </button>
               </div>
             )}
 

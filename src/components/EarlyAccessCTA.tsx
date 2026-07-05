@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { scrollToProducts } from '@/lib/scroll'
 
 type Props = { count: number }
 
@@ -22,15 +21,6 @@ export default function EarlyAccessCTA({ count }: Props) {
             High-performance actives meet calming botanicals.
             Skincare designed for real skin, real life.
           </p>
-          <div className="flex flex-col items-center gap-4 mt-10">
-            <button
-              onClick={scrollToProducts}
-              style={{ fontFamily: 'var(--font-body)', fontSize: '16px' }}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#1A237E] text-white text-base font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-            >
-              Shop Now →
-            </button>
-          </div>
         </motion.div>
       </div>
     </section>

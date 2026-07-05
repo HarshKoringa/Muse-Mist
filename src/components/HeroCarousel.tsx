@@ -156,13 +156,6 @@ export default function HeroCarousel({ products }: Props) {
             </AnimatePresence>
           </div>
 
-          <button
-            onClick={handleScrollToProducts}
-            style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: 600, padding: "10px 28px" }}
-            className="w-fit rounded-full bg-[#1A237E] text-white hover:bg-[#151c6b] transition-colors cursor-pointer lg:text-[17px] lg:px-11 lg:py-4"
-          >
-            Shop Now →
-          </button>
         </div>
 
         {/* Photo-frame image column */}

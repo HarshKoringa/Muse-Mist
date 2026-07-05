@@ -46,12 +46,6 @@ export default async function OrdersPage() {
             <p className="text-lg font-medium text-[#1A237E] opacity-40">
               No orders yet
             </p>
-            <Link
-              href="/#products"
-              className="mt-2 px-6 py-3 rounded-xl bg-[#1A237E] text-white text-base font-medium hover:opacity-90 transition-opacity"
-            >
-              Shop The Edit
-            </Link>
           </div>
         )}
 
