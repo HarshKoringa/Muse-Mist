@@ -8,7 +8,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
-import { createClient } from "@/utils/supabase/client";
 import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
 import { trackInitiateCheckout } from "@/lib/pixel";
 import { scrollToProducts } from "@/lib/scroll";
@@ -30,7 +29,6 @@ export default function CartDrawer() {
   const [totalPrepaidPercent, setTotalPrepaidPercent] = useState(5);
   const [codDiscountPercent, setCodDiscountPercent] = useState(0);
   const [isEarlyAccess, setIsEarlyAccess] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -93,65 +91,14 @@ export default function CartDrawer() {
 
   const displayTotal = selectedMethod === "prepaid" ? prepaidTotal : codTotal;
 
-  const handleProceed = async () => {
-    setLoading(true);
-    try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        localStorage.setItem('mm_open_cart', 'true');
-        closeCart();
-        router.push('/login');
-        return;
-      }
-
-      trackInitiateCheckout({
-        slugs: items.map((i) => i.slug),
-        total: displayTotal,
-        numItems: totalItemCount,
-      });
-
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
-          payment_method: selectedMethod,
-          user_id: user.id,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Checkout failed");
-
-      sessionStorage.setItem(
-        "checkout_data",
-        JSON.stringify({
-          items: data.verified_items,
-          payment_method: selectedMethod,
-          user_id: user.id,
-          subtotal: data.subtotal,
-          discount: data.discount,
-          delivery_charge: data.delivery_charge,
-          total: data.total,
-          is_early_access: data.is_early_access,
-          total_discount_percent: data.total_discount_percent,
-          razorpay_order_id: data.razorpay_order_id,
-          razorpay_key: data.razorpay_key,
-        })
-      );
-
-      closeCart();
-      router.push(`/checkout/address?method=${selectedMethod}`);
-    } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleProceed = () => {
+    trackInitiateCheckout({
+      slugs: items.map((i) => i.slug),
+      total: displayTotal,
+      numItems: totalItemCount,
+    });
+    closeCart();
+    router.push(`/checkout/address?method=${selectedMethod}`);
   };
 
   if (!mounted) return null;
@@ -457,21 +404,15 @@ export default function CartDrawer() {
                   {/* CTA */}
                   <button
                     onClick={handleProceed}
-                    disabled={loading || items.length === 0}
+                    disabled={items.length === 0}
                     style={{ fontFamily: "var(--font-body)" }}
                     className={`w-full py-3.5 px-4 rounded-xl font-semibold flex flex-row items-center justify-center gap-4 flex-nowrap transition-opacity ${
-                      loading || items.length === 0
+                      items.length === 0
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-[#1A237E] text-white hover:opacity-90 cursor-pointer"
                     }`}
                   >
-                    {loading ? (
-                      <span className="flex items-center gap-2 text-[15px]">
-                        <Loader2 size={18} className="animate-spin" />
-                        Processing...
-                      </span>
-                    ) : (
-                      <>
+                    <>
                         <span className="text-[15px] font-bold whitespace-nowrap">
                           {selectedMethod === "cod"
                             ? `Proceed to Checkout — ₹${displayTotal.toLocaleString("en-IN")}`
@@ -494,7 +435,6 @@ export default function CartDrawer() {
                           </div>
                         )}
                       </>
-                    )}
                   </button>
 
                   <div className="flex items-center justify-center gap-2 mt-2.5 bg-[#F0EEFF] rounded-lg py-2 px-3">
