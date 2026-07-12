@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Loader2, Check, Lock } from 'lucide-react'
 import Image from 'next/image'
@@ -8,6 +8,7 @@ import Script from 'next/script'
 import { createClient } from '@/utils/supabase/client'
 import { useCartStore } from '@/store/cartStore'
 import { getDiscountInfo } from '@/app/actions/getDiscountInfo'
+import { trackInitiateCheckout } from '@/lib/pixel'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,6 +37,18 @@ function AddressForm() {
       router.push('/')
     }
   }, [hydrated, items.length, router])
+
+  // Fire InitiateCheckout once the address page is actually seen with items in cart
+  const firedInitiateCheckout = useRef(false)
+  useEffect(() => {
+    if (!hydrated || firedInitiateCheckout.current || items.length === 0) return
+    firedInitiateCheckout.current = true
+    trackInitiateCheckout({
+      slugs: items.map((item) => item.slug),
+      total: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      numItems: items.reduce((sum, item) => sum + item.quantity, 0),
+    })
+  }, [hydrated, items])
 
   // ── Payment method ────────────────────────────────────────
   const initialMethod = searchParams.get('method') === 'cod' ? 'cod' : 'prepaid'
@@ -257,14 +270,15 @@ function AddressForm() {
       landmark: landmark?.trim() || '',
     }
 
-    const savePixelData = () => {
+    const savePixelData = (orderId: string) => {
       try {
-        sessionStorage.setItem('pixel_purchase_data', JSON.stringify({
+        sessionStorage.setItem('order_result', JSON.stringify({
+          order_id: orderId,
           total: checkoutData.total,
           items: (checkoutData.verified_items || []).map((i: { slug: string; quantity: number; final_price: number }) => ({
             slug: i.slug,
             quantity: i.quantity,
-            price: i.final_price,
+            final_price: i.final_price,
           })),
         }))
       } catch {}
@@ -289,7 +303,7 @@ function AddressForm() {
       const orderData = await orderRes.json()
 
       if (orderRes.ok && orderData.success) {
-        savePixelData()
+        savePixelData(orderData.order_id)
         clearCart()
         router.push(`/checkout/success?order_id=${orderData.order_id}`)
       } else {
@@ -326,7 +340,7 @@ function AddressForm() {
         const verifyData = await verifyRes.json()
 
         if (verifyRes.ok && verifyData.success) {
-          savePixelData()
+          savePixelData(verifyData.order_id)
           clearCart()
           router.push(`/checkout/success?order_id=${verifyData.order_id}`)
         } else {

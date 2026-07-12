@@ -12,17 +12,27 @@ function SuccessContent() {
   const orderId = searchParams.get('order_id')
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('pixel_purchase_data')
+    const raw = sessionStorage.getItem('order_result')
     if (!raw) return
+
     try {
       const data = JSON.parse(raw)
       trackPurchase({
         orderId: data.order_id || orderId || 'unknown',
         total: data.total,
-        items: data.items || [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        items: (data.items || []).map((item: any) => ({
+          slug: item.slug,
+          quantity: item.quantity,
+          price: item.final_price ?? item.price,
+        })),
       })
-    } catch {}
-    sessionStorage.removeItem('pixel_purchase_data')
+    } catch (e) {
+      console.error('[Pixel] Purchase event error:', e)
+    }
+
+    // Remove immediately after firing — prevents duplicate Purchase events on refresh
+    sessionStorage.removeItem('order_result')
   }, [orderId])
 
   return (

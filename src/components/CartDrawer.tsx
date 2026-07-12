@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
 import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
-import { trackInitiateCheckout } from "@/lib/pixel";
 import { scrollToProducts } from "@/lib/scroll";
 
 const COD_CHARGE = 50;
@@ -92,11 +91,6 @@ export default function CartDrawer() {
   const displayTotal = selectedMethod === "prepaid" ? prepaidTotal : codTotal;
 
   const handleProceed = () => {
-    trackInitiateCheckout({
-      slugs: items.map((i) => i.slug),
-      total: displayTotal,
-      numItems: totalItemCount,
-    });
     closeCart();
     router.push(`/checkout/address?method=${selectedMethod}`);
   };
