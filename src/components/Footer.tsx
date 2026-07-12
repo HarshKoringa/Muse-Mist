@@ -2,9 +2,13 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { Instagram } from 'lucide-react'
 
 export default function Footer() {
+  const pathname = usePathname()
+  if (pathname.startsWith('/checkout')) return null
+
   return (
     <footer className="w-full bg-[#1A237E] border-t-2 border-white/10 px-6 sm:px-12 py-16">
       <div className="max-w-7xl mx-auto">

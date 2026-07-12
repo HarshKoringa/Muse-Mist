@@ -359,7 +359,7 @@ function AddressForm() {
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
-      <main className="min-h-screen bg-[#DCEFFF] pb-40 lg:pb-16">
+      <main className="bg-[#DCEFFF] pb-32 lg:pb-16 lg:min-h-screen">
         {/* Mobile sticky header */}
         <div className="sticky top-0 z-10 flex items-center gap-4 bg-[#DCEFFF]/95 backdrop-blur px-4 py-4 border-b border-black/5 lg:hidden">
           <button onClick={() => router.back()} className="cursor-pointer">
