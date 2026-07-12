@@ -411,7 +411,7 @@ function AddressForm() {
                 </div>
               ) : (
                 <>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <div className="flex-1 flex items-center border border-gray-300 rounded-xl overflow-hidden">
                       <span className="px-3 text-gray-500 text-sm bg-gray-50 border-r border-gray-300 py-3">+91</span>
                       <input
@@ -420,7 +420,7 @@ function AddressForm() {
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                         placeholder="Enter mobile number"
                         style={{ fontSize: '16px', fontFamily: 'var(--font-body)' }}
-                        className="flex-1 px-3 py-3 outline-none text-base"
+                        className="flex-1 w-full px-3 py-3 outline-none text-base"
                         disabled={otpSent}
                       />
                     </div>
@@ -429,7 +429,7 @@ function AddressForm() {
                         onClick={handleSendOTP}
                         disabled={phone.length !== 10 || phoneLoading}
                         style={{ fontFamily: 'var(--font-body)' }}
-                        className="px-5 py-3 bg-[#1A237E] text-white rounded-xl text-sm font-medium disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                        className="w-full sm:w-auto px-5 py-3 bg-[#1A237E] text-white rounded-xl text-sm font-medium disabled:opacity-50 whitespace-nowrap cursor-pointer"
                       >
                         {phoneLoading ? 'Sending...' : 'Send OTP'}
                       </button>
@@ -438,7 +438,7 @@ function AddressForm() {
 
                   {otpSent && (
                     <>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="text"
                           value={otp}
@@ -446,13 +446,13 @@ function AddressForm() {
                           placeholder="Enter 6-digit OTP"
                           maxLength={6}
                           style={{ fontSize: '16px', fontFamily: 'var(--font-body)' }}
-                          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-base text-center tracking-widest"
+                          className="flex-1 w-full px-4 py-3 border border-gray-300 rounded-xl text-base text-center tracking-widest"
                         />
                         <button
                           onClick={handleVerifyOTP}
                           disabled={otp.length !== 6 || phoneLoading}
                           style={{ fontFamily: 'var(--font-body)' }}
-                          className="px-5 py-3 bg-[#1A237E] text-white rounded-xl text-sm font-medium disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                          className="w-full sm:w-auto px-5 py-3 bg-[#1A237E] text-white rounded-xl text-sm font-medium disabled:opacity-50 whitespace-nowrap cursor-pointer"
                         >
                           {phoneLoading ? 'Verifying...' : 'Verify'}
                         </button>
