@@ -13,26 +13,33 @@ function SuccessContent() {
 
   useEffect(() => {
     const raw = sessionStorage.getItem('order_result')
-    if (!raw) return
 
-    try {
-      const data = JSON.parse(raw)
-      trackPurchase({
-        orderId: data.order_id || orderId || 'unknown',
-        total: data.total,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        items: (data.items || []).map((item: any) => ({
-          slug: item.slug,
-          quantity: item.quantity,
-          price: item.final_price ?? item.price,
-        })),
-      })
-    } catch (e) {
-      console.error('[Pixel] Purchase event error:', e)
+    if (raw) {
+      try {
+        const data = JSON.parse(raw)
+        trackPurchase({
+          orderId: data.order_id || orderId || 'unknown',
+          total: data.total || 0,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          items: (data.items || []).map((item: any) => ({
+            slug: item.slug,
+            quantity: item.quantity,
+            price: item.final_price ?? item.price,
+          })),
+        })
+      } catch (e) {
+        console.error('[Pixel] Purchase event error:', e)
+      }
+      // Remove immediately after firing — prevents duplicate Purchase events on refresh
+      sessionStorage.removeItem('order_result')
+      return
     }
 
-    // Remove immediately after firing — prevents duplicate Purchase events on refresh
-    sessionStorage.removeItem('order_result')
+    // sessionStorage unavailable (Safari private mode, opened in a new tab, etc.) —
+    // fall back to the order_id carried in the URL so Purchase still fires.
+    if (orderId) {
+      trackPurchase({ orderId, total: 0, items: [] })
+    }
   }, [orderId])
 
   return (

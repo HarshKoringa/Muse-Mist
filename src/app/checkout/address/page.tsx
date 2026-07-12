@@ -32,7 +32,9 @@ function AddressForm() {
     return useCartStore.persist.onFinishHydration(() => setHydrated(true))
   }, [hydrated])
 
+  const orderPlacedRef = useRef(false)
   useEffect(() => {
+    if (orderPlacedRef.current) return
     if (hydrated && items.length === 0) {
       router.push('/')
     }
@@ -303,6 +305,7 @@ function AddressForm() {
       const orderData = await orderRes.json()
 
       if (orderRes.ok && orderData.success) {
+        orderPlacedRef.current = true
         savePixelData(orderData.order_id)
         clearCart()
         router.push(`/checkout/success?order_id=${orderData.order_id}`)
@@ -340,6 +343,7 @@ function AddressForm() {
         const verifyData = await verifyRes.json()
 
         if (verifyRes.ok && verifyData.success) {
+          orderPlacedRef.current = true
           savePixelData(verifyData.order_id)
           clearCart()
           router.push(`/checkout/success?order_id=${verifyData.order_id}`)
