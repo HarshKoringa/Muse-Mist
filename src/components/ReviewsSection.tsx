@@ -1,6 +1,6 @@
 "use client";
 
-const BASE = 'https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/';
+const BASE = '/images/';
 
 const REVIEWS = [
   {

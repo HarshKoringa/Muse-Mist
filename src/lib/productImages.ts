@@ -1,4 +1,4 @@
-const SUPABASE_IMG = 'https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images'
+const SUPABASE_IMG = '/images'
 
 export const PRODUCT_IMAGES: Record<string, string[]> = {
   'invisible-glow-shield': [

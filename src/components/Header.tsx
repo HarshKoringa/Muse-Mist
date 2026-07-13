@@ -11,8 +11,8 @@ import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
 import { scrollToProducts } from "@/lib/scroll";
 
-const LOGO_ICON = "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/logo-icon.png";
-const LOGO_TEXT = "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/logo-text.png";
+const LOGO_ICON = "/images/logo-icon.png";
+const LOGO_TEXT = "/images/logo-text.png";
 
 export default function Header() {
   const router = useRouter();

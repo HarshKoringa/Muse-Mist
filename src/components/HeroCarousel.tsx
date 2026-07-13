@@ -20,15 +20,15 @@ const HEADLINE_MAP: Record<string, string> = {
 
 const HERO_IMAGES: Record<string, string> = {
   "cleanse-clear-calm":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-foam-facewash.png",
+    "/images/hero-foam-facewash.png",
   "invisible-glow-shield":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-sunscreen.png",
+    "/images/hero-sunscreen.png",
   "smooth-and-spotless":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-niacinamied.png",
+    "/images/hero-niacinamied.png",
   "barrier-repair":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-moisturizer.png",
+    "/images/hero-moisturizer.png",
   "reset-to-radiance":
-    "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-vitaminC.png",
+    "/images/hero-vitaminC.png",
 };
 
 const GRADIENT_MAP: Record<string, string> = {
@@ -47,9 +47,9 @@ const ROUTINE_ORDER = [
 ];
 
 const BG_DESKTOP =
-  "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-bg-desktop-v4.png";
+  "/images/hero-bg-desktop-v4.png";
 const BG_MOBILE =
-  "https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/hero-bg-mobile-v4.png";
+  "/images/hero-bg-mobile-v4.png";
 
 type Props = { products: Product[] };
 

@@ -416,15 +416,15 @@ export default function CartDrawer() {
                           <div className="flex flex-row items-center shrink-0 -space-x-1.5">
                             <div className="bg-white rounded-md p-0.5 border-2 border-[#1A237E] relative z-30">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Gpay-icon.png" alt="GPay" className="h-5 w-5 object-contain" />
+                              <img src="/images/Gpay-icon.png" alt="GPay" className="h-5 w-5 object-contain" />
                             </div>
                             <div className="bg-white rounded-md p-0.5 border-2 border-[#1A237E] relative z-20">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Visa-icon.png" alt="Visa" className="h-5 w-5 object-contain" />
+                              <img src="/images/Visa-icon.png" alt="Visa" className="h-5 w-5 object-contain" />
                             </div>
                             <div className="bg-white rounded-md p-0.5 border-2 border-[#1A237E] relative z-10">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://jqetgwopumqhrhotoitf.supabase.co/storage/v1/object/public/product-images/Paytm-icon.png" alt="Paytm" className="h-5 w-5 object-contain" />
+                              <img src="/images/Paytm-icon.png" alt="Paytm" className="h-5 w-5 object-contain" />
                             </div>
                           </div>
                         )}
