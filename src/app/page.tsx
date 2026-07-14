@@ -21,7 +21,7 @@ export default async function Home() {
       .select("*", { count: "exact", head: true }),
   ]);
 
-  const under_main = true
+  const under_main = false
 
   return (
     
