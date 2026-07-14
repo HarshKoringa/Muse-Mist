@@ -26,7 +26,7 @@ export default async function Home() {
   return (
     
   under_main ? (
-    <h1>Under maintenance</h1>
+    <h1 className="text-3xl font-bold text-center mt-20">Under maintenance</h1>
   ) : (
     <div className="min-h-screen bg-white">
       <HeroCarousel products={products ?? []} />
