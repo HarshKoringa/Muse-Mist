@@ -25,7 +25,7 @@ export default async function Home() {
 
   return (
     if (under_main){
-      <h1> Under Maintaince </h1>
+      <h1> Under maintenance </h1>
     } else {
       <div className="min-h-screen bg-white">
         <HeroCarousel products={products ?? []} />
