@@ -14,10 +14,13 @@ export async function POST(req: NextRequest) {
     }
 
     const itemList: { id: string; quantity: number }[] = Array.isArray(items) ? items : []
-    const totalQuantity = itemList.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0)
 
     const supabase = createAdminClient()
-    const resolution = await resolveReferralCode(supabase, code, itemList.length, totalQuantity)
+    const resolution = await resolveReferralCode(
+      supabase,
+      code,
+      itemList.map((i) => Number(i.quantity) || 0)
+    )
 
     if (resolution.type === 'none' || resolution.type === 'error') {
       return NextResponse.json({

@@ -194,12 +194,10 @@ export async function POST(req: NextRequest) {
     // STEP 9b: Resolve referral/ambassador/coupon code — recomputed here too,
     // never trusted from the client's earlier /api/checkout response
     // ══════════════════════════════════════════════════════
-    const totalQuantity = clientItems.reduce((sum, i) => sum + i.quantity, 0)
     const referralResolution = await resolveReferralCode(
       supabase,
       order_data.referral_code,
-      clientItems.length,
-      totalQuantity
+      clientItems.map((i) => i.quantity)
     )
 
     // ══════════════════════════════════════════════════════

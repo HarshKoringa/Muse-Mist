@@ -13,8 +13,7 @@ export type ReferralResolution =
 export async function resolveReferralCode(
   supabase: SupabaseClient,
   rawCode: string | undefined | null,
-  cartDistinctItemCount: number,
-  cartTotalQuantity: number
+  cartItemQuantities: number[]
 ): Promise<ReferralResolution> {
   const code = (rawCode || '').trim().toUpperCase()
   if (!code) return { type: 'none' }
@@ -56,8 +55,8 @@ export async function resolveReferralCode(
     if (bySelfPurchase.self_purchase_used) {
       return { type: 'error', message: 'This self-purchase code has already been used' }
     }
-    if (cartDistinctItemCount !== 1 || cartTotalQuantity !== 1) {
-      return { type: 'error', message: 'Self-purchase code is valid for one product, quantity 1 only' }
+    if (cartItemQuantities.length === 0 || cartItemQuantities.some((qty) => qty !== 1)) {
+      return { type: 'error', message: 'Self-purchase code allows any number of products, but only 1 quantity of each' }
     }
     return {
       type: 'self_purchase',

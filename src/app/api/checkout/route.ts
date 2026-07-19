@@ -128,12 +128,10 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Check referral/ambassador/coupon code ────────────
-    const totalQuantity = itemRequests.reduce((sum, i) => sum + i.quantity, 0)
     const referralResolution = await resolveReferralCode(
       supabase,
       referral_code,
-      itemRequests.length,
-      totalQuantity
+      itemRequests.map((i) => i.quantity)
     )
 
     // ── Calculate discount percentage ────────────────────
