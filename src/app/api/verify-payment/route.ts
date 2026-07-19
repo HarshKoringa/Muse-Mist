@@ -217,15 +217,19 @@ export async function POST(req: NextRequest) {
     discountPercent = applyReferralToDiscount(discountPercent, referralResolution)
 
     const multiplier = (100 - discountPercent) / 100
+    // The ambassador self-purchase perk is a flat % off MRP, not off the
+    // already-discounted sale price — every other discount is off `price`.
+    const useMrpBasis = referralResolution.type === 'self_purchase'
 
     const serverItems = clientItems.map((item) => {
       const product = productMap.get(item.id)!
-      const finalPrice = Math.round(product.price * multiplier)
+      const basePrice = useMrpBasis ? Number(product.mrp ?? product.price) : product.price
+      const finalPrice = Math.round(basePrice * multiplier)
       return {
         id: product.id,
         name: product.name,
         slug: product.slug,
-        price: product.price,
+        price: basePrice,
         mrp: product.mrp,
         quantity: item.quantity,
         final_price: finalPrice,
