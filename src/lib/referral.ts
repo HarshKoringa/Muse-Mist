@@ -3,8 +3,8 @@ import { SupabaseClient } from '@supabase/supabase-js'
 export type ReferralResolution =
   | { type: 'none' }
   | { type: 'error'; message: string }
-  | { type: 'referral'; ambassadorId: string; discountPercent: number; mode: 'stack' }
-  | { type: 'self_purchase'; ambassadorId: string; discountPercent: number; mode: 'flat' }
+  | { type: 'referral'; ambassadorId: string; ambassadorName: string; discountPercent: number; mode: 'stack' }
+  | { type: 'self_purchase'; ambassadorId: string; ambassadorName: string; discountPercent: number; mode: 'flat' }
   | { type: 'coupon'; couponId: string; discountPercent: number; mode: 'stack' | 'flat' }
 
 // Looks up a referral/self-purchase/coupon code against the DB and returns how it
@@ -30,18 +30,24 @@ export async function resolveReferralCode(
 
   const { data: byReferral } = await supabase
     .from('ambassadors')
-    .select('id')
+    .select('id, name')
     .eq('referral_code', code)
     .eq('active', true)
     .maybeSingle()
 
   if (byReferral) {
-    return { type: 'referral', ambassadorId: byReferral.id, discountPercent: referralPercent, mode: 'stack' }
+    return {
+      type: 'referral',
+      ambassadorId: byReferral.id,
+      ambassadorName: byReferral.name,
+      discountPercent: referralPercent,
+      mode: 'stack',
+    }
   }
 
   const { data: bySelfPurchase } = await supabase
     .from('ambassadors')
-    .select('id, self_purchase_used')
+    .select('id, name, self_purchase_used')
     .eq('self_purchase_code', code)
     .eq('active', true)
     .maybeSingle()
@@ -53,7 +59,13 @@ export async function resolveReferralCode(
     if (cartDistinctItemCount !== 1 || cartTotalQuantity !== 1) {
       return { type: 'error', message: 'Self-purchase code is valid for one product, quantity 1 only' }
     }
-    return { type: 'self_purchase', ambassadorId: bySelfPurchase.id, discountPercent: selfPurchasePercent, mode: 'flat' }
+    return {
+      type: 'self_purchase',
+      ambassadorId: bySelfPurchase.id,
+      ambassadorName: bySelfPurchase.name,
+      discountPercent: selfPurchasePercent,
+      mode: 'flat',
+    }
   }
 
   const { data: coupon } = await supabase

@@ -8,8 +8,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { useCartUIStore } from "@/store/cartUIStore";
+import { useReferralStore } from "@/store/referralStore";
 import { getDiscountInfo } from "@/app/actions/getDiscountInfo";
 import { scrollToProducts } from "@/lib/scroll";
+import ReferralCodeField from "@/components/ReferralCodeField";
 
 const COD_CHARGE = 50;
 
@@ -79,13 +81,28 @@ export default function CartDrawer() {
     };
   }, [isCartOpen, isDesktop]);
 
+  const referralApplied = useReferralStore((s) => s.applied);
+  const referralIsFlat = referralApplied?.mode === "flat";
+
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const totalItemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
-  const prepaidDiscount = Math.round(subtotal * (totalPrepaidPercent / 100));
+  const effectivePrepaidPercent = referralApplied
+    ? referralApplied.mode === "stack"
+      ? totalPrepaidPercent + referralApplied.discountPercent
+      : referralApplied.discountPercent
+    : totalPrepaidPercent;
+
+  const effectiveCodPercent = referralApplied
+    ? referralApplied.mode === "stack"
+      ? codDiscountPercent + referralApplied.discountPercent
+      : referralApplied.discountPercent
+    : codDiscountPercent;
+
+  const prepaidDiscount = Math.round(subtotal * (effectivePrepaidPercent / 100));
   const prepaidTotal = subtotal - prepaidDiscount;
 
-  const codDiscount = Math.round(subtotal * (codDiscountPercent / 100));
+  const codDiscount = Math.round(subtotal * (effectiveCodPercent / 100));
   const codTotal = subtotal - codDiscount + (items.length > 0 ? COD_CHARGE : 0);
 
   const displayTotal = selectedMethod === "prepaid" ? prepaidTotal : codTotal;
@@ -322,6 +339,9 @@ export default function CartDrawer() {
                     </p>
                   )}
 
+                  {/* Referral / ambassador / coupon code */}
+                  <ReferralCodeField items={items} subtotal={subtotal} />
+
                   {/* Price breakdown */}
                   {discountLoading ? (
                     <div className="flex items-center gap-2 py-1">
@@ -342,7 +362,7 @@ export default function CartDrawer() {
 
                       {selectedMethod === "prepaid" && (
                         <>
-                          {isEarlyAccess && earlyAccessPercent > 0 && (
+                          {!referralIsFlat && isEarlyAccess && earlyAccessPercent > 0 && (
                             <div className="flex justify-between text-sm text-purple-600">
                               <span>Early Access -{earlyAccessPercent}%</span>
                               <span>
@@ -353,15 +373,17 @@ export default function CartDrawer() {
                               </span>
                             </div>
                           )}
-                          <div className="flex justify-between text-sm text-green-600">
-                            <span>Prepaid -{prepaidDiscountPercent}%</span>
-                            <span>
-                              −₹
-                              {Math.round(
-                                (subtotal * prepaidDiscountPercent) / 100
-                              ).toLocaleString("en-IN")}
-                            </span>
-                          </div>
+                          {!referralIsFlat && (
+                            <div className="flex justify-between text-sm text-green-600">
+                              <span>Prepaid -{prepaidDiscountPercent}%</span>
+                              <span>
+                                −₹
+                                {Math.round(
+                                  (subtotal * prepaidDiscountPercent) / 100
+                                ).toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex justify-between text-sm text-green-600">
                             <span>Delivery</span>
                             <span className="font-medium">Free</span>
@@ -371,7 +393,7 @@ export default function CartDrawer() {
 
                       {selectedMethod === "cod" && (
                         <>
-                          {isEarlyAccess && codDiscount > 0 && (
+                          {!referralIsFlat && isEarlyAccess && codDiscount > 0 && (
                             <div className="flex justify-between text-sm text-purple-600">
                               <span>Early Access -{earlyAccessPercent}%</span>
                               <span>−₹{codDiscount.toLocaleString("en-IN")}</span>
@@ -382,6 +404,20 @@ export default function CartDrawer() {
                             <span>+₹{COD_CHARGE}</span>
                           </div>
                         </>
+                      )}
+
+                      {referralApplied && !referralIsFlat && (
+                        <div className="flex justify-between text-sm text-blue-600">
+                          <span>Referral code -{referralApplied.discountPercent}%</span>
+                          <span>
+                            −₹{Math.round((subtotal * referralApplied.discountPercent) / 100).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      )}
+                      {referralApplied && referralIsFlat && (
+                        <div className="flex justify-between text-sm text-blue-600">
+                          <span>Code applied — flat {referralApplied.discountPercent}% off</span>
+                        </div>
                       )}
 
                       <div className="h-px bg-[#E5E7EB] my-1" />

@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       type: resolution.type,
       discountPercent: resolution.discountPercent,
       mode: resolution.mode,
+      ambassadorName: resolution.type === 'referral' || resolution.type === 'self_purchase' ? resolution.ambassadorName : undefined,
     })
   } catch (err) {
     console.error('[Muse & Mist] /api/validate-referral error:', err)

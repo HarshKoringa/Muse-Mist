@@ -7,8 +7,10 @@ import Image from 'next/image'
 import Script from 'next/script'
 import { createClient } from '@/utils/supabase/client'
 import { useCartStore } from '@/store/cartStore'
+import { useReferralStore } from '@/store/referralStore'
 import { getDiscountInfo } from '@/app/actions/getDiscountInfo'
 import { trackInitiateCheckout } from '@/lib/pixel'
+import ReferralCodeField from '@/components/ReferralCodeField'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -77,51 +79,10 @@ function AddressForm() {
     refreshDiscountInfo()
   }, [refreshDiscountInfo])
 
-  // ── Referral / ambassador / coupon code ──────────────────
-  const [referralCode, setReferralCode] = useState('')
-  const [referralOpen, setReferralOpen] = useState(false)
-  const [referralLoading, setReferralLoading] = useState(false)
-  const [referralError, setReferralError] = useState('')
-  const [referralApplied, setReferralApplied] = useState<{
-    discountPercent: number
-    mode: 'stack' | 'flat'
-    type: string
-  } | null>(null)
-
-  const handleApplyReferral = async () => {
-    const code = referralCode.trim()
-    if (!code) return
-    setReferralLoading(true)
-    setReferralError('')
-    try {
-      const res = await fetch('/api/validate-referral', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
-        }),
-      })
-      const data = await res.json()
-      if (res.ok && data.valid) {
-        setReferralApplied({ discountPercent: data.discountPercent, mode: data.mode, type: data.type })
-      } else {
-        setReferralApplied(null)
-        setReferralError(data.message || 'Invalid code')
-      }
-    } catch {
-      setReferralApplied(null)
-      setReferralError('Could not validate code. Please try again.')
-    } finally {
-      setReferralLoading(false)
-    }
-  }
-
-  const handleRemoveReferral = () => {
-    setReferralApplied(null)
-    setReferralCode('')
-    setReferralError('')
-  }
+  // ── Referral / ambassador / coupon code (shared with the cart drawer) ────
+  const referralCode = useReferralStore((s) => s.code)
+  const referralApplied = useReferralStore((s) => s.applied)
+  const clearReferral = useReferralStore((s) => s.clear)
 
   const effectivePrepaidPercent = referralApplied
     ? referralApplied.mode === 'stack'
@@ -368,6 +329,7 @@ function AddressForm() {
         orderPlacedRef.current = true
         savePixelData(orderData.order_id)
         clearCart()
+        clearReferral()
         router.push(`/checkout/success?order_id=${orderData.order_id}`)
       } else {
         setSubmitError(orderData.error || 'Order failed')
@@ -407,6 +369,7 @@ function AddressForm() {
           orderPlacedRef.current = true
           savePixelData(verifyData.order_id)
           clearCart()
+          clearReferral()
           router.push(`/checkout/success?order_id=${verifyData.order_id}`)
         } else {
           setSubmitError(verifyData.error || 'Payment verification failed')
@@ -582,58 +545,12 @@ function AddressForm() {
               <Field label="Email" value={email} onChange={setEmail} type="email" />
             </section>
 
-            {/* Referral / ambassador / coupon code */}
+            {/* Referral / ambassador / coupon code — shared state with the cart drawer */}
             <section className="bg-white rounded-2xl shadow-sm p-6">
-              {!referralOpen && !referralApplied ? (
-                <button
-                  onClick={() => setReferralOpen(true)}
-                  style={{ fontFamily: 'var(--font-body)' }}
-                  className="text-sm font-medium text-[#1A237E] underline underline-offset-2 cursor-pointer"
-                >
-                  Have a referral or coupon code?
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  <h2 style={{ fontFamily: 'var(--font-body)' }} className="text-sm font-semibold text-[#1A237E] uppercase tracking-wide">
-                    Referral / Coupon Code
-                  </h2>
-                  {referralApplied ? (
-                    <div className="flex items-center justify-between bg-green-50 rounded-xl px-4 py-3">
-                      <span className="text-sm text-green-700 font-medium flex items-center gap-1.5" style={{ fontFamily: 'var(--font-body)' }}>
-                        <Check size={15} />
-                        &quot;{referralCode.trim().toUpperCase()}&quot; applied — {referralApplied.discountPercent}% off
-                      </span>
-                      <button
-                        onClick={handleRemoveReferral}
-                        style={{ fontFamily: 'var(--font-body)' }}
-                        className="text-sm text-red-500 underline cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        value={referralCode}
-                        onChange={(e) => { setReferralCode(e.target.value.toUpperCase()); setReferralError('') }}
-                        placeholder="Enter code"
-                        style={{ fontSize: '16px', fontFamily: 'var(--font-body)' }}
-                        className="flex-1 w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:border-[#1A237E] uppercase"
-                      />
-                      <button
-                        onClick={handleApplyReferral}
-                        disabled={!referralCode.trim() || referralLoading}
-                        style={{ fontFamily: 'var(--font-body)' }}
-                        className="w-full sm:w-auto px-5 py-3 bg-[#1A237E] text-white rounded-xl text-sm font-medium disabled:opacity-50 whitespace-nowrap cursor-pointer"
-                      >
-                        {referralLoading ? 'Checking...' : 'Apply'}
-                      </button>
-                    </div>
-                  )}
-                  {referralError && <p className="text-sm text-red-500">{referralError}</p>}
-                </div>
-              )}
+              <ReferralCodeField
+                items={items.map((item) => ({ id: item.id, quantity: item.quantity }))}
+                subtotal={subtotal}
+              />
             </section>
 
             {/* Payment method */}
