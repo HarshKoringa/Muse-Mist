@@ -96,7 +96,13 @@ function AddressForm() {
       : referralApplied.discountPercent
     : codDiscountPercent
 
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  // The ambassador self-purchase perk is a flat % off MRP, not the sale price —
+  // matches the server-side pricing basis in /api/checkout & /api/verify-payment.
+  const isSelfPurchase = referralApplied?.type === 'self_purchase'
+  const subtotal = items.reduce(
+    (sum, i) => sum + (isSelfPurchase ? (i.mrp ?? i.price) : i.price) * i.quantity,
+    0
+  )
   const prepaidDiscount = Math.round(subtotal * (effectivePrepaidPercent / 100))
   const prepaidTotal = subtotal - prepaidDiscount
   const codDiscount = Math.round(subtotal * (effectiveCodPercent / 100))
