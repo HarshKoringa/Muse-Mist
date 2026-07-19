@@ -4,7 +4,7 @@ export type ReferralResolution =
   | { type: 'none' }
   | { type: 'error'; message: string }
   | { type: 'referral'; ambassadorId: string; ambassadorName: string; discountPercent: number; mode: 'stack' }
-  | { type: 'self_purchase'; ambassadorId: string; ambassadorName: string; discountPercent: number; mode: 'flat' }
+  | { type: 'self_purchase'; ambassadorId: string; ambassadorName: string; discountPercent: number; mode: 'stack' }
   | { type: 'coupon'; couponId: string; discountPercent: number; mode: 'stack' | 'flat' }
 
 // Looks up a referral/self-purchase/coupon code against the DB and returns how it
@@ -63,7 +63,7 @@ export async function resolveReferralCode(
       ambassadorId: bySelfPurchase.id,
       ambassadorName: bySelfPurchase.name,
       discountPercent: selfPurchasePercent,
-      mode: 'flat',
+      mode: 'stack',
     }
   }
 
