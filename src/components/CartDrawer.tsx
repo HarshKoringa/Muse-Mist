@@ -83,14 +83,8 @@ export default function CartDrawer() {
 
   const referralApplied = useReferralStore((s) => s.applied);
   const referralIsFlat = referralApplied?.mode === "flat";
-  // The ambassador self-purchase perk is a flat % off MRP, not the sale price —
-  // matches the server-side pricing basis in /api/checkout & /api/verify-payment.
-  const isSelfPurchase = referralApplied?.type === "self_purchase";
 
-  const subtotal = items.reduce(
-    (sum, i) => sum + (isSelfPurchase ? (i.mrp ?? i.price) : i.price) * i.quantity,
-    0
-  );
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const totalItemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   const effectivePrepaidPercent = referralApplied
