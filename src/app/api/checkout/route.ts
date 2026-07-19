@@ -150,19 +150,15 @@ export async function POST(req: NextRequest) {
 
     // ── Calculate prices from DB data (PER ITEM) ─────────
     const multiplier = (100 - discountPercent) / 100
-    // The ambassador self-purchase perk is a flat % off MRP, not off the
-    // already-discounted sale price — every other discount is off `price`.
-    const useMrpBasis = referralResolution.type === 'self_purchase'
 
     const serverItems = itemRequests.map((item) => {
       const product = productMap.get(item.id)!
-      const basePrice = useMrpBasis ? Number(product.mrp ?? product.price) : product.price
-      const finalPrice = Math.round(basePrice * multiplier)
+      const finalPrice = Math.round(product.price * multiplier)
       return {
         id: product.id,
         name: product.name,
         slug: product.slug,
-        price: basePrice,
+        price: product.price,
         mrp: product.mrp,
         quantity: item.quantity,
         final_price: finalPrice,
