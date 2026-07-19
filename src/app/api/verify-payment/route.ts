@@ -2,6 +2,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { createShiprocketOrder } from '@/lib/shiprocket'
 import { sendOrderConfirmation } from '@/lib/whatsapp'
 import { rateLimit } from '@/lib/rateLimit'
+import { resolveReferralCode, applyReferralToDiscount } from '@/lib/referral'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
@@ -190,6 +191,18 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════
+    // STEP 9b: Resolve referral/ambassador/coupon code — recomputed here too,
+    // never trusted from the client's earlier /api/checkout response
+    // ══════════════════════════════════════════════════════
+    const totalQuantity = clientItems.reduce((sum, i) => sum + i.quantity, 0)
+    const referralResolution = await resolveReferralCode(
+      supabase,
+      order_data.referral_code,
+      clientItems.length,
+      totalQuantity
+    )
+
+    // ══════════════════════════════════════════════════════
     // STEP 10: SERVER-SIDE price calculation — trust NO client data
     // ══════════════════════════════════════════════════════
     let discountPercent = 0
@@ -202,6 +215,8 @@ export async function POST(req: NextRequest) {
       discountPercent = earlyAccessDiscount > 0 ? earlyAccessDiscount : 0
       deliveryCharge = COD_CHARGE
     }
+
+    discountPercent = applyReferralToDiscount(discountPercent, referralResolution)
 
     const multiplier = (100 - discountPercent) / 100
 
@@ -347,6 +362,15 @@ export async function POST(req: NextRequest) {
         status: orderStatus,
         razorpay_order_id: razorpay_order_id ?? null,
         razorpay_payment_id: razorpay_payment_id ?? null,
+        ambassador_id:
+          referralResolution.type === 'referral' || referralResolution.type === 'self_purchase'
+            ? referralResolution.ambassadorId
+            : null,
+        referral_type:
+          referralResolution.type === 'referral' || referralResolution.type === 'self_purchase'
+            ? referralResolution.type
+            : null,
+        coupon_id: referralResolution.type === 'coupon' ? referralResolution.couponId : null,
       })
       .select()
       .single()
@@ -408,6 +432,31 @@ export async function POST(req: NextRequest) {
         }
       } catch (e) {
         console.log('[Order] Could not mark discount as used:', e)
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // STEP 16b: Update ambassador state — increment order count for
+    // referral codes, or mark the self-purchase code as used
+    // ══════════════════════════════════════════════════════
+    if (referralResolution.type === 'referral') {
+      try {
+        await supabase.rpc('increment_ambassador_order_count', {
+          p_ambassador_id: referralResolution.ambassadorId,
+        })
+        console.log('[Ambassador] Order count incremented ✓')
+      } catch (e) {
+        console.log('[Ambassador] Could not increment order count:', e)
+      }
+    } else if (referralResolution.type === 'self_purchase') {
+      try {
+        await supabase
+          .from('ambassadors')
+          .update({ self_purchase_used: true })
+          .eq('id', referralResolution.ambassadorId)
+        console.log('[Ambassador] Self-purchase marked as used ✓')
+      } catch (e) {
+        console.log('[Ambassador] Could not mark self-purchase as used:', e)
       }
     }
 

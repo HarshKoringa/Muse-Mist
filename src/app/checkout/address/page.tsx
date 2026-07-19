@@ -77,10 +77,68 @@ function AddressForm() {
     refreshDiscountInfo()
   }, [refreshDiscountInfo])
 
+  // ── Referral / ambassador / coupon code ──────────────────
+  const [referralCode, setReferralCode] = useState('')
+  const [referralOpen, setReferralOpen] = useState(false)
+  const [referralLoading, setReferralLoading] = useState(false)
+  const [referralError, setReferralError] = useState('')
+  const [referralApplied, setReferralApplied] = useState<{
+    discountPercent: number
+    mode: 'stack' | 'flat'
+    type: string
+  } | null>(null)
+
+  const handleApplyReferral = async () => {
+    const code = referralCode.trim()
+    if (!code) return
+    setReferralLoading(true)
+    setReferralError('')
+    try {
+      const res = await fetch('/api/validate-referral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.valid) {
+        setReferralApplied({ discountPercent: data.discountPercent, mode: data.mode, type: data.type })
+      } else {
+        setReferralApplied(null)
+        setReferralError(data.message || 'Invalid code')
+      }
+    } catch {
+      setReferralApplied(null)
+      setReferralError('Could not validate code. Please try again.')
+    } finally {
+      setReferralLoading(false)
+    }
+  }
+
+  const handleRemoveReferral = () => {
+    setReferralApplied(null)
+    setReferralCode('')
+    setReferralError('')
+  }
+
+  const effectivePrepaidPercent = referralApplied
+    ? referralApplied.mode === 'stack'
+      ? totalPrepaidPercent + referralApplied.discountPercent
+      : referralApplied.discountPercent
+    : totalPrepaidPercent
+
+  const effectiveCodPercent = referralApplied
+    ? referralApplied.mode === 'stack'
+      ? codDiscountPercent + referralApplied.discountPercent
+      : referralApplied.discountPercent
+    : codDiscountPercent
+
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
-  const prepaidDiscount = Math.round(subtotal * (totalPrepaidPercent / 100))
+  const prepaidDiscount = Math.round(subtotal * (effectivePrepaidPercent / 100))
   const prepaidTotal = subtotal - prepaidDiscount
-  const codDiscount = Math.round(subtotal * (codDiscountPercent / 100))
+  const codDiscount = Math.round(subtotal * (effectiveCodPercent / 100))
   const codTotal = subtotal - codDiscount + (items.length > 0 ? COD_CHARGE : 0)
   const displayTotal = paymentMethod === 'prepaid' ? prepaidTotal : codTotal
 
@@ -251,6 +309,7 @@ function AddressForm() {
         items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
         payment_method: paymentMethod,
         user_id: user.id,
+        referral_code: referralApplied ? referralCode.trim() : undefined,
       }),
     })
     const checkoutData = await checkoutRes.json()
@@ -299,6 +358,7 @@ function AddressForm() {
             payment_method: 'cod',
             items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
             shipping_address: shippingAddress,
+            referral_code: referralApplied ? referralCode.trim() : undefined,
           },
         }),
       })
@@ -337,6 +397,7 @@ function AddressForm() {
               payment_method: 'prepaid',
               items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
               shipping_address: shippingAddress,
+              referral_code: referralApplied ? referralCode.trim() : undefined,
             },
           }),
         })
@@ -402,6 +463,7 @@ function AddressForm() {
               prepaidDiscountPercent={prepaidDiscountPercent}
               codDiscount={codDiscount}
               displayTotal={displayTotal}
+              referralApplied={referralApplied}
             />
 
             {/* Phone verification */}
@@ -520,6 +582,60 @@ function AddressForm() {
               <Field label="Email" value={email} onChange={setEmail} type="email" />
             </section>
 
+            {/* Referral / ambassador / coupon code */}
+            <section className="bg-white rounded-2xl shadow-sm p-6">
+              {!referralOpen && !referralApplied ? (
+                <button
+                  onClick={() => setReferralOpen(true)}
+                  style={{ fontFamily: 'var(--font-body)' }}
+                  className="text-sm font-medium text-[#1A237E] underline underline-offset-2 cursor-pointer"
+                >
+                  Have a referral or coupon code?
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <h2 style={{ fontFamily: 'var(--font-body)' }} className="text-sm font-semibold text-[#1A237E] uppercase tracking-wide">
+                    Referral / Coupon Code
+                  </h2>
+                  {referralApplied ? (
+                    <div className="flex items-center justify-between bg-green-50 rounded-xl px-4 py-3">
+                      <span className="text-sm text-green-700 font-medium flex items-center gap-1.5" style={{ fontFamily: 'var(--font-body)' }}>
+                        <Check size={15} />
+                        &quot;{referralCode.trim().toUpperCase()}&quot; applied — {referralApplied.discountPercent}% off
+                      </span>
+                      <button
+                        onClick={handleRemoveReferral}
+                        style={{ fontFamily: 'var(--font-body)' }}
+                        className="text-sm text-red-500 underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={referralCode}
+                        onChange={(e) => { setReferralCode(e.target.value.toUpperCase()); setReferralError('') }}
+                        placeholder="Enter code"
+                        style={{ fontSize: '16px', fontFamily: 'var(--font-body)' }}
+                        className="flex-1 w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:border-[#1A237E] uppercase"
+                      />
+                      <button
+                        onClick={handleApplyReferral}
+                        disabled={!referralCode.trim() || referralLoading}
+                        style={{ fontFamily: 'var(--font-body)' }}
+                        className="w-full sm:w-auto px-5 py-3 bg-[#1A237E] text-white rounded-xl text-sm font-medium disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                      >
+                        {referralLoading ? 'Checking...' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {referralError && <p className="text-sm text-red-500">{referralError}</p>}
+                </div>
+              )}
+            </section>
+
             {/* Payment method */}
             <section className="bg-white rounded-2xl shadow-sm p-6 space-y-3">
               <h2 style={{ fontFamily: 'var(--font-body)' }} className="text-sm font-semibold text-[#1A237E] uppercase tracking-wide">
@@ -602,6 +718,7 @@ function AddressForm() {
               prepaidDiscountPercent={prepaidDiscountPercent}
               codDiscount={codDiscount}
               displayTotal={displayTotal}
+              referralApplied={referralApplied}
             />
           </div>
         </div>
@@ -647,7 +764,7 @@ function Field({
 
 function OrderSummary({
   className = '', items, subtotal, paymentMethod, isEarlyAccess, earlyAccessPercent,
-  prepaidDiscountPercent, codDiscount, displayTotal,
+  prepaidDiscountPercent, codDiscount, displayTotal, referralApplied,
 }: {
   className?: string
   items: { id: string; name: string; size?: string | null; image_url?: string | null; price: number; quantity: number }[]
@@ -658,7 +775,9 @@ function OrderSummary({
   prepaidDiscountPercent: number
   codDiscount: number
   displayTotal: number
+  referralApplied?: { discountPercent: number; mode: 'stack' | 'flat'; type: string } | null
 }) {
+  const referralIsFlat = referralApplied?.mode === 'flat'
   return (
     <div className={`bg-white rounded-2xl shadow-sm p-6 space-y-4 ${className}`}>
       <h2 style={{ fontFamily: 'var(--font-body)' }} className="text-sm font-semibold text-[#1A237E] uppercase tracking-wide">
@@ -695,16 +814,18 @@ function OrderSummary({
 
         {paymentMethod === 'prepaid' ? (
           <>
-            {isEarlyAccess && earlyAccessPercent > 0 && (
+            {!referralIsFlat && isEarlyAccess && earlyAccessPercent > 0 && (
               <div className="flex justify-between text-sm text-purple-600">
                 <span>Early Access -{earlyAccessPercent}%</span>
                 <span>−₹{Math.round((subtotal * earlyAccessPercent) / 100).toLocaleString('en-IN')}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm text-green-600">
-              <span>Prepaid -{prepaidDiscountPercent}%</span>
-              <span>−₹{Math.round((subtotal * prepaidDiscountPercent) / 100).toLocaleString('en-IN')}</span>
-            </div>
+            {!referralIsFlat && (
+              <div className="flex justify-between text-sm text-green-600">
+                <span>Prepaid -{prepaidDiscountPercent}%</span>
+                <span>−₹{Math.round((subtotal * prepaidDiscountPercent) / 100).toLocaleString('en-IN')}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm text-green-600">
               <span>Delivery</span>
               <span className="font-medium">Free</span>
@@ -712,7 +833,7 @@ function OrderSummary({
           </>
         ) : (
           <>
-            {isEarlyAccess && codDiscount > 0 && (
+            {!referralIsFlat && isEarlyAccess && codDiscount > 0 && (
               <div className="flex justify-between text-sm text-purple-600">
                 <span>Early Access</span>
                 <span>−₹{codDiscount.toLocaleString('en-IN')}</span>
@@ -723,6 +844,15 @@ function OrderSummary({
               <span>+₹{COD_CHARGE}</span>
             </div>
           </>
+        )}
+
+        {referralApplied && (
+          <div className="flex justify-between text-sm text-blue-600">
+            <span>{referralIsFlat ? `Code applied — flat ${referralApplied.discountPercent}% off` : `Referral code -${referralApplied.discountPercent}%`}</span>
+            {!referralIsFlat && (
+              <span>−₹{Math.round((subtotal * referralApplied.discountPercent) / 100).toLocaleString('en-IN')}</span>
+            )}
+          </div>
         )}
 
         <div className="h-px bg-[#E5E7EB] my-1" />

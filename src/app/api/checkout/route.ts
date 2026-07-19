@@ -1,6 +1,7 @@
 import { getRazorpayInstance } from '@/lib/razorpay'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { rateLimit } from '@/lib/rateLimit'
+import { resolveReferralCode, applyReferralToDiscount } from '@/lib/referral'
 import { NextRequest, NextResponse } from 'next/server'
 
 const COD_CHARGE = 50
@@ -10,7 +11,7 @@ const MAX_QUANTITY_PER_ITEM = 10
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { items, payment_method, user_id } = body
+    const { items, payment_method, user_id, referral_code } = body
 
     // ── Validate input ───────────────────────────────────
     if (!items?.length || !payment_method || !user_id) {
@@ -126,6 +127,15 @@ export async function POST(req: NextRequest) {
       console.log('[Checkout] No early access discount found')
     }
 
+    // ── Check referral/ambassador/coupon code ────────────
+    const totalQuantity = itemRequests.reduce((sum, i) => sum + i.quantity, 0)
+    const referralResolution = await resolveReferralCode(
+      supabase,
+      referral_code,
+      itemRequests.length,
+      totalQuantity
+    )
+
     // ── Calculate discount percentage ────────────────────
     let discountPercent = 0
     let deliveryCharge = 0
@@ -137,6 +147,8 @@ export async function POST(req: NextRequest) {
       discountPercent = earlyAccessDiscount > 0 ? earlyAccessDiscount : 0
       deliveryCharge = COD_CHARGE
     }
+
+    discountPercent = applyReferralToDiscount(discountPercent, referralResolution)
 
     // ── Calculate prices from DB data (PER ITEM) ─────────
     const multiplier = (100 - discountPercent) / 100
@@ -199,6 +211,8 @@ export async function POST(req: NextRequest) {
       is_early_access: isEarlyAccess,
       total_discount_percent: discountPercent,
       verified_items: serverItems,
+      referral_code_error: referralResolution.type === 'error' ? referralResolution.message : null,
+      referral_code_applied: ['referral', 'self_purchase', 'coupon'].includes(referralResolution.type),
     })
   } catch (err) {
     console.error('[Muse & Mist] /api/checkout error:', err)
