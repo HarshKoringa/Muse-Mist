@@ -2,13 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/lib/toast-context";
-import { ToastContainer } from "@/components/ToastContainer";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CartDrawer from "@/components/CartDrawer";
-import ContentWrapper from "@/components/ContentWrapper";
-import BottomNav from "@/components/BottomNav";
-import MetaPixel from "@/components/MetaPixel";
+import SiteChrome from "@/components/SiteChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -86,17 +80,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${dmSans.variable} antialiased`}
       >
         <ToastProvider>
-          <MetaPixel />
-          <Header />
-          <ToastContainer />
-          <CartDrawer />
-          <BottomNav />
-          <ContentWrapper>
-            <main>
-              {children}
-            </main>
-            <Footer />
-          </ContentWrapper>
+          <SiteChrome>{children}</SiteChrome>
         </ToastProvider>
       </body>
     </html>

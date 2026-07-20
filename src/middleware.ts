@@ -3,6 +3,18 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const isApiRoute = pathname.startsWith("/api");
+
+  // Checked BEFORE the Supabase client is constructed below — if maintenance
+  // mode is on, the maintenance page must render with zero backend calls,
+  // even if Supabase itself is the thing that's down.
+  if (process.env.MAINTENANCE_MODE === "true" && !isApiRoute && pathname !== "/maintenance") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/maintenance";
+    return NextResponse.rewrite(url, { status: 503 });
+  }
+
   let response = NextResponse.next({
     request: { headers: request.headers },
   });
