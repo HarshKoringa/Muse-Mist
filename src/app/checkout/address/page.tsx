@@ -83,6 +83,7 @@ function AddressForm() {
   const referralCode = useReferralStore((s) => s.code)
   const referralApplied = useReferralStore((s) => s.applied)
   const clearReferral = useReferralStore((s) => s.clear)
+  const referralIsFlat = referralApplied?.mode === 'flat'
 
   const effectivePrepaidPercent = referralApplied
     ? referralApplied.mode === 'stack'
@@ -586,7 +587,7 @@ function AddressForm() {
               </div>
               {paymentMethod === 'prepaid' ? (
                 <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                  <Check size={11} /> Extra {totalPrepaidPercent}% off + Free shipping
+                  <Check size={11} /> {referralIsFlat ? 'Free shipping' : `Extra ${totalPrepaidPercent}% off + Free shipping`}
                 </p>
               ) : (
                 <p className="text-xs text-gray-500">+₹{COD_CHARGE} delivery charge</p>

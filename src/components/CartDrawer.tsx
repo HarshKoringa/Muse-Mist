@@ -328,7 +328,7 @@ export default function CartDrawer() {
                       className="text-xs text-green-600 font-medium flex items-center gap-1"
                     >
                       <Check size={11} />
-                      Extra 5% off + Free shipping
+                      {referralIsFlat ? "Free shipping" : "Extra 5% off + Free shipping"}
                     </p>
                   ) : (
                     <p
