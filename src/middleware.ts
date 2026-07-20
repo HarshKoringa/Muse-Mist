@@ -9,7 +9,8 @@ export async function middleware(request: NextRequest) {
   // Checked BEFORE the Supabase client is constructed below — if maintenance
   // mode is on, the maintenance page must render with zero backend calls,
   // even if Supabase itself is the thing that's down.
-  if (process.env.MAINTENANCE_MODE === "true" && !isApiRoute && pathname !== "/maintenance") {
+  const maintenanceModeOn = process.env.MAINTENANCE_MODE?.toLowerCase() === "true";
+  if (maintenanceModeOn && !isApiRoute && pathname !== "/maintenance") {
     const url = request.nextUrl.clone();
     url.pathname = "/maintenance";
     return NextResponse.rewrite(url, { status: 503 });
